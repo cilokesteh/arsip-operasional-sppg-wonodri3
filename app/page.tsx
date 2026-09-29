@@ -9,7 +9,7 @@ import {
   DailyMenuRecord,
 } from '@/lib/data';
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   Users,
   Utensils,
   Camera,
@@ -26,9 +26,12 @@ import {
   HeartHandshake,
   Heart,
   Search,
-  ExternalLink,
   ShieldCheck,
   Award,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  SlidersHorizontal,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -36,6 +39,11 @@ export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState<string>('2026-09-29');
   const [activeTab, setActiveTab] = useState<'akg' | 'menu' | 'dokumentasi' | 'penerima'>('akg');
   const [searchSite, setSearchSite] = useState<string>('');
+  const [showCalendarModal, setShowCalendarModal] = useState<boolean>(false);
+
+  // Month navigation in calendar popup
+  const [calendarMonth, setCalendarMonth] = useState<number>(8); // September = 8 (0-indexed)
+  const [calendarYear, setCalendarYear] = useState<number>(2026);
 
   const currentMenu = menuHistory.find((m) => m.date === selectedDate) || menuHistory[0];
 
@@ -82,12 +90,39 @@ export default function HomePage() {
     }
   };
 
+  // Helper calendar dates generator
+  const availableDatesSet = new Set(menuHistory.map((m) => m.date));
+  const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+  const firstDayOfWeek = new Date(calendarYear, calendarMonth, 1).getDay(); // 0 = Sun
+
+  const monthNames = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+  ];
+
+  const prevMonth = () => {
+    if (calendarMonth === 0) {
+      setCalendarMonth(11);
+      setCalendarYear((y) => y - 1);
+    } else {
+      setCalendarMonth((m) => m - 1);
+    }
+  };
+
+  const nextMonth = () => {
+    if (calendarMonth === 11) {
+      setCalendarMonth(0);
+      setCalendarYear((y) => y + 1);
+    } else {
+      setCalendarMonth((m) => m + 1);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f4f9ff] text-[#0d1b2e] flex flex-col w-full overflow-x-hidden">
-      {/* 1. Mobile-Optimized Compact Header */}
+      {/* 1. Header */}
       <header className="sticky top-0 z-50 bg-[#0b1e3a] text-white border-b border-[#174a8a]/40 shadow-sm">
         <div className="max-w-6xl mx-auto px-3.5 sm:px-6 py-2.5 flex items-center justify-between gap-2">
-          {/* Logo & Brand Identity */}
           <Link href="/" className="flex items-center gap-2.5 min-w-0 flex-1">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white p-1 flex items-center justify-center shrink-0 border border-white/20">
               <Image
@@ -114,14 +149,20 @@ export default function HomePage() {
             </div>
           </Link>
 
-          {/* Action Header */}
           <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => setShowCalendarModal(true)}
+              className="p-2 sm:px-3 sm:py-1.5 rounded-lg text-xs font-bold text-white bg-[#1759ab] hover:bg-[#1d6fd0] border border-[#5fa8f0]/30 transition-colors flex items-center gap-1.5"
+            >
+              <CalendarIcon className="w-3.5 h-3.5 text-[#c9a227]" />
+              <span className="text-[11px] sm:inline">Kalender</span>
+            </button>
             <button
               onClick={() => window.print()}
               title="Cetak PDF"
-              className="p-2 sm:px-3 sm:py-1.5 rounded-lg text-xs font-bold text-white bg-[#1759ab] hover:bg-[#1d6fd0] border border-[#5fa8f0]/30 transition-colors"
+              className="p-2 sm:px-3 sm:py-1.5 rounded-lg text-xs font-bold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-colors"
             >
-              <Printer className="w-4 h-4 text-[#a8d8f0]" />
+              <Printer className="w-3.5 h-3.5 text-[#a8d8f0]" />
               <span className="hidden sm:inline ml-1.5">Cetak</span>
             </button>
             <Link
@@ -135,76 +176,89 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 2. Compact Mobile-First Hero Section */}
-      <section className="sppg-gradient text-white py-5 sm:py-8 px-3.5 sm:px-6 border-b border-[#cfe4fc]/30">
+      {/* 2. Compact Hero Section */}
+      <section className="sppg-gradient text-white py-5 sm:py-7 px-3.5 sm:px-6 border-b border-[#cfe4fc]/30">
         <div className="max-w-6xl mx-auto space-y-4">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-[#a8d8f0] text-[10px] sm:text-xs font-bold">
-              <Award className="w-3 h-3 text-[#c9a227]" />
-              <span>Transparansi Menu & AKG MBG</span>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-[#a8d8f0] text-[10px] sm:text-xs font-bold">
+                <Award className="w-3 h-3 text-[#c9a227]" />
+                <span>Transparansi Menu & Kandungan Gizi MBG</span>
+              </div>
+              <h1 className="text-lg sm:text-2xl md:text-3xl font-black text-white leading-tight">
+                Arsip Operasional MBG Harian
+              </h1>
+              <p className="text-[11px] sm:text-xs text-[#cfe4fc] leading-normal max-w-2xl">
+                Buka menu masa lalu dengan kalender atau pemilih tanggal. Data AKG, foto dapur,
+                serta kuota 1.555 penerima tersimpan permanen tanpa batasan waktu.
+              </p>
             </div>
-            <h1 className="text-lg sm:text-2xl md:text-3xl font-black text-white leading-tight">
-              Arsip Operasional MBG Harian
-            </h1>
-            <p className="text-[11px] sm:text-xs text-[#cfe4fc] leading-normal">
-              Informasi kandungan gizi (AKG), menu, foto dapur, dan penerima manfaat SPPG Wonodri 3.
-            </p>
-          </div>
 
-          {/* Quick Metrics Bar: 2-Col Mobile Grid */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-4">
-            <div className="p-3 rounded-xl bg-[#0b1e3a]/90 border border-[#5fa8f0]/40">
-              <span className="text-[10px] font-bold text-[#a5cdf9] uppercase tracking-wider block">
-                Total Distribusi
-              </span>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-xl sm:text-2xl font-black text-white tabular-nums">
-                  {totalEffective.toLocaleString('id-ID')}
+            {/* Quick Metrics */}
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 shrink-0">
+              <div className="p-3 rounded-xl bg-[#0b1e3a]/90 border border-[#5fa8f0]/40">
+                <span className="text-[10px] font-bold text-[#a5cdf9] uppercase tracking-wider block">
+                  Total Distribusi
                 </span>
-                <span className="text-[10px] font-bold text-[#c9a227]">Porsi</span>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-xl sm:text-2xl font-black text-white tabular-nums">
+                    {totalEffective.toLocaleString('id-ID')}
+                  </span>
+                  <span className="text-[10px] font-bold text-[#c9a227]">Porsi</span>
+                </div>
+                <span className="text-[9px] sm:text-[10px] text-slate-300 block mt-0.5">
+                  12 Sekolah + 1 Posyandu
+                </span>
               </div>
-              <span className="text-[9px] sm:text-[10px] text-slate-300 block mt-0.5">
-                12 Sekolah + 1 Posyandu
-              </span>
-            </div>
 
-            <div className="p-3 rounded-xl bg-[#0b1e3a]/90 border border-[#5fa8f0]/40">
-              <span className="text-[10px] font-bold text-[#a5cdf9] uppercase tracking-wider block">
-                Status Menu
-              </span>
-              <div className="flex items-center gap-1 mt-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="text-xs sm:text-sm font-bold text-white">Menu #{currentMenu.menuNumber}</span>
+              <div className="p-3 rounded-xl bg-[#0b1e3a]/90 border border-[#5fa8f0]/40">
+                <span className="text-[10px] font-bold text-[#a5cdf9] uppercase tracking-wider block">
+                  Status Menu
+                </span>
+                <div className="flex items-center gap-1 mt-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span className="text-xs sm:text-sm font-bold text-white">Menu #{currentMenu.menuNumber}</span>
+                </div>
+                <span className="text-[9px] sm:text-[10px] text-emerald-300 font-medium block mt-0.5 truncate">
+                  {currentMenu.date}
+                </span>
               </div>
-              <span className="text-[9px] sm:text-[10px] text-emerald-300 font-medium block mt-0.5 truncate">
-                Rilis: {currentMenu.publishedAt}
-              </span>
             </div>
           </div>
 
-          {/* Date Selector Navigation Bar */}
-          <div className="pt-2 flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            <span className="text-[10px] font-extrabold text-[#a8d8f0] uppercase tracking-wider whitespace-nowrap mr-1">
-              Tanggal:
-            </span>
-            {menuHistory.map((m) => (
-              <button
-                key={m.date}
-                onClick={() => setSelectedDate(m.date)}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
-                  selectedDate === m.date
-                    ? 'bg-[#c9a227] text-[#0b1e3a] font-extrabold shadow-sm'
-                    : 'bg-white/10 text-white hover:bg-white/20 border border-white/15'
-                }`}
-              >
-                {m.date}
-              </button>
-            ))}
+          {/* Interactive Date Bar with Calendar Trigger */}
+          <div className="pt-2 border-t border-white/15 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none flex-1">
+              <span className="text-[10px] font-extrabold text-[#a8d8f0] uppercase tracking-wider whitespace-nowrap mr-1">
+                Pilih Cepat:
+              </span>
+              {menuHistory.slice(0, 5).map((m) => (
+                <button
+                  key={m.date}
+                  onClick={() => setSelectedDate(m.date)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+                    selectedDate === m.date
+                      ? 'bg-[#c9a227] text-[#0b1e3a] font-extrabold shadow-sm'
+                      : 'bg-white/10 text-white hover:bg-white/20 border border-white/15'
+                  }`}
+                >
+                  {m.date}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setShowCalendarModal(true)}
+              className="px-3 py-1 rounded-lg text-xs font-bold bg-[#c9a227] text-[#0b1e3a] hover:bg-[#e8d5a3] transition-colors shrink-0 flex items-center gap-1 shadow-xs"
+            >
+              <CalendarIcon className="w-3.5 h-3.5" />
+              <span>Semua Tanggal ({menuHistory.length})</span>
+            </button>
           </div>
         </div>
       </section>
 
-      {/* 3. Segment Tab Bar (Full Width Responsive Scroll) */}
+      {/* 3. Segment Tab Bar */}
       <div className="bg-white border-b border-[#cfe4fc] sticky top-13 z-30 shadow-2xs">
         <div className="max-w-6xl mx-auto px-2 sm:px-6 flex overflow-x-auto scrollbar-none">
           {[
@@ -235,16 +289,30 @@ export default function HomePage() {
 
       {/* 4. Tab Content Area */}
       <main className="max-w-6xl mx-auto w-full px-3.5 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6">
-        {/* TAB 1: KANDUNGAN GIZI (AKG) — Mobile-First Cards */}
+        {/* Active Date Indicator */}
+        <div className="flex items-center justify-between bg-white rounded-xl p-3 sm:p-4 border border-[#cfe4fc] shadow-2xs">
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="w-4 h-4 text-[#1759ab]" />
+            <span className="text-xs sm:text-sm font-black text-[#0b1e3a]">
+              Data Operasional: {currentMenu.date}
+            </span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-200">
+              Menu #{currentMenu.menuNumber}
+            </span>
+          </div>
+
+          <button
+            onClick={() => setShowCalendarModal(true)}
+            className="text-xs font-bold text-[#1759ab] hover:underline flex items-center gap-1"
+          >
+            <span>Ganti Tanggal</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* TAB 1: KANDUNGAN GIZI (AKG) */}
         {activeTab === 'akg' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-              <span>Rincian gizi resmi untuk 5 kelompok porsi sasaran.</span>
-              <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                Standar BGN
-              </span>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
               {currentMenu.nutritionCards.map((card, idx) => {
                 const Icon = getGroupIcon(card.groupName);
@@ -254,7 +322,6 @@ export default function HomePage() {
                     className="sppg-card rounded-xl sm:rounded-2xl overflow-hidden flex flex-col justify-between"
                   >
                     <div>
-                      {/* Card Header Top */}
                       <div className="p-3 sm:p-4 bg-gradient-to-r from-[#e8f2fe] to-[#f4f9ff] border-b border-[#cfe4fc] flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="w-7 h-7 rounded-lg bg-[#1759ab] text-white flex items-center justify-center shrink-0">
@@ -271,13 +338,11 @@ export default function HomePage() {
                         </div>
                       </div>
 
-                      {/* Card Body Target Group */}
                       <div className="p-3.5 sm:p-4 space-y-3">
                         <h3 className="font-extrabold text-xs sm:text-sm text-[#0b1e3a] leading-snug">
                           {card.targetCategory}
                         </h3>
 
-                        {/* Energi Hero Metric */}
                         <div className="p-2.5 sm:p-3 rounded-lg bg-[#0b1e3a] text-white flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded bg-white/10 flex items-center justify-center text-[#c9a227]">
@@ -295,7 +360,6 @@ export default function HomePage() {
                           </div>
                         </div>
 
-                        {/* 4 Makronutrien Grid (2x2) */}
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
                             <div className="flex items-center justify-between text-slate-500 mb-0.5">
@@ -396,42 +460,20 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* TAB 3: DOKUMENTASI DAPUR (FOTO REAL SPPG WONODRI 3) */}
+        {/* TAB 3: DOKUMENTASI DAPUR */}
         {activeTab === 'dokumentasi' && (
           <div className="space-y-4">
             <div className="text-xs text-slate-500 font-medium">
-              Dokumentasi dapur 3 tahap wajib memastikan higienitas pengolahan makanan bergizi.
+              Dokumentasi dapur 3 tahap wajib memastikan higienitas pengolahan makanan bergizi untuk tanggal {currentMenu.date}.
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-5">
-              {[
-                {
-                  step: 'Persiapan',
-                  title: 'Sortasi Bahan Baku & Higienitas',
-                  desc: 'Pembersihan dan sortasi higienis bahan baku di dapur persiapan SPPG Wonodri 3.',
-                  image: '/about-kitchen.jpg',
-                  time: '04:00 - 05:30 WIB',
-                },
-                {
-                  step: 'Pengolahan',
-                  title: 'Pemasakan Standar Suhu Tinggi',
-                  desc: 'Pengolahan makanan hangat menggunakan peralatan berstandar BGN.',
-                  image: '/hero-kitchen.jpg',
-                  time: '05:30 - 07:15 WIB',
-                },
-                {
-                  step: 'Pengemasan',
-                  title: 'Plating Porsi & Segel Thermal',
-                  desc: 'Pengecekan gramasi tiap kelompok dan penyegelan box siap kirim.',
-                  image: '/gallery-1.jpg',
-                  time: '07:15 - 08:30 WIB',
-                },
-              ].map((p, idx) => (
+              {currentMenu.photos.map((p, idx) => (
                 <div key={idx} className="sppg-card rounded-xl sm:rounded-2xl overflow-hidden flex flex-col justify-between">
                   <div>
                     <div className="relative h-40 sm:h-48 w-full bg-slate-100">
                       <Image
-                        src={p.image}
+                        src={p.imageUrl}
                         alt={p.title}
                         fill
                         className="object-cover"
@@ -441,11 +483,13 @@ export default function HomePage() {
                           {p.step}
                         </span>
                       </div>
-                      <div className="absolute bottom-2.5 right-2.5">
-                        <span className="px-1.5 py-0.2 text-[10px] font-bold rounded bg-[#1759ab] text-white">
-                          {p.time}
-                        </span>
-                      </div>
+                      {p.timeEstimate && (
+                        <div className="absolute bottom-2.5 right-2.5">
+                          <span className="px-1.5 py-0.2 text-[10px] font-bold rounded bg-[#1759ab] text-white">
+                            {p.timeEstimate}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="p-3.5 sm:p-4 space-y-1">
@@ -453,7 +497,7 @@ export default function HomePage() {
                         {p.title}
                       </h3>
                       <p className="text-[11px] text-slate-600 leading-relaxed">
-                        {p.desc}
+                        {p.description}
                       </p>
                     </div>
                   </div>
@@ -470,7 +514,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* TAB 4: PENERIMA MANFAAT — Mobile Card / Table View */}
+        {/* TAB 4: PENERIMA MANFAAT */}
         {activeTab === 'penerima' && (
           <div className="space-y-4">
             <div className="space-y-2">
@@ -489,7 +533,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Mobile Cards (tampil di layar HP < 640px) */}
             <div className="grid grid-cols-1 gap-2.5 sm:hidden">
               {filteredSites.map((site, index) => (
                 <div key={site.id} className="sppg-card rounded-xl p-3 flex items-center justify-between gap-3">
@@ -521,7 +564,6 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Desktop Table View (tampil di sm ke atas) */}
             <div className="sppg-card rounded-2xl overflow-hidden hidden sm:block">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs sm:text-sm">
@@ -591,7 +633,134 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* 5. Mobile-Friendly Footer */}
+      {/* 5. Calendar Modal Pop-up (Bisa lihat semua menu masa lalu) */}
+      {showCalendarModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-[#cfe4fc] shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="bg-[#0b1e3a] text-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5 text-[#c9a227]" />
+                <div>
+                  <h3 className="font-extrabold text-sm sm:text-base">Arsip Kalender Menu</h3>
+                  <p className="text-[10px] text-[#a5cdf9]">Pilih tanggal untuk melihat menu masa lalu</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCalendarModal(false)}
+                className="p-1 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Calendar Controls */}
+            <div className="p-4 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                <span className="font-black text-sm text-[#0b1e3a]">
+                  {monthNames[calendarMonth]} {calendarYear}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={prevMonth}
+                    className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={nextMonth}
+                    className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Day Labels */}
+              <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 uppercase">
+                <span>Min</span>
+                <span>Sen</span>
+                <span>Sel</span>
+                <span>Rab</span>
+                <span>Kam</span>
+                <span>Jum</span>
+                <span>Sab</span>
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-1">
+                {/* Empty cells before first day */}
+                {Array.from({ length: firstDayOfWeek }).map((_, i) => (
+                  <div key={`empty-${i}`} className="h-9" />
+                ))}
+
+                {/* Days of Month */}
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                  const day = i + 1;
+                  const dateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                  const hasMenu = availableDatesSet.has(dateStr);
+                  const isSelected = selectedDate === dateStr;
+
+                  return (
+                    <button
+                      key={dateStr}
+                      disabled={!hasMenu}
+                      onClick={() => {
+                        setSelectedDate(dateStr);
+                        setShowCalendarModal(false);
+                      }}
+                      className={`h-9 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center relative ${
+                        isSelected
+                          ? 'bg-[#1759ab] text-white shadow-sm'
+                          : hasMenu
+                          ? 'bg-blue-50 text-[#0b1e3a] hover:bg-[#c9a227] hover:text-[#0b1e3a] cursor-pointer'
+                          : 'text-slate-300 cursor-not-allowed'
+                      }`}
+                    >
+                      <span>{day}</span>
+                      {hasMenu && !isSelected && (
+                        <span className="w-1 h-1 rounded-full bg-[#1759ab] absolute bottom-1" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Quick History List */}
+              <div className="pt-2 border-t border-slate-100">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                  Daftar Arsip Tersedia:
+                </span>
+                <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
+                  {menuHistory.map((m) => (
+                    <button
+                      key={m.date}
+                      onClick={() => {
+                        setSelectedDate(m.date);
+                        setShowCalendarModal(false);
+                      }}
+                      className={`w-full text-left p-2 rounded-lg text-xs transition-colors flex items-center justify-between ${
+                        selectedDate === m.date
+                          ? 'bg-blue-100 text-[#1759ab] font-extrabold'
+                          : 'hover:bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      <span className="truncate pr-2">
+                        <strong>{m.date}</strong> — Menu #{m.menuNumber}: {m.title.slice(0, 32)}...
+                      </span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white border border-slate-200 shrink-0">
+                        Buka
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Footer */}
       <footer className="mt-auto py-6 px-4 bg-[#0b1e3a] text-white border-t border-[#174a8a]/40">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400 text-center sm:text-left">
           <div className="flex items-center gap-2">
