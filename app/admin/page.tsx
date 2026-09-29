@@ -12,18 +12,19 @@ import {
   AlertCircle,
   Save,
   Check,
-  ExternalLink,
   Copy,
   Table,
+  Camera,
+  Upload,
+  FolderOpen,
 } from 'lucide-react';
 import { INITIAL_BENEFICIARIES } from '@/lib/data';
 
 export default function AdminPage() {
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success'>('idle');
-  const [activeSubTab, setActiveSubTab] = useState<'sheet' | 'publish' | 'overrides'>('sheet');
+  const [activeSubTab, setActiveSubTab] = useState<'sheet' | 'publish' | 'photos' | 'overrides'>('sheet');
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
 
-  // Default Sheet URL input state
   const [sheetUrl, setSheetUrl] = useState('');
 
   // Form State untuk Publish Menu Baru
@@ -45,6 +46,11 @@ export default function AdminPage() {
   });
 
   const [publishSuccess, setPublishSuccess] = useState(false);
+
+  // State File Foto Dapur
+  const [prepPhoto, setPrepPhoto] = useState<string | null>(null);
+  const [cookPhoto, setCookPhoto] = useState<string | null>(null);
+  const [packPhoto, setPackPhoto] = useState<string | null>(null);
 
   const handleSyncSheet = () => {
     if (!sheetUrl) {
@@ -74,7 +80,18 @@ export default function AdminPage() {
     setTimeout(() => setCopiedTab(null), 2500);
   };
 
-  const sheet1Header = "tanggal\tnomor_menu\tjudul_menu\tkarbohidrat\tlauk_hewani\tlauk_nabati\tsayur\tbuah\tpelengkap\tstatus";
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: React.Dispatch<React.SetStateAction<string | null>>
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setter(url);
+    }
+  };
+
+  const sheet1Header = "tanggal\tnomor_menu\tjudul_menu\tkarbohidrat\tlauk_hewani\tlauk_nabati\tsayur\tbuah\tpelengkap\tfoto_persiapan\tfoto_pengolahan\tfoto_pengemasan\tstatus";
   const sheet2Header = "tanggal\tkelompok\ttarget_kategori\tporsi_badge\tenergi_kkal\tprotein_g\tlemak_g\tkarbo_g\tserat_g";
   const sheet3Header = "tanggal\tid_sekolah\tkondisi\tjumlah_efektif\talasan";
 
@@ -108,7 +125,7 @@ export default function AdminPage() {
                   </span>
                 </div>
                 <p className="text-[10px] text-[#a5cdf9]">
-                  Integrasi Google Spreadsheet & Form Publikasi Menu Harian
+                  Integrasi Google Spreadsheet & Upload Dokumentasi Foto
                 </p>
               </div>
             </div>
@@ -125,11 +142,12 @@ export default function AdminPage() {
 
       {/* Admin Nav */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-6">
-        <div className="flex space-x-2 border-b border-[#cfe4fc]">
+        <div className="flex space-x-2 border-b border-[#cfe4fc] overflow-x-auto scrollbar-none">
           {[
-            { id: 'sheet' as const, label: '1. Panduan & Setup Google Sheet', icon: FileSpreadsheet },
-            { id: 'publish' as const, label: '2. Form Input & Rilis Menu', icon: Layers },
-            { id: 'overrides' as const, label: '3. Data Master 1.555 Penerima', icon: AlertCircle },
+            { id: 'sheet' as const, label: '1. Setup Google Sheet', icon: FileSpreadsheet },
+            { id: 'photos' as const, label: '2. Upload Foto Dapur (3 Tahap)', icon: Camera },
+            { id: 'publish' as const, label: '3. Form Rilis Menu Manual', icon: Layers },
+            { id: 'overrides' as const, label: '4. Data 1.555 Penerima', icon: AlertCircle },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeSubTab === tab.id;
@@ -137,7 +155,7 @@ export default function AdminPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveSubTab(tab.id)}
-                className={`flex items-center gap-2 py-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+                className={`flex items-center gap-2 py-3 px-4 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                   isActive
                     ? 'border-[#1759ab] text-[#1759ab] bg-white rounded-t-xl'
                     : 'border-transparent text-slate-500 hover:text-[#0b1e3a]'
@@ -159,14 +177,41 @@ export default function AdminPage() {
               <div className="max-w-3xl space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#1759ab] text-xs font-bold border border-blue-200">
                   <Table className="w-3.5 h-3.5" />
-                  <span>Format Spreadsheet Operasional Resmi</span>
+                  <span>2 Pilihan Mudah Upload Foto</span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-black text-[#0b1e3a]">
-                  Cara Membuat & Menghubungkan Google Sheet
+                  Bagaimana Cara Upload Foto Dokumentasi?
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Lo atau tim gizi SPPG Wonodri 3 cukup membuat <strong>1 file Google Sheet baru di Google Drive</strong> dengan <strong>3 Tab</strong> di bawah. Setiap ada menu baru, tim cukup mengisi baris baru di spreadsheet tersebut.
+                  Lo punya <strong>2 opsi sangat fleksibel</strong> untuk memasukkan foto (Persiapan, Pengolahan, Pengemasan):
                 </p>
+              </div>
+
+              {/* 2 Cara Upload Box */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl bg-white border border-[#cfe4fc] space-y-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-[#1759ab] flex items-center justify-center font-bold text-xs">
+                    1
+                  </div>
+                  <h3 className="font-extrabold text-sm text-[#0b1e3a]">
+                    Opsi A: Upload Langsung via Panel Web (Rekomendasi)
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Buka tab <strong>&quot;2. Upload Foto Dapur&quot;</strong> di atas. Tim dapur cukup jepret foto langsung dari kamera HP atau galeri dan klik tombol Simpan. Praktis tanpa perlu copy-paste link.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-white border border-[#cfe4fc] space-y-2">
+                  <div className="w-8 h-8 rounded-lg bg-amber-100 text-[#8a6d1d] flex items-center justify-center font-bold text-xs">
+                    2
+                  </div>
+                  <h3 className="font-extrabold text-sm text-[#0b1e3a]">
+                    Opsi B: Masukkan Link Google Drive di Sheet
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Buat folder foto di Google Drive, lalu tempel link foto di kolom <code>foto_persiapan</code>, <code>foto_pengolahan</code>, dan <code>foto_pengemasan</code> pada Tab 1 (Menu_Harian).
+                  </p>
+                </div>
               </div>
 
               {/* Box Input Link Spreadsheet */}
@@ -206,7 +251,7 @@ export default function AdminPage() {
               {/* Template 3 Tab */}
               <div className="space-y-4 pt-2">
                 <h3 className="font-extrabold text-sm text-[#0b1e3a] uppercase tracking-wider">
-                  Struktur 3 Tab Google Sheet (Tinggal Copy Header):
+                  Struktur 3 Tab Google Sheet (Termasuk Kolom Foto):
                 </h3>
 
                 {/* Tab 1 */}
@@ -217,19 +262,19 @@ export default function AdminPage() {
                         Tab 1: Menu_Harian
                       </span>
                       <span className="text-[11px] text-slate-500">
-                        Untuk data nama makanan, lauk, sayur, buah, dan susu setiap hari.
+                        Termasuk kolom <code>foto_persiapan</code>, <code>foto_pengolahan</code>, <code>foto_pengemasan</code>.
                       </span>
                     </div>
                     <button
                       onClick={() => copyToClipboard(sheet1Header, 'tab1')}
-                      className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 flex items-center gap-1"
+                      className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
                     >
                       <Copy className="w-3 h-3" />
                       <span>{copiedTab === 'tab1' ? 'Tersalin!' : 'Salin Header Baris 1'}</span>
                     </button>
                   </div>
                   <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 font-mono text-[10px] text-slate-700 overflow-x-auto">
-                    <code>tanggal | nomor_menu | judul_menu | karbohidrat | lauk_hewani | lauk_nabati | sayur | buah | pelengkap | status</code>
+                    <code>tanggal | nomor_menu | judul_menu | karbohidrat | lauk_hewani | lauk_nabati | sayur | buah | pelengkap | foto_persiapan | foto_pengolahan | foto_pengemasan | status</code>
                   </div>
                 </div>
 
@@ -246,7 +291,7 @@ export default function AdminPage() {
                     </div>
                     <button
                       onClick={() => copyToClipboard(sheet2Header, 'tab2')}
-                      className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 flex items-center gap-1"
+                      className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
                     >
                       <Copy className="w-3 h-3" />
                       <span>{copiedTab === 'tab2' ? 'Tersalin!' : 'Salin Header Baris 1'}</span>
@@ -265,12 +310,12 @@ export default function AdminPage() {
                         Tab 3: Penyesuaian
                       </span>
                       <span className="text-[11px] text-slate-500">
-                        Khusus jika ada sekolah yang libur atau penyesuaian porsi pada tanggal tertentu.
+                        Khusus jika ada sekolah libur atau perubahan kuota.
                       </span>
                     </div>
                     <button
                       onClick={() => copyToClipboard(sheet3Header, 'tab3')}
-                      className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 flex items-center gap-1"
+                      className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
                     >
                       <Copy className="w-3 h-3" />
                       <span>{copiedTab === 'tab3' ? 'Tersalin!' : 'Salin Header Baris 1'}</span>
@@ -285,7 +330,198 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* SUBTAB 2: FORM PUBLISH MENU TANPA SHEET */}
+        {/* SUBTAB 2: UPLOAD FOTO LANGSUNG DARI HP / LAPTOP */}
+        {activeSubTab === 'photos' && (
+          <div className="space-y-6">
+            <div className="sppg-card rounded-2xl p-6 sm:p-8 space-y-6">
+              <div>
+                <h2 className="text-xl font-black text-[#0b1e3a]">
+                  Upload 3 Foto Dokumentasi Dapur
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Foto langsung dari kamera HP atau ambil dari galeri perangkat tim dapur.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* 1. Persiapan */}
+                <div className="p-4 rounded-xl bg-[#f4f9ff] border border-[#cfe4fc] space-y-3 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black uppercase text-[#1759ab]">
+                        1. Tahap Persiapan
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-500">04:00 - 05:30</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-snug">
+                      Pencucian sayur, sortasi bahan baku, pemotongan lauk.
+                    </p>
+
+                    <div className="relative h-44 rounded-xl border-2 border-dashed border-slate-300 bg-white flex flex-col items-center justify-center p-3 text-center overflow-hidden">
+                      {prepPhoto ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={prepPhoto}
+                          alt="Preview Persiapan"
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="space-y-1.5 text-slate-400">
+                          <Camera className="w-8 h-8 mx-auto text-slate-300" />
+                          <span className="text-[11px] font-bold block text-slate-600">
+                            Pilih / Ambil Foto
+                          </span>
+                          <span className="text-[9px] block">PNG / JPG maksimal 5MB</span>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileChange(e, setPrepPhoto)}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  {prepPhoto && (
+                    <div className="flex items-center justify-between text-[11px] text-emerald-700 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                      <span className="flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Foto Siap
+                      </span>
+                      <button
+                        onClick={() => setPrepPhoto(null)}
+                        className="text-slate-400 hover:text-rose-600 text-[10px]"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Pengolahan */}
+                <div className="p-4 rounded-xl bg-[#f4f9ff] border border-[#cfe4fc] space-y-3 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black uppercase text-[#1759ab]">
+                        2. Tahap Pengolahan
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-500">05:30 - 07:15</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-snug">
+                      Pemasakan kuali bertekanan, suhu &gt;85°C, higienitas.
+                    </p>
+
+                    <div className="relative h-44 rounded-xl border-2 border-dashed border-slate-300 bg-white flex flex-col items-center justify-center p-3 text-center overflow-hidden">
+                      {cookPhoto ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={cookPhoto}
+                          alt="Preview Pengolahan"
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="space-y-1.5 text-slate-400">
+                          <Camera className="w-8 h-8 mx-auto text-slate-300" />
+                          <span className="text-[11px] font-bold block text-slate-600">
+                            Pilih / Ambil Foto
+                          </span>
+                          <span className="text-[9px] block">PNG / JPG maksimal 5MB</span>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileChange(e, setCookPhoto)}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  {cookPhoto && (
+                    <div className="flex items-center justify-between text-[11px] text-emerald-700 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                      <span className="flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Foto Siap
+                      </span>
+                      <button
+                        onClick={() => setCookPhoto(null)}
+                        className="text-slate-400 hover:text-rose-600 text-[10px]"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Pengemasan */}
+                <div className="p-4 rounded-xl bg-[#f4f9ff] border border-[#cfe4fc] space-y-3 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black uppercase text-[#1759ab]">
+                        3. Tahap Pengemasan
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-500">07:15 - 08:30</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-snug">
+                      Plating gramasi porsi, seal box thermal, siap kirim.
+                    </p>
+
+                    <div className="relative h-44 rounded-xl border-2 border-dashed border-slate-300 bg-white flex flex-col items-center justify-center p-3 text-center overflow-hidden">
+                      {packPhoto ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={packPhoto}
+                          alt="Preview Pengemasan"
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="space-y-1.5 text-slate-400">
+                          <Camera className="w-8 h-8 mx-auto text-slate-300" />
+                          <span className="text-[11px] font-bold block text-slate-600">
+                            Pilih / Ambil Foto
+                          </span>
+                          <span className="text-[9px] block">PNG / JPG maksimal 5MB</span>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileChange(e, setPackPhoto)}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  {packPhoto && (
+                    <div className="flex items-center justify-between text-[11px] text-emerald-700 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                      <span className="flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Foto Siap
+                      </span>
+                      <button
+                        onClick={() => setPackPhoto(null)}
+                        className="text-slate-400 hover:text-rose-600 text-[10px]"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => alert('Foto dapur berhasil disimpan secara lokal!')}
+                  className="px-6 py-2.5 rounded-xl text-xs font-black text-white bg-[#1759ab] hover:bg-[#1d6fd0] transition-colors shadow-xs flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Simpan Dokumentasi Foto</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUBTAB 3: FORM PUBLISH MENU */}
         {activeSubTab === 'publish' && (
           <div className="space-y-6">
             <div className="sppg-card rounded-2xl p-6 sm:p-8 space-y-6">
@@ -409,7 +645,7 @@ export default function AdminPage() {
                 <div className="flex justify-end pt-3">
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-xl text-xs font-black text-white bg-[#1759ab] hover:bg-[#1d6fd0] transition-colors shadow-xs flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-xl text-xs font-black text-white bg-[#1759ab] hover:bg-[#1d6fd0] transition-colors shadow-xs flex items-center gap-2 cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
                     <span>Publish Menu ke Arsip</span>
@@ -420,7 +656,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* SUBTAB 3: DATA MASTER PENERIMA */}
+        {/* SUBTAB 4: DATA MASTER PENERIMA */}
         {activeSubTab === 'overrides' && (
           <div className="space-y-6">
             <div className="sppg-card rounded-2xl p-6 sm:p-8 space-y-4">
