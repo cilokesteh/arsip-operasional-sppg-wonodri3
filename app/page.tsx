@@ -83,132 +83,135 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f9ff] text-[#0d1b2e] flex flex-col">
-      {/* 1. Header Resmi SPPG Wonodri 3 (Navy Blue + BGN Gold Standard) */}
-      <header className="sticky top-0 z-50 bg-[#0b1e3a] text-white border-b border-[#174a8a]/40 shadow-md">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-18 flex items-center justify-between gap-4">
+    <div className="min-h-screen bg-[#f4f9ff] text-[#0d1b2e] flex flex-col w-full overflow-x-hidden">
+      {/* 1. Mobile-Optimized Compact Header */}
+      <header className="sticky top-0 z-50 bg-[#0b1e3a] text-white border-b border-[#174a8a]/40 shadow-sm">
+        <div className="max-w-6xl mx-auto px-3.5 sm:px-6 py-2.5 flex items-center justify-between gap-2">
           {/* Logo & Brand Identity */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-xs shrink-0 border border-white/20">
+          <Link href="/" className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white p-1 flex items-center justify-center shrink-0 border border-white/20">
               <Image
                 src="/logo.png"
-                alt="Logo Resmi SPPG Wonodri 3"
-                width={36}
-                height={36}
+                alt="Logo BGN SPPG Wonodri 3"
+                width={32}
+                height={32}
                 className="object-contain"
                 priority
               />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-white text-base sm:text-lg tracking-tight group-hover:text-[#a8d8f0] transition-colors">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold text-white text-sm sm:text-base tracking-tight truncate">
                   SPPG Wonodri 3
                 </span>
-                <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded bg-[#c9a227] text-[#0b1e3a]">
+                <span className="px-1.5 py-0.2 text-[9px] font-black uppercase rounded bg-[#c9a227] text-[#0b1e3a] shrink-0">
                   BGN
                 </span>
               </div>
-              <p className="text-[11px] text-[#a5cdf9] font-medium tracking-wide">
-                Satuan Pelayanan Pemenuhan Gizi • Kota Semarang
+              <p className="text-[10px] sm:text-[11px] text-[#a5cdf9] truncate">
+                Dapur MBG Semarang Selatan
               </p>
             </div>
           </Link>
 
           {/* Action Header */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-[#1759ab] hover:bg-[#1d6fd0] border border-[#5fa8f0]/30 shadow-xs transition-colors"
+              title="Cetak PDF"
+              className="p-2 sm:px-3 sm:py-1.5 rounded-lg text-xs font-bold text-white bg-[#1759ab] hover:bg-[#1d6fd0] border border-[#5fa8f0]/30 transition-colors"
             >
-              <Printer className="w-3.5 h-3.5 text-[#a8d8f0]" />
-              <span className="hidden sm:inline">Cetak Dokumen</span>
+              <Printer className="w-4 h-4 text-[#a8d8f0]" />
+              <span className="hidden sm:inline ml-1.5">Cetak</span>
             </button>
             <Link
               href="/admin"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-[#0b1e3a] bg-white hover:bg-slate-100 transition-colors shadow-xs"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-[#0b1e3a] bg-white hover:bg-slate-100 transition-colors flex items-center gap-1"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-[#1759ab]" />
-              <span>Tim Teknis</span>
+              <span className="text-[11px]">Teknis</span>
             </Link>
           </div>
         </div>
       </header>
 
-      {/* 2. Formal Navy Hero Banner */}
-      <section className="sppg-gradient text-white pt-8 pb-10 px-4 sm:px-6 relative overflow-hidden border-b border-[#cfe4fc]/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-            <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[#a8d8f0] text-xs font-bold">
-                <Award className="w-3.5 h-3.5 text-[#c9a227]" />
-                <span>Dokumen Resmi Transparansi Program MBG Nasional</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                Arsip Operasional & Angka Kandungan Gizi
-              </h1>
-              <p className="text-xs sm:text-sm text-[#cfe4fc] leading-relaxed">
-                Pencatatan harian menu makanan bergizi, uji gramasi nutrisi per kategori porsi,
-                dokumentasi higienitas dapur, serta pengawasan jangkauan penerima manfaat di Kota Semarang.
-              </p>
+      {/* 2. Compact Mobile-First Hero Section */}
+      <section className="sppg-gradient text-white py-5 sm:py-8 px-3.5 sm:px-6 border-b border-[#cfe4fc]/30">
+        <div className="max-w-6xl mx-auto space-y-4">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-[#a8d8f0] text-[10px] sm:text-xs font-bold">
+              <Award className="w-3 h-3 text-[#c9a227]" />
+              <span>Transparansi Menu & AKG MBG</span>
             </div>
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-black text-white leading-tight">
+              Arsip Operasional MBG Harian
+            </h1>
+            <p className="text-[11px] sm:text-xs text-[#cfe4fc] leading-normal">
+              Informasi kandungan gizi (AKG), menu, foto dapur, dan penerima manfaat SPPG Wonodri 3.
+            </p>
+          </div>
 
-            {/* Total Beneficiaries Stat Box */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#0b1e3a]/90 backdrop-blur-md border border-[#5fa8f0]/40 shadow-lg shrink-0 min-w-[240px]">
-              <span className="text-[11px] font-bold text-[#a5cdf9] uppercase tracking-wider block">
-                Total Distribusi Efektif
+          {/* Quick Metrics Bar: 2-Col Mobile Grid */}
+          <div className="grid grid-cols-2 gap-2 sm:gap-4">
+            <div className="p-3 rounded-xl bg-[#0b1e3a]/90 border border-[#5fa8f0]/40">
+              <span className="text-[10px] font-bold text-[#a5cdf9] uppercase tracking-wider block">
+                Total Distribusi
               </span>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-2xl sm:text-3xl font-black text-white tabular-nums tracking-tight">
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-xl sm:text-2xl font-black text-white tabular-nums">
                   {totalEffective.toLocaleString('id-ID')}
                 </span>
-                <span className="text-xs font-bold text-[#c9a227]">Penerima</span>
+                <span className="text-[10px] font-bold text-[#c9a227]">Porsi</span>
               </div>
-              <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between text-[11px]">
-                <span className="text-slate-300">12 Sekolah + 1 Posyandu</span>
-                <span className="text-emerald-400 font-bold flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Valid
-                </span>
+              <span className="text-[9px] sm:text-[10px] text-slate-300 block mt-0.5">
+                12 Sekolah + 1 Posyandu
+              </span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-[#0b1e3a]/90 border border-[#5fa8f0]/40">
+              <span className="text-[10px] font-bold text-[#a5cdf9] uppercase tracking-wider block">
+                Status Menu
+              </span>
+              <div className="flex items-center gap-1 mt-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="text-xs sm:text-sm font-bold text-white">Menu #{currentMenu.menuNumber}</span>
               </div>
+              <span className="text-[9px] sm:text-[10px] text-emerald-300 font-medium block mt-0.5 truncate">
+                Rilis: {currentMenu.publishedAt}
+              </span>
             </div>
           </div>
 
-          {/* Date Selector Navigation Strip */}
-          <div className="mt-8 pt-6 border-t border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
-              <span className="text-xs font-bold text-[#a8d8f0] uppercase tracking-wider whitespace-nowrap flex items-center gap-1.5 mr-1">
-                <Calendar className="w-3.5 h-3.5 text-[#c9a227]" />
-                Pilih Arsip Tanggal:
-              </span>
-              {menuHistory.map((m) => (
-                <button
-                  key={m.date}
-                  onClick={() => setSelectedDate(m.date)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                    selectedDate === m.date
-                      ? 'bg-[#c9a227] text-[#0b1e3a] font-extrabold shadow-md'
-                      : 'bg-white/10 text-white hover:bg-white/20 border border-white/15'
-                  }`}
-                >
-                  {m.date} (Menu #{m.menuNumber})
-                </button>
-              ))}
-            </div>
-
-            <div className="text-xs text-[#a5cdf9] font-medium">
-              Status Rilis: <strong className="text-white">{currentMenu.publishedAt}</strong>
-            </div>
+          {/* Date Selector Navigation Bar */}
+          <div className="pt-2 flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            <span className="text-[10px] font-extrabold text-[#a8d8f0] uppercase tracking-wider whitespace-nowrap mr-1">
+              Tanggal:
+            </span>
+            {menuHistory.map((m) => (
+              <button
+                key={m.date}
+                onClick={() => setSelectedDate(m.date)}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+                  selectedDate === m.date
+                    ? 'bg-[#c9a227] text-[#0b1e3a] font-extrabold shadow-sm'
+                    : 'bg-white/10 text-white hover:bg-white/20 border border-white/15'
+                }`}
+              >
+                {m.date}
+              </button>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 3. Navigation Tabs (SPPG Clean Style) */}
-      <div className="bg-white border-b border-[#cfe4fc] shadow-2xs sticky top-18 z-30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex space-x-1 sm:space-x-6 overflow-x-auto">
+      {/* 3. Segment Tab Bar (Full Width Responsive Scroll) */}
+      <div className="bg-white border-b border-[#cfe4fc] sticky top-13 z-30 shadow-2xs">
+        <div className="max-w-6xl mx-auto px-2 sm:px-6 flex overflow-x-auto scrollbar-none">
           {[
-            { id: 'akg' as const, label: 'Kandungan Gizi (AKG)', icon: Flame },
-            { id: 'menu' as const, label: 'Komposisi Menu Harian', icon: Utensils },
-            { id: 'dokumentasi' as const, label: 'Dokumentasi Dapur 3 Tahap', icon: Camera },
-            { id: 'penerima' as const, label: 'Daftar Sekolah & Posyandu (1.555)', icon: Users },
+            { id: 'akg' as const, label: 'Kandungan Gizi', icon: Flame },
+            { id: 'menu' as const, label: 'Menu Makanan', icon: Utensils },
+            { id: 'dokumentasi' as const, label: 'Foto Dapur', icon: Camera },
+            { id: 'penerima' as const, label: 'Penerima (1.555)', icon: Users },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -216,13 +219,13 @@ export default function HomePage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 py-4 px-2 sm:px-3 text-xs sm:text-sm font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+                className={`flex items-center gap-1.5 py-3 px-3 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                   isActive
-                    ? 'border-[#1759ab] text-[#1759ab]'
-                    : 'border-transparent text-slate-500 hover:text-[#0b1e3a] hover:border-slate-300'
+                    ? 'border-[#1759ab] text-[#1759ab] bg-blue-50/50'
+                    : 'border-transparent text-slate-500 hover:text-[#0b1e3a]'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#1759ab]' : 'text-slate-400'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#1759ab]' : 'text-slate-400'}`} />
                 <span>{tab.label}</span>
               </button>
             );
@@ -230,47 +233,38 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* 4. Main Body */}
-      <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 flex-1 space-y-8">
-        {/* TAB 1: KANDUNGAN GIZI (AKG) — Formal SPPG Cards */}
+      {/* 4. Tab Content Area */}
+      <main className="max-w-6xl mx-auto w-full px-3.5 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6">
+        {/* TAB 1: KANDUNGAN GIZI (AKG) — Mobile-First Cards */}
         {activeTab === 'akg' && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#cfe4fc]/80 pb-3">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-black text-[#0b1e3a]">
-                  Angka Kandungan Gizi (AKG) Harian
-                </h2>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
-                  Rincian takaran gizi terstandarisasi untuk 5 kelompok sasaran penerima manfaat SPPG Wonodri 3.
-                </p>
-              </div>
-
-              <div className="gold-badge px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 w-fit">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#8a6d1d]" />
-                <span>Pedoman Standar Gizi Seimbang BGN</span>
-              </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+              <span>Rincian gizi resmi untuk 5 kelompok porsi sasaran.</span>
+              <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                Standar BGN
+              </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
               {currentMenu.nutritionCards.map((card, idx) => {
                 const Icon = getGroupIcon(card.groupName);
                 return (
                   <div
                     key={idx}
-                    className="sppg-card rounded-2xl overflow-hidden flex flex-col justify-between"
+                    className="sppg-card rounded-xl sm:rounded-2xl overflow-hidden flex flex-col justify-between"
                   >
                     <div>
                       {/* Card Header Top */}
-                      <div className="p-5 bg-gradient-to-r from-[#e8f2fe] to-[#f4f9ff] border-b border-[#cfe4fc] flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-[#1759ab] text-white flex items-center justify-center shadow-xs">
-                            <Icon className="w-4 h-4" />
+                      <div className="p-3 sm:p-4 bg-gradient-to-r from-[#e8f2fe] to-[#f4f9ff] border-b border-[#cfe4fc] flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-[#1759ab] text-white flex items-center justify-center shrink-0">
+                            <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div>
-                            <span className="text-xs font-black text-[#1759ab] uppercase tracking-wider block">
+                            <span className="text-xs font-black text-[#1759ab] uppercase tracking-wide block">
                               Porsi {card.groupName}
                             </span>
-                            <span className="text-[11px] text-slate-500 font-bold block">
+                            <span className="text-[10px] text-slate-500 font-bold block">
                               {card.portionBadge}
                             </span>
                           </div>
@@ -278,83 +272,80 @@ export default function HomePage() {
                       </div>
 
                       {/* Card Body Target Group */}
-                      <div className="p-5 space-y-4">
-                        <h3 className="font-extrabold text-sm sm:text-base text-[#0b1e3a] leading-snug min-h-[40px]">
+                      <div className="p-3.5 sm:p-4 space-y-3">
+                        <h3 className="font-extrabold text-xs sm:text-sm text-[#0b1e3a] leading-snug">
                           {card.targetCategory}
                         </h3>
 
                         {/* Energi Hero Metric */}
-                        <div className="p-3.5 rounded-xl bg-[#0b1e3a] text-white flex items-center justify-between shadow-xs">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-[#c9a227]">
-                              <Flame className="w-4 h-4" />
+                        <div className="p-2.5 sm:p-3 rounded-lg bg-[#0b1e3a] text-white flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded bg-white/10 flex items-center justify-center text-[#c9a227]">
+                              <Flame className="w-3.5 h-3.5" />
                             </div>
-                            <div>
-                              <span className="text-[11px] text-[#a5cdf9] font-bold uppercase tracking-wider block leading-none">
-                                Energi Total
-                              </span>
-                              <span className="text-[10px] text-slate-300">Kalori Porsi</span>
-                            </div>
+                            <span className="text-[10px] text-[#a5cdf9] font-bold uppercase tracking-wider">
+                              Energi Total
+                            </span>
                           </div>
-                          <div className="text-right">
-                            <span className="text-xl sm:text-2xl font-black text-white tabular-nums">
+                          <div>
+                            <span className="text-base sm:text-lg font-black text-white tabular-nums">
                               {card.energyKcal.toFixed(1)}
                             </span>
-                            <span className="text-xs font-bold text-[#c9a227] ml-1">Kkal</span>
+                            <span className="text-[10px] font-bold text-[#c9a227] ml-1">Kkal</span>
                           </div>
                         </div>
 
-                        {/* 4 Makronutrien Grid */}
+                        {/* 4 Makronutrien Grid (2x2) */}
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                            <div className="flex items-center justify-between text-slate-500 mb-1">
-                              <span className="text-[10px] font-bold uppercase">Protein</span>
-                              <Dna className="w-3 h-3 text-emerald-600" />
+                          <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                            <div className="flex items-center justify-between text-slate-500 mb-0.5">
+                              <span className="text-[9px] font-bold uppercase">Protein</span>
+                              <Dna className="w-2.5 h-2.5 text-emerald-600" />
                             </div>
-                            <span className="text-sm font-black text-[#0d1b2e] block tabular-nums">
-                              {card.proteinG.toFixed(2)} <span className="text-[10px] font-normal text-slate-500">g</span>
+                            <span className="text-xs sm:text-sm font-black text-[#0d1b2e] block tabular-nums">
+                              {card.proteinG.toFixed(1)} <span className="text-[9px] font-normal text-slate-500">g</span>
                             </span>
-                            <span className="text-[9px] text-slate-400">Hewani & Nabati</span>
+                            <span className="text-[8px] text-slate-400">Hewani & Nabati</span>
                           </div>
 
-                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                            <div className="flex items-center justify-between text-slate-500 mb-1">
-                              <span className="text-[10px] font-bold uppercase">Lemak</span>
-                              <Beef className="w-3 h-3 text-rose-600" />
+                          <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                            <div className="flex items-center justify-between text-slate-500 mb-0.5">
+                              <span className="text-[9px] font-bold uppercase">Lemak</span>
+                              <Beef className="w-2.5 h-2.5 text-rose-600" />
                             </div>
-                            <span className="text-sm font-black text-[#0d1b2e] block tabular-nums">
-                              {card.fatG.toFixed(2)} <span className="text-[10px] font-normal text-slate-500">g</span>
+                            <span className="text-xs sm:text-sm font-black text-[#0d1b2e] block tabular-nums">
+                              {card.fatG.toFixed(1)} <span className="text-[9px] font-normal text-slate-500">g</span>
                             </span>
-                            <span className="text-[9px] text-slate-400">Lemak Total</span>
+                            <span className="text-[8px] text-slate-400">Lemak Total</span>
                           </div>
 
-                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                            <div className="flex items-center justify-between text-slate-500 mb-1">
-                              <span className="text-[10px] font-bold uppercase">Karbo</span>
-                              <Compass className="w-3 h-3 text-blue-600" />
+                          <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                            <div className="flex items-center justify-between text-slate-500 mb-0.5">
+                              <span className="text-[9px] font-bold uppercase">Karbo</span>
+                              <Compass className="w-2.5 h-2.5 text-blue-600" />
                             </div>
-                            <span className="text-sm font-black text-[#0d1b2e] block tabular-nums">
-                              {card.carbsG.toFixed(2)} <span className="text-[10px] font-normal text-slate-500">g</span>
+                            <span className="text-xs sm:text-sm font-black text-[#0d1b2e] block tabular-nums">
+                              {card.carbsG.toFixed(1)} <span className="text-[9px] font-normal text-slate-500">g</span>
                             </span>
-                            <span className="text-[9px] text-slate-400">Energi Pokok</span>
+                            <span className="text-[8px] text-slate-400">Energi Pokok</span>
                           </div>
 
-                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                            <div className="flex items-center justify-between text-slate-500 mb-1">
-                              <span className="text-[10px] font-bold uppercase">Serat</span>
-                              <Leaf className="w-3 h-3 text-teal-600" />
+                          <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                            <div className="flex items-center justify-between text-slate-500 mb-0.5">
+                              <span className="text-[9px] font-bold uppercase">Serat</span>
+                              <Leaf className="w-2.5 h-2.5 text-teal-600" />
                             </div>
-                            <span className="text-sm font-black text-[#0d1b2e] block tabular-nums">
-                              {card.fiberG.toFixed(2)} <span className="text-[10px] font-normal text-slate-500">g</span>
+                            <span className="text-xs sm:text-sm font-black text-[#0d1b2e] block tabular-nums">
+                              {card.fiberG.toFixed(1)} <span className="text-[9px] font-normal text-slate-500">g</span>
                             </span>
-                            <span className="text-[9px] text-slate-400">Sayur & Buah</span>
+                            <span className="text-[8px] text-slate-400">Sayur & Buah</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-3 bg-slate-50 border-t border-[#cfe4fc] text-center text-[10px] font-bold text-[#1759ab] tracking-wider uppercase">
-                      ✦ SPPG WONODRI 3 • MAKANAN BERGIZI GRATIS ✦
+                    <div className="p-2.5 bg-slate-50 border-t border-[#cfe4fc] text-center text-[9px] font-bold text-[#1759ab] tracking-wider uppercase">
+                      ✦ SPPG WONODRI 3 ✦
                     </div>
                   </div>
                 );
@@ -365,38 +356,38 @@ export default function HomePage() {
 
         {/* TAB 2: MENU COMPOSITION */}
         {activeTab === 'menu' && (
-          <div className="sppg-card rounded-2xl p-6 sm:p-8 space-y-6">
-            <div className="border-b border-[#cfe4fc] pb-4">
-              <span className="text-xs font-extrabold uppercase text-[#1759ab] tracking-wider">
+          <div className="sppg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-4">
+            <div className="border-b border-[#cfe4fc] pb-3">
+              <span className="text-[10px] font-extrabold uppercase text-[#1759ab] tracking-wider">
                 Menu Terverifikasi • Nomor Urut #{currentMenu.menuNumber}
               </span>
-              <h2 className="text-xl sm:text-2xl font-black text-[#0b1e3a] mt-1">
+              <h2 className="text-base sm:text-xl font-black text-[#0b1e3a] mt-0.5 leading-snug">
                 {currentMenu.title}
               </h2>
-              <p className="text-xs text-slate-500 mt-1">
-                Tanggal: <strong>{currentMenu.date}</strong> | Dapur Produksi: <strong>Jl. Erlangga Raya No 38, Pleburan</strong>
+              <p className="text-[10px] sm:text-xs text-slate-500 mt-1">
+                Tanggal: <strong>{currentMenu.date}</strong> | Dapur: <strong>Jl. Erlangga Raya No 38</strong>
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
               {[
-                { label: 'Sumber Karbohidrat Pokok', val: currentMenu.components.karbohidrat, tag: 'Beras Pulen Lokal Berkualitas' },
-                { label: 'Lauk Hewani', val: currentMenu.components.laukHewani, tag: 'Protein Daging / Ayam Segar' },
-                { label: 'Lauk Nabati', val: currentMenu.components.laukNabati, tag: 'Tahu / Tempe Tradisional Higienis' },
-                { label: 'Sayuran Hijau & Serat', val: currentMenu.components.sayur, tag: 'Sayuran Segar Kaya Vitamin' },
-                { label: 'Buah Segar Pencuci Mulut', val: currentMenu.components.buah, tag: 'Buah Pilihan Kaya Antioksidan' },
+                { label: 'Karbohidrat Pokok', val: currentMenu.components.karbohidrat, tag: 'Beras Pulen Berkualitas' },
+                { label: 'Lauk Hewani', val: currentMenu.components.laukHewani, tag: 'Protein Segar' },
+                { label: 'Lauk Nabati', val: currentMenu.components.laukNabati, tag: 'Olahan Kedelai Higienis' },
+                { label: 'Sayuran & Serat', val: currentMenu.components.sayur, tag: 'Sayur Segar Kaya Vitamin' },
+                { label: 'Buah Segar', val: currentMenu.components.buah, tag: 'Buah Pilihan Segar' },
                 { label: 'Pelengkap Susu', val: currentMenu.components.pelengkap || 'Susu Pasteurisasi', tag: 'Kalsium & Vitamin D' },
               ].map((item, i) => (
-                <div key={i} className="p-4 rounded-xl bg-[#f4f9ff] border border-[#cfe4fc] flex flex-col justify-between">
+                <div key={i} className="p-3 rounded-lg bg-[#f4f9ff] border border-[#cfe4fc] flex flex-col justify-between">
                   <div>
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">
                       {item.label}
                     </span>
-                    <p className="font-extrabold text-sm sm:text-base text-[#0b1e3a] leading-snug">
+                    <p className="font-extrabold text-xs sm:text-sm text-[#0b1e3a] leading-snug">
                       {item.val}
                     </p>
                   </div>
-                  <span className="text-[11px] font-bold text-[#1759ab] mt-3 block">
+                  <span className="text-[10px] font-bold text-[#1759ab] mt-2 block">
                     ✦ {item.tag}
                   </span>
                 </div>
@@ -409,68 +400,68 @@ export default function HomePage() {
         {activeTab === 'dokumentasi' && (
           <div className="space-y-4">
             <div className="text-xs text-slate-500 font-medium">
-              Dokumentasi dapur 3 tahap wajib memastikan higienitas pengolahan makanan bergizi sebelum tiba di sekolah.
+              Dokumentasi dapur 3 tahap wajib memastikan higienitas pengolahan makanan bergizi.
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-5">
               {[
                 {
                   step: 'Persiapan',
-                  title: 'Sortasi Bahan Baku & Higienitas Dapur',
+                  title: 'Sortasi Bahan Baku & Higienitas',
                   desc: 'Pembersihan dan sortasi higienis bahan baku di dapur persiapan SPPG Wonodri 3.',
                   image: '/about-kitchen.jpg',
                   time: '04:00 - 05:30 WIB',
                 },
                 {
                   step: 'Pengolahan',
-                  title: 'Proses Pemasakan Standar Suhu Tinggi',
-                  desc: 'Pengolahan makanan hangat menggunakan peralatan stainless steel berstandar BGN.',
+                  title: 'Pemasakan Standar Suhu Tinggi',
+                  desc: 'Pengolahan makanan hangat menggunakan peralatan berstandar BGN.',
                   image: '/hero-kitchen.jpg',
                   time: '05:30 - 07:15 WIB',
                 },
                 {
                   step: 'Pengemasan',
-                  title: 'Plating Porsi & Segel Wadah Thermal',
-                  desc: 'Pengecekan gramasi tiap kelompok penerima dan penyegelan box siap kirim.',
+                  title: 'Plating Porsi & Segel Thermal',
+                  desc: 'Pengecekan gramasi tiap kelompok dan penyegelan box siap kirim.',
                   image: '/gallery-1.jpg',
                   time: '07:15 - 08:30 WIB',
                 },
               ].map((p, idx) => (
-                <div key={idx} className="sppg-card rounded-2xl overflow-hidden flex flex-col justify-between">
+                <div key={idx} className="sppg-card rounded-xl sm:rounded-2xl overflow-hidden flex flex-col justify-between">
                   <div>
-                    <div className="relative h-48 w-full bg-slate-100">
+                    <div className="relative h-40 sm:h-48 w-full bg-slate-100">
                       <Image
                         src={p.image}
                         alt={p.title}
                         fill
                         className="object-cover"
                       />
-                      <div className="absolute top-3 left-3">
-                        <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-md bg-[#0b1e3a]/90 text-white shadow-xs">
+                      <div className="absolute top-2.5 left-2.5">
+                        <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded bg-[#0b1e3a]/90 text-white">
                           {p.step}
                         </span>
                       </div>
-                      <div className="absolute bottom-3 right-3">
-                        <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-[#1759ab] text-white shadow-xs">
+                      <div className="absolute bottom-2.5 right-2.5">
+                        <span className="px-1.5 py-0.2 text-[10px] font-bold rounded bg-[#1759ab] text-white">
                           {p.time}
                         </span>
                       </div>
                     </div>
 
-                    <div className="p-5 space-y-2">
-                      <h3 className="font-extrabold text-base text-[#0b1e3a] leading-snug">
+                    <div className="p-3.5 sm:p-4 space-y-1">
+                      <h3 className="font-extrabold text-xs sm:text-sm text-[#0b1e3a] leading-snug">
                         {p.title}
                       </h3>
-                      <p className="text-xs text-slate-600 leading-relaxed">
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
                         {p.desc}
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-3.5 bg-slate-50 border-t border-[#cfe4fc] flex items-center justify-between text-xs text-slate-500 font-semibold">
+                  <div className="p-2.5 bg-slate-50 border-t border-[#cfe4fc] flex items-center justify-between text-[10px] text-slate-500 font-semibold">
                     <span>SOP SPPG Wonodri 3</span>
                     <span className="text-emerald-700 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Higienis Terverifikasi
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Higienis
                     </span>
                   </div>
                 </div>
@@ -479,18 +470,18 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* TAB 4: PENERIMA MANFAAT */}
+        {/* TAB 4: PENERIMA MANFAAT — Mobile Card / Table View */}
         {activeTab === 'penerima' && (
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="space-y-2">
               <div className="text-xs text-slate-600 font-medium">
-                Data Master: <strong>1.555 Penerima</strong> (12 Sekolah + 1 Posyandu Wilayah Semarang Selatan)
+                Data Master: <strong>1.555 Penerima</strong> (12 Sekolah + 1 Posyandu)
               </div>
-              <div className="relative w-full sm:w-72">
+              <div className="relative w-full">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Cari nama sekolah / posyandu..."
+                  placeholder="Cari sekolah..."
                   value={searchSite}
                   onChange={(e) => setSearchSite(e.target.value)}
                   className="w-full pl-8 pr-3 py-2 rounded-xl text-xs border border-[#cfe4fc] bg-white focus:outline-none focus:ring-2 focus:ring-[#1759ab]"
@@ -498,24 +489,57 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="sppg-card rounded-2xl overflow-hidden">
+            {/* Mobile Cards (tampil di layar HP < 640px) */}
+            <div className="grid grid-cols-1 gap-2.5 sm:hidden">
+              {filteredSites.map((site, index) => (
+                <div key={site.id} className="sppg-card rounded-xl p-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold text-slate-400">{index + 1}.</span>
+                      <span className="font-extrabold text-xs text-[#0b1e3a] truncate">
+                        {site.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-100 text-blue-900">
+                        {site.type}
+                      </span>
+                      <span className="text-[10px] text-slate-500">
+                        Master: {site.masterCount}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-sm font-black text-[#1759ab] block tabular-nums">
+                      {site.effectiveCount}
+                    </span>
+                    <span className="text-[9px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                      Aktif
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View (tampil di sm ke atas) */}
+            <div className="sppg-card rounded-2xl overflow-hidden hidden sm:block">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs sm:text-sm">
                   <thead className="bg-[#e8f2fe] border-b border-[#cfe4fc] text-[#0b1e3a] font-extrabold uppercase tracking-wider text-[11px]">
                     <tr>
-                      <th className="py-3.5 px-4 sm:px-6">No</th>
-                      <th className="py-3.5 px-4 sm:px-6">Nama Lembaga Penerima</th>
-                      <th className="py-3.5 px-4 sm:px-6">Kategori</th>
-                      <th className="py-3.5 px-4 sm:px-6 text-right">Master Kuota</th>
-                      <th className="py-3.5 px-4 sm:px-6 text-right">Distribusi Hari Ini</th>
-                      <th className="py-3.5 px-4 sm:px-6 text-center">Status</th>
+                      <th className="py-3 px-4">No</th>
+                      <th className="py-3 px-4">Nama Lembaga Penerima</th>
+                      <th className="py-3 px-4">Kategori</th>
+                      <th className="py-3 px-4 text-right">Master Kuota</th>
+                      <th className="py-3 px-4 text-right">Distribusi Hari Ini</th>
+                      <th className="py-3 px-4 text-center">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#cfe4fc]/60">
                     {filteredSites.map((site, index) => (
                       <tr key={site.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3.5 px-4 sm:px-6 font-semibold text-slate-400">{index + 1}</td>
-                        <td className="py-3.5 px-4 sm:px-6">
+                        <td className="py-3 px-4 font-semibold text-slate-400">{index + 1}</td>
+                        <td className="py-3 px-4">
                           <span className="font-extrabold text-[#0b1e3a] block text-xs sm:text-sm">
                             {site.name}
                           </span>
@@ -525,28 +549,20 @@ export default function HomePage() {
                             </span>
                           )}
                         </td>
-                        <td className="py-3.5 px-4 sm:px-6">
-                          <span
-                            className={`px-2.5 py-0.5 rounded text-[10px] font-black uppercase ${
-                              site.type === 'SD'
-                                ? 'bg-blue-100 text-blue-900 border border-blue-200'
-                                : site.type === 'TK'
-                                ? 'bg-purple-100 text-purple-900 border border-purple-200'
-                                : 'bg-emerald-100 text-emerald-900 border border-emerald-200'
-                            }`}
-                          >
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-100 text-blue-900 border border-blue-200">
                             {site.type}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 sm:px-6 text-right font-bold text-slate-600">
+                        <td className="py-3 px-4 text-right font-bold text-slate-600">
                           {site.masterCount.toLocaleString('id-ID')}
                         </td>
-                        <td className="py-3.5 px-4 sm:px-6 text-right font-black text-[#0b1e3a]">
+                        <td className="py-3 px-4 text-right font-black text-[#0b1e3a]">
                           {site.effectiveCount.toLocaleString('id-ID')}
                         </td>
-                        <td className="py-3.5 px-4 sm:px-6 text-center">
-                          <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            Distribusi Aktif
+                        <td className="py-3 px-4 text-center">
+                          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            Aktif
                           </span>
                         </td>
                       </tr>
@@ -554,16 +570,16 @@ export default function HomePage() {
                   </tbody>
                   <tfoot className="bg-[#e8f2fe] border-t-2 border-[#cfe4fc] font-black text-[#0b1e3a] text-xs sm:text-sm">
                     <tr>
-                      <td colSpan={3} className="py-4 px-4 sm:px-6">
+                      <td colSpan={3} className="py-3.5 px-4">
                         TOTAL PENERIMA MANFAAT
                       </td>
-                      <td className="py-4 px-4 sm:px-6 text-right text-slate-600">
+                      <td className="py-3.5 px-4 text-right text-slate-600">
                         {totalMaster.toLocaleString('id-ID')}
                       </td>
-                      <td className="py-4 px-4 sm:px-6 text-right text-[#1759ab] text-sm sm:text-base font-black">
+                      <td className="py-3.5 px-4 text-right text-[#1759ab] text-sm sm:text-base font-black">
                         {totalEffective.toLocaleString('id-ID')}
                       </td>
-                      <td className="py-4 px-4 sm:px-6 text-center text-[11px] text-emerald-800 font-bold">
+                      <td className="py-3.5 px-4 text-center text-[11px] text-emerald-800 font-bold">
                         100% Terverifikasi
                       </td>
                     </tr>
@@ -575,41 +591,33 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* 5. Footer Resmi SPPG Wonodri 3 */}
-      <footer className="mt-auto py-10 px-4 sm:px-6 bg-[#0b1e3a] text-white border-t border-[#174a8a]/40">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-slate-400">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-white p-1 flex items-center justify-center shrink-0">
-              <Image
-                src="/logo.png"
-                alt="Logo BGN SPPG Wonodri 3"
-                width={28}
-                height={28}
-                className="object-contain"
-              />
-            </div>
-            <div>
-              <span className="font-extrabold text-white block text-sm">
-                SPPG Wonodri 3 Kota Semarang
-              </span>
-              <p className="text-[11px] text-[#a5cdf9]">
-                Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan
-              </p>
-            </div>
+      {/* 5. Mobile-Friendly Footer */}
+      <footer className="mt-auto py-6 px-4 bg-[#0b1e3a] text-white border-t border-[#174a8a]/40">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400 text-center sm:text-left">
+          <div className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="Logo SPPG"
+              width={22}
+              height={22}
+              className="object-contain"
+            />
+            <span className="font-extrabold text-white text-xs">
+              SPPG Wonodri 3 Kota Semarang
+            </span>
           </div>
 
-          <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex items-center gap-3 text-[10px]">
             <a
               href="https://www.sppgwonodri3.web.id/portfolio/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#c9a227] hover:text-[#e8d5a3] flex items-center gap-1 font-bold"
+              className="text-[#c9a227] hover:text-[#e8d5a3] font-bold"
             >
-              <span>Lihat Portofolio Lengkap</span>
-              <ExternalLink className="w-3 h-3" />
+              Portofolio Unit
             </a>
             <span>•</span>
-            <span className="text-slate-400 font-medium">Built by CilokTech Studio</span>
+            <span className="text-slate-400">Built by CilokTech Studio</span>
           </div>
         </div>
       </footer>
