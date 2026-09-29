@@ -18,9 +18,8 @@ import {
 } from 'lucide-react';
 
 interface AKGInput {
-  groupName: string;
-  targetCategory: string;
-  portionBadge: string;
+  groupName: string; // Besar, Kecil, Balita, Busui, Bumil
+  targetCategory: string; // SD 4-6/SMP, PAUD/TK, dll
   energyKcal: number;
   proteinG: number;
   fatG: number;
@@ -29,11 +28,11 @@ interface AKGInput {
 }
 
 const DEFAULT_AKG_PRESETS: AKGInput[] = [
-  { groupName: 'Besar', targetCategory: 'SD 4-6 / SMP / SMK / GURU', portionBadge: 'Porsi Remaja & Dewasa', energyKcal: 572.4, proteinG: 15.5, fatG: 14.5, carbsG: 83.9, fiberG: 2.4 },
-  { groupName: 'Kecil', targetCategory: 'PAUD / TK / SD 1-3', portionBadge: 'Porsi Anak Usia Dini', energyKcal: 462.9, proteinG: 13.6, fatG: 14.4, carbsG: 81.7, fiberG: 2.4 },
-  { groupName: 'Balita', targetCategory: '6 - 60 Bulan', portionBadge: 'Porsi Lunak', energyKcal: 426.9, proteinG: 13.0, fatG: 14.3, carbsG: 51.7, fiberG: 2.0 },
-  { groupName: 'Busui', targetCategory: 'Ibu Menyusui', portionBadge: 'Porsi Padat Energi', energyKcal: 572.4, proteinG: 15.5, fatG: 14.5, carbsG: 83.9, fiberG: 2.4 },
-  { groupName: 'Bumil', targetCategory: 'Ibu Hamil', portionBadge: 'Porsi Zat Besi & Folat', energyKcal: 572.4, proteinG: 15.5, fatG: 14.5, carbsG: 83.9, fiberG: 2.4 },
+  { groupName: 'Besar', targetCategory: 'SD 4-6 / SMP / SMK / GURU', energyKcal: 572.4, proteinG: 15.5, fatG: 14.5, carbsG: 83.9, fiberG: 2.4 },
+  { groupName: 'Kecil', targetCategory: 'PAUD / TK / SD 1-3', energyKcal: 462.9, proteinG: 13.6, fatG: 14.4, carbsG: 81.7, fiberG: 2.4 },
+  { groupName: 'Balita', targetCategory: '6 - 60 Bulan (Balita)', energyKcal: 426.9, proteinG: 13.0, fatG: 14.3, carbsG: 51.7, fiberG: 2.0 },
+  { groupName: 'Busui', targetCategory: 'Ibu Menyusui', energyKcal: 572.4, proteinG: 15.5, fatG: 14.5, carbsG: 83.9, fiberG: 2.4 },
+  { groupName: 'Bumil', targetCategory: 'Ibu Hamil', energyKcal: 572.4, proteinG: 15.5, fatG: 14.5, carbsG: 83.9, fiberG: 2.4 },
 ];
 
 export default function AdminPage() {
@@ -41,8 +40,7 @@ export default function AdminPage() {
 
   // 1. Data Menu Harian
   const [menuDate, setMenuDate] = useState('2026-10-01');
-  const [menuNumber, setMenuNumber] = useState(1);
-  const [menuTitle, setMenuTitle] = useState('');
+  const [namaMenu, setNamaMenu] = useState('');
   const [components, setComponents] = useState({
     karbohidrat: '',
     laukHewani: '',
@@ -84,8 +82,8 @@ export default function AdminPage() {
 
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!menuTitle.trim()) {
-      alert('Silakan tulis ringkasan menu hari ini.');
+    if (!namaMenu.trim()) {
+      alert('Silakan tulis nama menu hari ini.');
       return;
     }
     setPublishSuccess(true);
@@ -110,12 +108,13 @@ export default function AdminPage() {
     setTimeout(() => setCopiedTab(null), 2500);
   };
 
-  const sheet1Header = "tanggal\tnomor_menu\tjudul_menu\tkarbohidrat\tlauk_hewani\tlauk_nabati\tsayur\tbuah\tpelengkap\tstatus";
-  const sheet2Header = "tanggal\tkelompok\ttarget_kategori\tporsi_badge\tenergi_kkal\tprotein_g\tlemak_g\tkarbo_g\tserat_g";
+  // Header yang sudah disederhanakan sesuai instruksi Tuan
+  const sheet1Header = "tanggal\tnama_menu\tkarbohidrat\tlauk_hewani\tlauk_nabati\tsayur\tbuah\tpelengkap\tstatus";
+  const sheet2Header = "tanggal\tkelompok\tenergi_kkal\tprotein_g\tlemak_g\tkarbo_g\tserat_g";
 
   return (
     <div className="min-h-screen bg-[#f4f9ff] text-[#0d1b2e] pb-16">
-      {/* Header Sederhana */}
+      {/* Header */}
       <header className="bg-[#0b1e3a] text-white border-b border-[#174a8a]/40 shadow-xs">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -179,7 +178,7 @@ export default function AdminPage() {
             {publishSuccess && (
               <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Menu #{menuNumber} & nilai AKG 5 kelompok untuk tanggal {menuDate} berhasil dipublikasikan!</span>
+                <span>Menu & nilai AKG untuk tanggal {menuDate} berhasil dipublikasikan!</span>
               </div>
             )}
 
@@ -189,36 +188,24 @@ export default function AdminPage() {
                 1. Data Menu Hari Ini
               </h2>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Tanggal Layanan</label>
-                  <input
-                    type="date"
-                    value={menuDate}
-                    onChange={(e) => setMenuDate(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-[#1759ab]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Nomor Menu</label>
-                  <input
-                    type="number"
-                    value={menuNumber}
-                    onChange={(e) => setMenuNumber(parseInt(e.target.value) || 1)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-[#1759ab]"
-                    required
-                  />
-                </div>
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Tanggal Layanan</label>
+                <input
+                  type="date"
+                  value={menuDate}
+                  onChange={(e) => setMenuDate(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-[#1759ab]"
+                  required
+                />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Judul / Ringkasan Menu</label>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Nama Menu</label>
                 <input
                   type="text"
                   placeholder="Contoh: Nasi Putih, Ayam Semur Kecap, Tahu Bacem, Tumis Buncis, Pisang, Susu"
-                  value={menuTitle}
-                  onChange={(e) => setMenuTitle(e.target.value)}
+                  value={namaMenu}
+                  onChange={(e) => setNamaMenu(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-[#1759ab]"
                   required
                 />
@@ -226,7 +213,7 @@ export default function AdminPage() {
 
               {/* Rincian Komponen 6 Kotak */}
               <div className="pt-1">
-                <span className="text-[11px] font-bold text-slate-500 block mb-1.5">Rincian Komponen Porsi:</span>
+                <span className="text-[11px] font-bold text-slate-500 block mb-1.5">Rincian Komponen Makanan:</span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                   <input
                     type="text"
@@ -286,7 +273,7 @@ export default function AdminPage() {
                       2. Angka Kandungan Gizi (AKG) 5 Kelompok
                     </h2>
                     <span className="text-[10px] text-slate-500">
-                      Nilai sudah otomatis terisi standar awal BGN, bisa langsung diedit angkanya.
+                      Nilai awal standar BGN sudah terisi otomatis, tinggal disesuaikan.
                     </span>
                   </div>
                 </div>
@@ -297,17 +284,14 @@ export default function AdminPage() {
                 {akgList.map((item, idx) => (
                   <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#1759ab] text-white">
                           {item.groupName}
                         </span>
-                        <span className="text-xs font-extrabold text-[#0b1e3a]">
-                          {item.targetCategory}
+                        <span className="text-xs font-bold text-slate-600">
+                          ({item.targetCategory})
                         </span>
                       </div>
-                      <span className="text-[10px] font-semibold text-slate-500">
-                        {item.portionBadge}
-                      </span>
                     </div>
 
                     {/* 5 Field Gizi: Energi, Protein, Lemak, Karbo, Serat */}
@@ -487,7 +471,7 @@ export default function AdminPage() {
                 className="w-full sm:w-auto px-8 py-3 rounded-xl text-xs font-black text-white bg-[#1759ab] hover:bg-[#1d6fd0] transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Save className="w-4 h-4" />
-                <span>Simpan Menu & Rilis AKG Hari Ini</span>
+                <span>Simpan & Rilis Menu Hari Ini</span>
               </button>
             </div>
           </form>
@@ -501,7 +485,7 @@ export default function AdminPage() {
                 Hubungkan dengan Google Spreadsheet
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Mendukung 2 tab utama: <strong>Menu_Harian</strong> dan <strong>AKG</strong>.
+                Struktur sederhana 2 tab: <strong>Menu_Harian</strong> dan <strong>AKG</strong>.
               </p>
             </div>
 
@@ -540,13 +524,16 @@ export default function AdminPage() {
             {/* Format Ringkas 2 Tab Wajib */}
             <div className="space-y-3 pt-2">
               <h3 className="text-xs font-black text-[#0b1e3a] uppercase tracking-wider">
-                Struktur 2 Tab Wajib di Google Sheet:
+                Struktur 2 Tab Google Sheet (Tinggal Salin Header):
               </h3>
 
               {/* Tab 1: Menu */}
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-slate-900 block">Tab 1: Menu_Harian</span>
+                  <div>
+                    <span className="font-extrabold text-slate-900 block">Tab 1: Menu_Harian</span>
+                    <span className="text-[10px] text-slate-500">Cukup tanggal dan nama menu (nomor menu sudah dihapus)</span>
+                  </div>
                   <button
                     type="button"
                     onClick={() => copyToClipboard(sheet1Header, 'tab1')}
@@ -557,7 +544,7 @@ export default function AdminPage() {
                   </button>
                 </div>
                 <p className="font-mono text-[10px] text-slate-600 bg-white p-2 rounded border border-slate-200 overflow-x-auto">
-                  tanggal | nomor_menu | judul_menu | karbohidrat | lauk_hewani | lauk_nabati | sayur | buah | pelengkap | status
+                  tanggal | nama_menu | karbohidrat | lauk_hewani | lauk_nabati | sayur | buah | pelengkap | status
                 </p>
               </div>
 
@@ -565,8 +552,8 @@ export default function AdminPage() {
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="font-extrabold text-slate-900 block">Tab 2: AKG (Angka Kandungan Gizi)</span>
-                    <span className="text-[10px] text-slate-500">Untuk 5 kelompok: Besar, Kecil, Balita, Busui, Bumil</span>
+                    <span className="font-extrabold text-slate-900 block">Tab 2: AKG</span>
+                    <span className="text-[10px] text-slate-500">Cukup kolom kelompok (Besar, Kecil, Balita, Busui, Bumil) + 5 nilai gizi</span>
                   </div>
                   <button
                     type="button"
@@ -578,7 +565,7 @@ export default function AdminPage() {
                   </button>
                 </div>
                 <p className="font-mono text-[10px] text-slate-600 bg-white p-2 rounded border border-slate-200 overflow-x-auto">
-                  tanggal | kelompok | target_kategori | porsi_badge | energi_kkal | protein_g | lemak_g | karbo_g | serat_g
+                  tanggal | kelompok | energi_kkal | protein_g | lemak_g | karbo_g | serat_g
                 </p>
               </div>
             </div>
