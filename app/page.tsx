@@ -17,7 +17,6 @@ import {
   X,
   FileSpreadsheet,
   Search,
-  Flame,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -80,7 +79,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#f1f5f9] text-[#1e293b] flex flex-col font-sans w-full overflow-x-hidden">
-      {/* 1. Top Bar Navigasi Sistem (Mobile Friendly) */}
+      {/* 1. Top Bar Navigasi Sistem */}
       <header className="bg-[#0f172a] text-white border-b border-slate-800 sticky top-0 z-40 no-print">
         <div className="max-w-5xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -123,7 +122,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 2. DOKUMEN LAPORAN RESMI (RESPONSIF MOBILE & DESKTOP) */}
+      {/* 2. DOKUMEN LAPORAN RESMI (URUTAN 1 S/D 5 PRESISI SESUAI PERMINTAAN) */}
       <main className="max-w-5xl mx-auto w-full px-2.5 sm:px-6 py-4 sm:py-8 flex-1">
         <div className="report-sheet bg-white rounded-xl border border-slate-300 shadow-sm p-4 sm:p-8 md:p-10 space-y-6 sm:space-y-7">
           
@@ -155,7 +154,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Status Dokumen Metadata */}
               <div className="bg-slate-50 sm:bg-transparent p-2.5 sm:p-0 rounded-lg sm:text-right border sm:border-0 border-slate-200 text-xs text-slate-600 shrink-0 space-y-1">
                 <div className="inline-block px-2 py-0.5 bg-blue-100 text-blue-900 rounded text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
                   Laporan Operasional Resmi
@@ -166,11 +164,11 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* I. INFORMASI MENU & KOMPOSISI MAKANAN */}
+          {/* ===================== 1. MENU ===================== */}
           <section className="space-y-3 sm:space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
               <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                I. Menu Harian & Komposisi Porsi
+                1. Menu Makanan & Komposisi Porsi
               </h2>
               <span className="text-[10px] text-slate-500 font-semibold">Menu #{currentMenu.menuNumber || 1}</span>
             </div>
@@ -198,7 +196,7 @@ export default function HomePage() {
                   </h3>
                 </div>
 
-                {/* 5 Komponen: List Card di Mobile, Table di Tablet/Desktop */}
+                {/* Mobile Komponen Card */}
                 <div className="grid grid-cols-1 sm:hidden gap-1.5 text-xs">
                   <div className="p-2 rounded bg-slate-50 border border-slate-200 flex justify-between">
                     <span className="font-bold text-slate-600">Karbohidrat:</span>
@@ -222,7 +220,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Table Komponen (Tablet/Desktop/Print) */}
+                {/* Desktop Table Komponen */}
                 <div className="hidden sm:block border border-slate-200 rounded-lg overflow-hidden">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-100/70 border-b border-slate-200 text-slate-700 font-bold text-[10px] uppercase">
@@ -265,30 +263,16 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* II. URAIAN PEKERJAAN OPERASIONAL & DISTRIBUSI */}
-          <section className="space-y-2">
-            <div className="border-b border-slate-200 pb-1.5">
-              <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                II. Uraian Pekerjaan Operasional & Distribusi
-              </h2>
-            </div>
-            <div className="p-3 sm:p-4 rounded-lg bg-slate-50 border border-slate-200 text-[11px] sm:text-xs text-slate-800 leading-relaxed whitespace-pre-line font-mono">
-              {currentMenu.uraianPekerjaan || (
-                '1. Pembersihan dan sterilisasi dapur operasional mulai pukul 04:00 WIB.\n2. Sortasi sayur dan bahan baku segar dari petani lokal.\n3. Pengolahan masakan dengan suhu inti di atas 85°C untuk menjamin keamanan pangan.\n4. Penataan porsi makanan hangat sesuai gramasi standar BGN.\n5. Penyegelan kotak makanan dan keberangkatan armada distribusi pukul 08:30 WIB ke 12 sekolah dan 1 posyandu.'
-              )}
-            </div>
-          </section>
-
-          {/* III. TABEL STANDAR ANGKA KANDUNGAN GIZI (AKG) — RESPONSIF MOBILE */}
+          {/* ===================== 2. AKG ===================== */}
           <section className="space-y-2.5">
             <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
               <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                III. Verifikasi Angka Kandungan Gizi (AKG)
+                2. Angka Kandungan Gizi (AKG) 5 Kelompok
               </h2>
               <span className="text-[10px] text-slate-500">Standar BGN</span>
             </div>
 
-            {/* Mobile View: Kartu Ringkas Gizi per Kelompok (Sangat Enak Dibaca di HP) */}
+            {/* Mobile View: Kartu Ringkas Gizi */}
             <div className="grid grid-cols-1 gap-2.5 sm:hidden">
               {(currentMenu.nutritionCards || STANDARD_AKG_REFERENCE).map((item, i) => (
                 <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
@@ -304,7 +288,6 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  {/* 4 Komponen Makro 4 Kotak Kecil */}
                   <div className="grid grid-cols-4 gap-1 text-center text-[10px] pt-1 border-t border-slate-200/80">
                     <div className="p-1 rounded bg-white border border-slate-200">
                       <span className="text-slate-400 block text-[9px]">Protein</span>
@@ -327,7 +310,7 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Desktop Table View (sm ke atas & Print) */}
+            {/* Desktop Table View */}
             <div className="hidden sm:block border border-slate-200 rounded-lg overflow-hidden">
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-100 border-b border-slate-200 text-slate-800 font-black text-[10px] uppercase">
@@ -364,11 +347,11 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* IV. DOKUMENTASI PROSES DAPUR 3 TAHAP */}
+          {/* ===================== 3. DOKUMENTASI ===================== */}
           <section className="space-y-2">
             <div className="border-b border-slate-200 pb-1.5">
               <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                IV. Dokumentasi Higienitas Dapur (3 Tahap Wajib)
+                3. Dokumentasi Dapur (3 Tahap Wajib)
               </h2>
             </div>
 
@@ -391,11 +374,11 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* V. DATA PENERIMA MANFAAT (RESPONSIF MOBILE) */}
+          {/* ===================== 4. ALOKASI ===================== */}
           <section className="space-y-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-1.5">
               <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                V. Alokasi Penerima Manfaat ({totalMaster} Porsi)
+                4. Alokasi Penerima Manfaat ({totalMaster} Porsi)
               </h2>
               <div className="relative w-full sm:w-56 no-print">
                 <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -476,6 +459,20 @@ export default function HomePage() {
                   </tr>
                 </tfoot>
               </table>
+            </div>
+          </section>
+
+          {/* ===================== 5. URAIAN KEGIATAN ===================== */}
+          <section className="space-y-2">
+            <div className="border-b border-slate-200 pb-1.5">
+              <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                5. Uraian Kegiatan Operasional Dapur & Distribusi
+              </h2>
+            </div>
+            <div className="p-3 sm:p-4 rounded-lg bg-slate-50 border border-slate-200 text-[11px] sm:text-xs text-slate-800 leading-relaxed whitespace-pre-line font-mono">
+              {currentMenu.uraianPekerjaan || (
+                '1. Pembersihan dan sterilisasi dapur operasional mulai pukul 04:00 WIB.\n2. Sortasi sayur dan bahan baku segar dari petani lokal.\n3. Pengolahan masakan dengan suhu inti di atas 85°C untuk menjamin keamanan pangan.\n4. Penataan porsi makanan hangat sesuai gramasi standar BGN.\n5. Penyegelan kotak makanan dan keberangkatan armada distribusi pukul 08:30 WIB ke 12 sekolah dan 1 posyandu.'
+              )}
             </div>
           </section>
 
