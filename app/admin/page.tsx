@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -15,6 +15,10 @@ import {
   Flame,
   Trash2,
   Copy,
+  Lock,
+  LogOut,
+  KeyRound,
+  ShieldAlert,
 } from 'lucide-react';
 
 interface AKGInput {
@@ -35,8 +39,40 @@ const DEFAULT_AKG_PRESETS: AKGInput[] = [
   { groupName: 'Bumil', targetCategory: 'Ibu Hamil', energyKcal: 572.4, proteinG: 15.5, fatG: 14.5, carbsG: 83.9, fiberG: 2.4 },
 ];
 
+// PIN Rahasia Default untuk Tim Teknis SPPG Wonodri 3
+const DEFAULT_PASSCODE = '91206';
+
 export default function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [inputPasscode, setInputPasscode] = useState<string>('');
+  const [loginError, setLoginError] = useState<string>('');
+
   const [mode, setMode] = useState<'form' | 'sheet'>('form');
+
+  // Check login session di browser
+  useEffect(() => {
+    const authStatus = sessionStorage.getItem('sppg_admin_auth');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputPasscode === DEFAULT_PASSCODE) {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('sppg_admin_auth', 'true');
+      setLoginError('');
+    } else {
+      setLoginError('Kode akses salah! Silakan coba lagi.');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('sppg_admin_auth');
+    setInputPasscode('');
+  };
 
   // 1. Data Menu Harian
   const [menuDate, setMenuDate] = useState('2026-10-01');
@@ -108,10 +144,75 @@ export default function AdminPage() {
     setTimeout(() => setCopiedTab(null), 2500);
   };
 
-  // Header alami dengan SPASI (tanpa underscore) sesuai instruksi Tuan
+  // Header alami dengan SPASI (tanpa underscore)
   const sheet1Header = "tanggal\tnama menu\tkarbohidrat\tlauk hewani\tlauk nabati\tsayur\tbuah\tpelengkap\tstatus";
   const sheet2Header = "tanggal\tkelompok\ttarget kategori\tenergi kkal\tprotein g\tlemak g\tkarbo g\tserat g";
 
+  // JIKA BELUM LOGIN: TAMPILKAN LAYAR GATE LOGIN KODE
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#0b1e3a] text-white flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-sm bg-white text-[#0d1b2e] rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-14 h-14 rounded-2xl bg-[#e8f2fe] text-[#1759ab] flex items-center justify-center mx-auto shadow-xs border border-[#cfe4fc]">
+              <Lock className="w-7 h-7 text-[#1759ab]" />
+            </div>
+            <h1 className="font-black text-lg sm:text-xl text-[#0b1e3a]">
+              Akses Panel Admin
+            </h1>
+            <p className="text-xs text-slate-500">
+              Khusus Tim Teknis & Operator Resmi SPPG Wonodri 3 Kota Semarang.
+            </p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="text-xs font-black text-slate-700 uppercase tracking-wider block mb-1.5">
+                Masukkan Kode Akses (PIN):
+              </label>
+              <div className="relative">
+                <input
+                  type="password"
+                  placeholder="Ketik kode akses..."
+                  value={inputPasscode}
+                  onChange={(e) => setInputPasscode(e.target.value)}
+                  className="w-full pl-9 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1759ab] focus:outline-none font-mono"
+                  required
+                  autoFocus
+                />
+                <KeyRound className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              </div>
+            </div>
+
+            {loginError && (
+              <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 flex items-center gap-1.5">
+                <ShieldAlert className="w-4 h-4 shrink-0 text-rose-600" />
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-2.5 rounded-xl text-xs font-black text-white bg-[#1759ab] hover:bg-[#1d6fd0] transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Masuk ke Panel Kendali</span>
+            </button>
+          </form>
+
+          <div className="text-center pt-2 border-t border-slate-100">
+            <Link
+              href="/"
+              className="text-xs font-bold text-slate-500 hover:text-[#1759ab] transition-colors"
+            >
+              ← Kembali ke Halaman Publik
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // JIKA SUDAH LOGIN: TAMPILKAN PANEL ADMIN LENGKAP
   return (
     <div className="min-h-screen bg-[#f4f9ff] text-[#0d1b2e] pb-16">
       {/* Header */}
@@ -134,12 +235,21 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <Link
-            href="/"
-            className="text-xs font-bold text-[#a8d8f0] hover:text-white transition-colors"
-          >
-            ← Lihat Web Publik
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="text-xs font-bold text-[#a8d8f0] hover:text-white transition-colors hidden sm:inline"
+            >
+              Web Publik
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Keluar</span>
+            </button>
+          </div>
         </div>
       </header>
 
