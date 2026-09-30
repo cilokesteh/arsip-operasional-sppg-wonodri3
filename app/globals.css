@@ -6,51 +6,20 @@
   }
 
   body {
-    background-color: #f8fafc;
+    background-color: #ffffff;
     color: #0f172a;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
 }
 
-/* Modern App Elevation & Clean Cards */
-.app-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.app-card:hover {
-  box-shadow: 0 6px 20px -4px rgba(15, 23, 42, 0.08);
-  border-color: #cbd5e1;
-}
-
-/* Print Styles: Cetak Sekali Klik Rapi Standar Dokumen Laporan Resmi */
+/* Print Clean Format */
 @media print {
   body {
-    background-color: #ffffff !important;
+    background: #ffffff !important;
     color: #000000 !important;
-    font-size: 11pt !important;
   }
-
-  header,
-  footer,
-  .no-print,
-  button,
-  input {
+  .no-print {
     display: none !important;
-  }
-
-  .app-card {
-    border: 1px solid #cbd5e1 !important;
-    box-shadow: none !important;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-    margin-bottom: 1.5rem !important;
-  }
-
-  .print-page-break {
-    page-break-before: always !important;
   }
 }
