@@ -21,8 +21,9 @@ import {
   FileText,
   Printer,
   Users,
-  BookmarkCheck,
   Sparkles,
+  History,
+  Calendar,
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
 import { INITIAL_BENEFICIARIES } from '@/lib/data';
@@ -44,8 +45,9 @@ export default function AdminPage() {
   const [inputPasscode, setInputPasscode] = useState<string>('');
   const [loginError, setLoginError] = useState<string>('');
 
-  // 1. Data Menu Harian
+  // 1. Data Menu Harian & Fitur Backdate
   const [menuDate, setMenuDate] = useState('2026-10-01');
+  const [isBackdate, setIsBackdate] = useState(false);
   const [namaMenu, setNamaMenu] = useState('');
   const [components, setComponents] = useState({
     karbohidrat: '',
@@ -60,8 +62,6 @@ export default function AdminPage() {
   const [menuPhotoUploading, setMenuPhotoUploading] = useState<boolean>(false);
 
   // 2. INPUT AKG MASTER HANYA 2 KELOMPOK (BESAR & KECIL)
-  // Besar -> otomatis mengisi Busui & Bumil
-  // Kecil -> otomatis mengisi Balita
   const [akgBesar, setAkgBesar] = useState<Omit<AKGInputRaw, 'groupName' | 'targetCategory'>>({
     energyKcal: '',
     proteinG: '',
@@ -181,7 +181,6 @@ export default function AdminPage() {
     setInputPasscode('');
   };
 
-  // Bersihkan string angka dari leading zero
   const sanitizeNumberString = (val: string) => {
     if (val.length > 1 && val.startsWith('0') && !val.startsWith('0.') && !val.startsWith('0,')) {
       return val.replace(/^0+/, '');
@@ -220,7 +219,7 @@ export default function AdminPage() {
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
     if (!namaMenu.trim()) {
-      alert('Silakan tulis nama menu hari ini.');
+      alert('Silakan tulis nama menu.');
       return;
     }
 
@@ -229,12 +228,6 @@ export default function AdminPage() {
       return isNaN(v) ? def : v;
     };
 
-    // Auto-Generate 5 Kelompok Sesuai Aturan User:
-    // 1. Besar (SD 4-6, SMP, SMK, Guru) -> input user
-    // 2. Kecil (PAUD, TK, SD 1-3) -> input user
-    // 3. Balita -> auto fill sama dengan Kecil
-    // 4. Busui -> auto fill sama dengan Besar
-    // 5. Bumil -> auto fill sama dengan Besar
     const generatedNutritionCards = [
       {
         groupName: 'Besar',
@@ -355,6 +348,8 @@ export default function AdminPage() {
       const existing = localStorage.getItem('sppg_synced_menus');
       let list = existing ? JSON.parse(existing) : [];
       list = [newRecord, ...list.filter((item: { date: string }) => item.date !== menuDate)];
+      // Urutkan riwayat menu berdasarkan tanggal terbaru di atas
+      list.sort((a: { date: string }, b: { date: string }) => new Date(b.date).getTime() - new Date(a.date).getTime());
       localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
       localStorage.removeItem('sppg_admin_draft_v2');
     } catch {
@@ -450,7 +445,7 @@ export default function AdminPage() {
                   Admin Panel SPPG Wonodri 3
                 </span>
                 <span className="text-[10px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
-                  <CloudUpload className="w-3 h-3" /> Auto-Save GDrive & Auto-Draft Aktif
+                  <CloudUpload className="w-3 h-3" /> Auto-Save GDrive & Backdate Aktif
                 </span>
               </div>
             </div>
@@ -485,17 +480,17 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
-        {/* Banner Auto-Draft Notifier */}
-        <div className="p-3 sm:p-4 rounded-xl bg-blue-50/80 border border-blue-200/80 flex items-center justify-between text-xs text-blue-900">
+        {/* Banner Fitur Backdate & Auto-Draft */}
+        <div className="p-3.5 sm:p-4 rounded-xl bg-blue-50/80 border border-blue-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-blue-900">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+            <History className="w-4 h-4 text-blue-600 shrink-0" />
             <span>
-              <strong>Fitur Efisiensi Aktif:</strong> Lo cukup mengisi <strong>AKG Besar</strong> dan <strong>AKG Kecil</strong>. Data Busui & Bumil otomatis disamakan dengan Porsi Besar, dan Balita otomatis disamakan dengan Porsi Kecil.
+              <strong>Fitur Backdate Aktif:</strong> Lo bisa bebas memilih tanggal lampau (bulan lalu atau hari kemarin) untuk melengkapi arsip operasional yang belum sempat terinput.
             </span>
           </div>
           {draftSavedAlert && (
-            <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded shrink-0">
-              Auto-Saved
+            <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded shrink-0 self-start sm:self-auto">
+              Draft Tersimpan
             </span>
           )}
         </div>
@@ -504,11 +499,11 @@ export default function AdminPage() {
           {publishSuccess && (
             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 flex items-center gap-2 shadow-xs">
               <Check className="w-5 h-5 text-emerald-600 shrink-0" />
-              <span>Laporan 5 alur lengkap tanggal {menuDate} berhasil dipublikasikan & tersimpan ke Google Drive!</span>
+              <span>Arsip menu untuk tanggal {menuDate} berhasil dipublikasikan & tersimpan ke arsip kalender!</span>
             </div>
           )}
 
-          {/* ===================== ALUR 1: MENU ===================== */}
+          {/* ===================== ALUR 1: MENU & PILIHAN BACKDATE ===================== */}
           <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
@@ -516,35 +511,58 @@ export default function AdminPage() {
                   <Utensils className="w-4 h-4" />
                 </div>
                 <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                  1. Menu Makanan & Foto Sajian Porsi
+                  1. Menu Makanan & Tanggal Arsip (Backdate)
                 </h2>
               </div>
               <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded">Alur 1</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Tanggal Layanan</label>
+            {/* Kotak Pilihan Tanggal Bebas (Backdate Selector) */}
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Pilih Tanggal Layanan (Bisa Hari Ini, Kemarin, atau Bulan Lalu):</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsBackdate(!isBackdate)}
+                  className="text-[11px] font-bold text-blue-600 hover:underline cursor-pointer"
+                >
+                  {isBackdate ? 'Mode Normal' : 'Mode Backdate Arsip'}
+                </button>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2 items-center">
                 <input
                   type="date"
                   value={menuDate}
                   onChange={(e) => setMenuDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600"
+                  className="w-full sm:w-auto px-3.5 py-2 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-900 focus:ring-2 focus:ring-blue-600"
                   required
                 />
+                <span className="text-[11px] text-slate-500">
+                  {new Date(menuDate) < new Date(new Date().setHours(0, 0, 0, 0)) ? (
+                    <strong className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-flex items-center gap-1">
+                      <History className="w-3 h-3" /> Menginput Arsip Tanggal Lampau (Backdate)
+                    </strong>
+                  ) : (
+                    'Tanggal operasional hari ini / mendatang'
+                  )}
+                </span>
               </div>
+            </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Nama Menu Lengkap</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Nasi Pandan Wangi, Ayam Semur, Tahu Bacem, Tumis Buncis, & Pisang"
-                  value={namaMenu}
-                  onChange={(e) => setNamaMenu(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600"
-                  required
-                />
-              </div>
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">Nama Menu Lengkap</label>
+              <input
+                type="text"
+                placeholder="Contoh: Nasi Pandan Wangi, Ayam Semur, Tahu Bacem, Tumis Buncis, & Pisang"
+                value={namaMenu}
+                onChange={(e) => setNamaMenu(e.target.value)}
+                className="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600"
+                required
+              />
             </div>
 
             {/* Upload Foto Makanan Utama */}
@@ -667,7 +685,7 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* ===================== ALUR 2: AKG HANYA 2 INPUT (AUTO FILL BALITA, BUSUI, BUMIL) ===================== */}
+          {/* ===================== ALUR 2: AKG 2 INPUT ===================== */}
           <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
@@ -687,7 +705,7 @@ export default function AdminPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* KELOMPOK 1: PORSI BESAR (Otomatis dipakai untuk Busui & Bumil) */}
+              {/* PORSI BESAR */}
               <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200 space-y-3">
                 <div className="flex items-center justify-between border-b border-blue-200/80 pb-2">
                   <div>
@@ -705,9 +723,7 @@ export default function AdminPage() {
 
                 <div className="space-y-2 text-xs">
                   <div>
-                    <label className="text-[10px] font-bold text-amber-900 block mb-0.5">
-                      Energi (Kkal)
-                    </label>
+                    <label className="text-[10px] font-bold text-amber-900 block mb-0.5">Energi (Kkal)</label>
                     <input
                       type="text"
                       inputMode="decimal"
@@ -768,7 +784,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* KELOMPOK 2: PORSI KECIL (Otomatis dipakai untuk Balita) */}
+              {/* PORSI KECIL */}
               <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-200 space-y-3">
                 <div className="flex items-center justify-between border-b border-emerald-200/80 pb-2">
                   <div>
@@ -786,9 +802,7 @@ export default function AdminPage() {
 
                 <div className="space-y-2 text-xs">
                   <div>
-                    <label className="text-[10px] font-bold text-amber-900 block mb-0.5">
-                      Energi (Kkal)
-                    </label>
+                    <label className="text-[10px] font-bold text-amber-900 block mb-0.5">Energi (Kkal)</label>
                     <input
                       type="text"
                       inputMode="decimal"
@@ -849,10 +863,6 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
-
-            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-600 font-medium">
-              💡 <strong>Ringkasan Sistem Otomatis:</strong> Di tabel laporan resmi nantinya tetap tercetak 5 baris lengkap (Besar, Kecil, Balita, Busui, Bumil) sesuai standar BGN tanpa lo perlu ngetik ulang 3 kelompok lainnya!
-            </div>
           </div>
 
           {/* ===================== ALUR 3: DOKUMENTASI ===================== */}
@@ -862,15 +872,9 @@ export default function AdminPage() {
                 <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
                   <Camera className="w-4 h-4" />
                 </div>
-                <div>
-                  <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                    3. Dokumentasi Dapur (3 Tahap)
-                  </h2>
-                  <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
-                    <CloudUpload className="w-3.5 h-3.5" />
-                    Auto-upload ke folder Google Drive SPPG
-                  </span>
-                </div>
+                <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                  3. Dokumentasi Dapur (3 Tahap)
+                </h2>
               </div>
               <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded">Alur 3</span>
             </div>
@@ -1112,7 +1116,7 @@ export default function AdminPage() {
                 rows={5}
                 value={uraianKegiatan}
                 onChange={(e) => setUraianKegiatan(e.target.value)}
-                placeholder="Tuliskan uraian tahapan kegiatan operasional hari ini..."
+                placeholder="Tuliskan uraian tahapan kegiatan operasional..."
                 className="w-full p-3 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600 leading-relaxed font-sans"
               />
             </div>
