@@ -378,6 +378,21 @@ export default function HomePage() {
                   ))}
                 </div>
               </div>
+
+              {/* Uraian Pekerjaan Operasional Dapur */}
+              {currentMenu.uraianPekerjaan && (
+                <div className="pt-4 border-t border-slate-100 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-600" />
+                    <span className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                      Uraian Pekerjaan Operasional & Distribusi:
+                    </span>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed whitespace-pre-line font-sans">
+                    {currentMenu.uraianPekerjaan}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

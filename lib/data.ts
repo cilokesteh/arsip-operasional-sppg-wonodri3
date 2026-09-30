@@ -37,6 +37,7 @@ export interface DailyMenuRecord {
   date: string; // YYYY-MM-DD
   menuNumber: number;
   title: string;
+  uraianPekerjaan?: string; // KOLOM URAIAN PEKERJAAN OPERASIONAL DAPUR
   menuPhotoUrl?: string; // FOTO SAJIAN MAKANAN UTAMA HARIAN
   status: 'draft' | 'review' | 'published';
   publishedAt?: string;
@@ -154,7 +155,8 @@ export const INITIAL_MENU_HISTORY: DailyMenuRecord[] = [
     date: '2026-10-01',
     menuNumber: 1,
     title: 'Nasi Pandan Wangi, Semur Ayam Suwir, Tahu Bacem Tradisional, Sayur Bening Jagung Manis, & Pisang Cavendish',
-    menuPhotoUrl: '/gallery-1.jpg', // Foto porsi sajian makanan utama
+    uraianPekerjaan: '1. Pembersihan dan sterilisasi dapur operasional mulai pukul 04:00 WIB.\n2. Sortasi sayur bayam dan jagung manis segar dari petani lokal.\n3. Pengolahan lauk ayam semur dan tahu bacem dengan suhu mendidih di atas 85°C.\n4. Penataan porsi makanan hangat ke dalam wadah thermal box food-grade.\n5. Pengecekan sampel mikrobiologi dan keberangkatan armada distribusi pukul 08:30 WIB ke 12 sekolah dan 1 posyandu.',
+    menuPhotoUrl: '/gallery-1.jpg',
     status: 'published',
     publishedAt: '01 Okt 2026 • 08:30 WIB',
     components: {
