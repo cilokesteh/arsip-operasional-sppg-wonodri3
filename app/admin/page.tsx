@@ -142,7 +142,6 @@ export default function AdminPage() {
       return;
     }
 
-    // Buat objek menu baru lengkap dengan foto Google Drive
     const newRecord = {
       date: menuDate,
       menuNumber: 1,
@@ -187,11 +186,10 @@ export default function AdminPage() {
     try {
       const existing = localStorage.getItem('sppg_synced_menus');
       let list = existing ? JSON.parse(existing) : [];
-      // replace or prepend
       list = [newRecord, ...list.filter((item: { date: string }) => item.date !== menuDate)];
       localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
     } catch {
-      // localStorage error fallback
+      // localStorage fallback
     }
 
     setPublishSuccess(true);
@@ -205,13 +203,13 @@ export default function AdminPage() {
     }
 
     setSyncStatus('syncing');
-    setSyncMessage('Menghubungkan dan menarik data menu, AKG, serta foto dari Google Sheet...');
+    setSyncMessage('Menghubungkan dan menarik data menu & AKG dari Google Sheet...');
 
     const res = await fetchGoogleSheetData(sheetUrl);
 
     if (res.success && res.menus.length > 0) {
       setSyncStatus('success');
-      setSyncMessage(`Sukses! ${res.menus.length} menu harian beserta rincian gizi & foto dapur berhasil disinkronkan ke web.`);
+      setSyncMessage(`Sukses! ${res.menus.length} menu harian beserta rincian gizi berhasil disinkronkan dari Google Sheet.`);
       localStorage.setItem('sppg_sheet_url', sheetUrl);
       localStorage.setItem('sppg_synced_menus', JSON.stringify(res.menus));
     } else {
@@ -226,7 +224,8 @@ export default function AdminPage() {
     setTimeout(() => setCopiedTab(null), 2500);
   };
 
-  const sheet1Header = "tanggal\tnama menu\tkarbohidrat\tlauk hewani\tlauk nabati\tsayur\tbuah\tpelengkap\tlink foto persiapan\tlink foto pengolahan\tlink foto pengemasan\tstatus";
+  // Header Google Sheet Bersih (Tanpa Link Foto — Foto Cukup Di-upload Lewat Web Langsung)
+  const sheet1Header = "tanggal\tnama menu\tkarbohidrat\tlauk hewani\tlauk nabati\tsayur\tbuah\tpelengkap\tstatus";
   const sheet2Header = "tanggal\tkelompok\ttarget kategori\tenergi kkal\tprotein g\tlemak g\tkarbo g\tserat g";
 
   // JIKA BELUM LOGIN
@@ -567,7 +566,7 @@ export default function AdminPage() {
                   </h2>
                   <span className="text-[10px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
                     <CloudUpload className="w-3.5 h-3.5" />
-                    Otomatis tersimpan permanen ke Google Drive SPPG Wonodri 3
+                    Otomatis tersimpan ke Google Drive tanpa ribet salin link
                   </span>
                 </div>
               </div>
@@ -611,7 +610,7 @@ export default function AdminPage() {
                       <button
                         type="button"
                         onClick={() => setPrepPhotoUrl(null)}
-                        className="text-rose-600 hover:underline inline-flex items-center gap-0.5"
+                        className="text-rose-600 hover:underline inline-flex items-center gap-0.5 cursor-pointer"
                       >
                         <Trash2 className="w-3 h-3" /> Hapus
                       </button>
@@ -657,7 +656,7 @@ export default function AdminPage() {
                       <button
                         type="button"
                         onClick={() => setCookPhotoUrl(null)}
-                        className="text-rose-600 hover:underline inline-flex items-center gap-0.5"
+                        className="text-rose-600 hover:underline inline-flex items-center gap-0.5 cursor-pointer"
                       >
                         <Trash2 className="w-3 h-3" /> Hapus
                       </button>
@@ -703,7 +702,7 @@ export default function AdminPage() {
                       <button
                         type="button"
                         onClick={() => setPackPhotoUrl(null)}
-                        className="text-rose-600 hover:underline inline-flex items-center gap-0.5"
+                        className="text-rose-600 hover:underline inline-flex items-center gap-0.5 cursor-pointer"
                       >
                         <Trash2 className="w-3 h-3" /> Hapus
                       </button>
@@ -727,7 +726,7 @@ export default function AdminPage() {
           </form>
         )}
 
-        {/* ===================== MODE 2: SINKRONISASI GOOGLE SHEET ===================== */}
+        {/* ===================== MODE 2: SINKRONISASI GOOGLE SHEET (BERSIH DARI LINK FOTO) ===================== */}
         {mode === 'sheet' && (
           <div className="sppg-card rounded-2xl p-5 sm:p-7 space-y-6">
             <div>
@@ -735,7 +734,7 @@ export default function AdminPage() {
                 Hubungkan dengan Google Spreadsheet
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Format penulisan kolom menggunakan <strong>SPASI biasa</strong> (tanpa underscore) agar nyaman dibaca dan diketik di Excel/Google Sheet.
+                Google Sheet khusus untuk teks Menu & Angka Gizi (AKG). Foto cukup di-upload langsung dari HP di tab sebelah tanpa perlu taruh link lagi di spreadsheet.
               </p>
             </div>
 
@@ -778,10 +777,10 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Format Ringkas 2 Tab Wajib dengan SPASI (No Underscore) */}
+            {/* Format Ringkas 2 Tab Wajib dengan SPASI (Bersih Tanpa Kolom Link Foto) */}
             <div className="space-y-3 pt-2">
               <h3 className="text-xs font-black text-[#0b1e3a] uppercase tracking-wider">
-                Struktur 2 Tab Google Sheet (Header Menggunakan Spasi Biasa):
+                Struktur 2 Tab Google Sheet (Bersih Tanpa Kolom Foto):
               </h3>
 
               {/* Tab 1: Menu */}
@@ -789,19 +788,19 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-slate-900 block">Tab 1: Menu Harian</span>
-                    <span className="text-[10px] text-slate-500">Header kolom menggunakan spasi biasa</span>
+                    <span className="text-[10px] text-slate-500">Murni hanya data makanan harian (spasi biasa)</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => copyToClipboard(sheet1Header, 'tab1')}
-                    className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
+                    className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer hover:bg-slate-100"
                   >
                     <Copy className="w-3 h-3" />
                     <span>{copiedTab === 'tab1' ? 'Tersalin!' : 'Salin Header'}</span>
                   </button>
                 </div>
                 <p className="font-mono text-[10px] text-slate-600 bg-white p-2 rounded border border-slate-200 overflow-x-auto">
-                  tanggal | nama menu | karbohidrat | lauk hewani | lauk nabati | sayur | buah | pelengkap | link foto persiapan | link foto pengolahan | link foto pengemasan | status
+                  tanggal | nama menu | karbohidrat | lauk hewani | lauk nabati | sayur | buah | pelengkap | status
                 </p>
               </div>
 
@@ -810,12 +809,12 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-slate-900 block">Tab 2: AKG</span>
-                    <span className="text-[10px] text-slate-500">Termasuk kolom target kategori & 5 nilai gizi (spasi biasa)</span>
+                    <span className="text-[10px] text-slate-500">Data angka gizi 5 kelompok (spasi biasa)</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => copyToClipboard(sheet2Header, 'tab2')}
-                    className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
+                    className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer hover:bg-slate-100"
                   >
                     <Copy className="w-3 h-3" />
                     <span>{copiedTab === 'tab2' ? 'Tersalin!' : 'Salin Header'}</span>
