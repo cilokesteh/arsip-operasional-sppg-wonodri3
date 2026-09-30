@@ -20,8 +20,10 @@ import {
   Utensils,
   FileText,
   Printer,
+  Users,
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
+import { INITIAL_BENEFICIARIES } from '@/lib/data';
 
 interface AKGInput {
   groupName: string;
@@ -75,9 +77,6 @@ export default function AdminPage() {
   // 1. Data Menu Harian
   const [menuDate, setMenuDate] = useState('2026-10-01');
   const [namaMenu, setNamaMenu] = useState('');
-  const [uraianPekerjaan, setUraianPekerjaan] = useState(
-    '1. Sterilisasi dapur & pengecekan higienitas operasional (04:00 WIB)\n2. Sortasi bahan baku segar (sayur, lauk hewani, lauk nabati)\n3. Pengolahan masakan hangat dengan suhu terukur di atas 85°C\n4. Food plating sesuai gramasi standar gizi BGN\n5. Penyegelan wadah thermal box dan serah terima ke armada distribusi'
-  );
   const [components, setComponents] = useState({
     karbohidrat: '',
     laukHewani: '',
@@ -93,7 +92,7 @@ export default function AdminPage() {
   // 2. Data AKG 5 Kelompok
   const [akgList, setAkgList] = useState<AKGInput[]>(DEFAULT_AKG_PRESETS);
 
-  // 3. State 3 Foto Dapur
+  // 3. State 3 Foto Dapur (Dokumentasi)
   const [prepPhotoUrl, setPrepPhotoUrl] = useState<string | null>(null);
   const [prepUploading, setPrepUploading] = useState<boolean>(false);
 
@@ -102,6 +101,14 @@ export default function AdminPage() {
 
   const [packPhotoUrl, setPackPhotoUrl] = useState<string | null>(null);
   const [packUploading, setPackUploading] = useState<boolean>(false);
+
+  // 4. Data Alokasi Penerima Manfaat (1.555 Penerima)
+  const [beneficiaryOverrides, setBeneficiaryOverrides] = useState<Record<string, { condition: 'aktif' | 'libur'; effectiveCount: number; reason: string }>>({});
+
+  // 5. Uraian Kegiatan Operasional Dapur
+  const [uraianKegiatan, setUraianKegiatan] = useState(
+    '1. Sterilisasi dapur & higienitas operasional (04:00 WIB)\n2. Sortasi bahan baku segar (sayur, lauk hewani, lauk nabati)\n3. Pengolahan masakan hangat dengan suhu terukur di atas 85°C\n4. Food plating sesuai gramasi standar gizi BGN\n5. Penyegelan wadah thermal box dan serah terima ke armada distribusi (08:30 WIB)'
+  );
 
   const [publishSuccess, setPublishSuccess] = useState(false);
 
@@ -134,11 +141,18 @@ export default function AdminPage() {
       return;
     }
 
+    const overridesList = Object.entries(beneficiaryOverrides).map(([siteId, data]) => ({
+      siteId,
+      condition: data.condition as 'libur' | 'penyesuaian',
+      effectiveCount: data.effectiveCount,
+      reason: data.reason,
+    }));
+
     const newRecord = {
       date: menuDate,
       menuNumber: 1,
       title: namaMenu,
-      uraianPekerjaan,
+      uraianPekerjaan: uraianKegiatan,
       menuPhotoUrl: menuPhotoUrl || '/gallery-1.jpg',
       status: 'published' as const,
       publishedAt: `${menuDate} • 08:30 WIB`,
@@ -174,7 +188,7 @@ export default function AdminPage() {
           timeEstimate: '07:15 - 08:30 WIB',
         },
       ],
-      overrides: [],
+      overrides: overridesList,
     };
 
     try {
@@ -256,7 +270,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#0d1b2e] pb-16">
-      {/* Header Sticky dengan Quick Action Print 1-Klik */}
+      {/* Header Sticky */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-2xs">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -281,16 +295,15 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Quick Action: Cetak 1-Klik Langsung dari Admin */}
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => window.print()}
-              title="Cetak Halaman / Unduh Laporan PDF"
+              title="Cetak Laporan Langsung"
               className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Cetak Laporan (1-Klik)</span>
+              <span className="hidden sm:inline">Cetak Laporan</span>
               <span className="sm:hidden">Cetak</span>
             </button>
             <Link
@@ -311,35 +324,15 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
-        {/* Banner Fitur 1-Klik Cetak */}
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-600 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-          <div>
-            <span className="text-xs font-black uppercase tracking-wider block text-blue-100">
-              Panel Kendali Langsung
-            </span>
-            <p className="text-xs sm:text-sm font-bold text-white mt-0.5">
-              Input menu, uraian pekerjaan, & foto dapur otomatis tersimpan di Google Drive.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="px-4 py-2 bg-white text-blue-700 rounded-xl text-xs font-black hover:bg-blue-50 transition-colors flex items-center justify-center gap-1.5 shrink-0 shadow-sm cursor-pointer"
-          >
-            <Printer className="w-4 h-4 text-blue-600" />
-            <span>Cetak PDF Sekarang</span>
-          </button>
-        </div>
-
         <form onSubmit={handlePublish} className="space-y-6">
           {publishSuccess && (
             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 flex items-center gap-2 shadow-xs">
               <Check className="w-5 h-5 text-emerald-600 shrink-0" />
-              <span>Menu, uraian pekerjaan, foto, dan nilai AKG untuk tanggal {menuDate} berhasil dipublikasikan & tersimpan ke Google Drive!</span>
+              <span>Laporan 5 alur lengkap tanggal {menuDate} berhasil dipublikasikan & tersimpan ke Google Drive!</span>
             </div>
           )}
 
-          {/* ===================== KARTU 1: DATA MENU & FOTO SAJIAN ===================== */}
+          {/* ===================== ALUR 1: MENU ===================== */}
           <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
@@ -350,7 +343,7 @@ export default function AdminPage() {
                   1. Menu Makanan & Foto Sajian Porsi
                 </h2>
               </div>
-              <span className="text-[10px] text-slate-500 font-semibold">Langkah 1 dari 4</span>
+              <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded">Alur 1</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -498,38 +491,7 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* ===================== KARTU 2: KOLOM URAIAN PEKERJAAN (BARU) ===================== */}
-          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center">
-                  <FileText className="w-4 h-4" />
-                </div>
-                <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                  2. Kolom Uraian Pekerjaan Operasional
-                </h2>
-              </div>
-              <span className="text-[10px] text-slate-500 font-semibold">Langkah 2 dari 4</span>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                Catatan / Log Uraian Pekerjaan Dapur & Distribusi:
-              </label>
-              <textarea
-                rows={5}
-                value={uraianPekerjaan}
-                onChange={(e) => setUraianPekerjaan(e.target.value)}
-                placeholder="Tuliskan uraian tahapan kerja tim dapur hari ini (persiapan bahan, sterilisasi, waktu masak, pengecekan suhu, dan keberangkatan armada distribusi)..."
-                className="w-full p-3 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600 leading-relaxed font-sans"
-              />
-              <span className="text-[11px] text-slate-400 block mt-1">
-                *Uraian ini akan otomatis tercetak di dokumen laporan resmi harian SPPG Wonodri 3.
-              </span>
-            </div>
-          </div>
-
-          {/* ===================== KARTU 3: AKG (5 KELOMPOK) ===================== */}
+          {/* ===================== ALUR 2: AKG ===================== */}
           <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
@@ -538,14 +500,14 @@ export default function AdminPage() {
                 </div>
                 <div>
                   <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                    3. Angka Kandungan Gizi (AKG) 5 Kelompok Porsi
+                    2. Angka Kandungan Gizi (AKG) 5 Kelompok Porsi
                   </h2>
                   <span className="text-[11px] text-slate-500">
                     Nilai standar BGN sudah terisi otomatis, tinggal edit angkanya jika ada perbedaan.
                   </span>
                 </div>
               </div>
-              <span className="text-[10px] text-slate-500 font-semibold">Langkah 3 dari 4</span>
+              <span className="text-[10px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded">Alur 2</span>
             </div>
 
             <div className="space-y-3">
@@ -632,7 +594,7 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* ===================== KARTU 4: 3 FOTO DOKUMENTASI DAPUR ===================== */}
+          {/* ===================== ALUR 3: DOKUMENTASI ===================== */}
           <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
@@ -641,7 +603,7 @@ export default function AdminPage() {
                 </div>
                 <div>
                   <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                    4. Foto Dokumentasi Dapur (3 Tahap)
+                    3. Dokumentasi Dapur (3 Tahap)
                   </h2>
                   <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
                     <CloudUpload className="w-3.5 h-3.5" />
@@ -649,7 +611,7 @@ export default function AdminPage() {
                   </span>
                 </div>
               </div>
-              <span className="text-[10px] text-slate-500 font-semibold">Langkah 4 dari 4</span>
+              <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded">Alur 3</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
@@ -790,6 +752,111 @@ export default function AdminPage() {
             </div>
           </div>
 
+          {/* ===================== ALUR 4: ALOKASI (PENERIMA MANFAAT) ===================== */}
+          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
+                  <Users className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                    4. Alokasi Penerima Manfaat (12 Sekolah + 1 Posyandu)
+                  </h2>
+                  <span className="text-[11px] text-slate-500">
+                    Total Master: 1.555 Porsi. Atur sekolah libur / penyesuaian porsi khusus tanggal ini jika ada.
+                  </span>
+                </div>
+              </div>
+              <span className="text-[10px] text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded">Alur 4</span>
+            </div>
+
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="max-h-64 overflow-y-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold text-[10px] uppercase sticky top-0">
+                    <tr>
+                      <th className="py-2.5 px-3">Lembaga Sekolah / Posyandu</th>
+                      <th className="py-2.5 px-3 w-24">Tipe</th>
+                      <th className="py-2.5 px-3 w-28 text-right">Master Kuota</th>
+                      <th className="py-2.5 px-3 w-32 text-center">Status Hari Ini</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {INITIAL_BENEFICIARIES.map((site) => {
+                      const isOverridden = beneficiaryOverrides[site.id]?.condition === 'libur';
+                      return (
+                        <tr key={site.id} className="hover:bg-slate-50">
+                          <td className="py-2 px-3 font-extrabold text-slate-900">{site.name}</td>
+                          <td className="py-2 px-3 text-slate-500">{site.type}</td>
+                          <td className="py-2 px-3 text-right font-black text-slate-900">{site.masterCount}</td>
+                          <td className="py-2 px-3 text-center">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const current = beneficiaryOverrides[site.id];
+                                if (current?.condition === 'libur') {
+                                  const updated = { ...beneficiaryOverrides };
+                                  delete updated[site.id];
+                                  setBeneficiaryOverrides(updated);
+                                } else {
+                                  setBeneficiaryOverrides({
+                                    ...beneficiaryOverrides,
+                                    [site.id]: { condition: 'libur', effectiveCount: 0, reason: 'Libur Sekolah' },
+                                  });
+                                }
+                              }}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
+                                isOverridden
+                                  ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                                  : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                              }`}
+                            >
+                              {isOverridden ? 'Libur (0 Porsi)' : 'Aktif Distribusi'}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* ===================== ALUR 5: URAIAN KEGIATAN ===================== */}
+          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                    5. Uraian Kegiatan Operasional Dapur & Distribusi
+                  </h2>
+                  <span className="text-[11px] text-slate-500">
+                    Log urutan tahapan kerja persiapan, masak, packing, dan keberangkatan armada.
+                  </span>
+                </div>
+              </div>
+              <span className="text-[10px] text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded">Alur 5</span>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Catatan / Log Uraian Kegiatan:
+              </label>
+              <textarea
+                rows={5}
+                value={uraianKegiatan}
+                onChange={(e) => setUraianKegiatan(e.target.value)}
+                placeholder="Tuliskan uraian tahapan kegiatan operasional hari ini..."
+                className="w-full p-3 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600 leading-relaxed font-sans"
+              />
+            </div>
+          </div>
+
           {/* Action Footer: Tombol Simpan & Rilis + Tombol Cetak 1-Klik */}
           <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
             <button
@@ -798,7 +865,7 @@ export default function AdminPage() {
               className="w-full sm:w-auto px-6 py-3.5 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
             >
               <Printer className="w-4 h-4 text-slate-600" />
-              <span>Cetak Pratinjau Dokumen</span>
+              <span>Cetak Laporan Lengkap</span>
             </button>
 
             <button
@@ -807,7 +874,7 @@ export default function AdminPage() {
               className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
-              <span>Simpan & Rilis Menu Hari Ini</span>
+              <span>Simpan & Rilis Laporan Harian</span>
             </button>
           </div>
         </form>
