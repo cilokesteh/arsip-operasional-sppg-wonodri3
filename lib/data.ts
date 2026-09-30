@@ -58,10 +58,10 @@ export interface DailyMenuRecord {
   }[];
 }
 
-// 13 Titik Layanan Resmi SPPG Wonodri 3 (Total: 1.555 Penerima Manfaat)
+// 13 Titik Layanan Resmi SPPG Wonodri 3 (Total: 1.554 Penerima Manfaat)
 export const INITIAL_BENEFICIARIES: BeneficiarySite[] = [
   { id: 'sd-it-al-firdaus', name: 'SD IT Al Firdaus', type: 'SD', masterCount: 349 },
-  { id: 'sdn-pleburan-03', name: 'SDN Pleburan 03', type: 'SD', masterCount: 342 },
+  { id: 'sdn-pleburan-03', name: 'SDN Pleburan 03', type: 'SD', masterCount: 341 },
   { id: 'sdn-lamper-lor', name: 'SDN Lamper Lor', type: 'SD', masterCount: 154 },
   { id: 'sdn-pleburan-b', name: 'SDN Pleburan B', type: 'SD', masterCount: 150 },
   { id: 'sdn-pleburan-a', name: 'SDN Pleburan A', type: 'SD', masterCount: 120 },
