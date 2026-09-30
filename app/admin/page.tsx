@@ -21,6 +21,7 @@ import {
   FileText,
   Printer,
   Users,
+  BookmarkCheck,
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
 import { INITIAL_BENEFICIARIES } from '@/lib/data';
@@ -50,30 +51,6 @@ export default function AdminPage() {
   const [inputPasscode, setInputPasscode] = useState<string>('');
   const [loginError, setLoginError] = useState<string>('');
 
-  useEffect(() => {
-    const authStatus = sessionStorage.getItem('sppg_admin_auth');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (inputPasscode === DEFAULT_PASSCODE) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('sppg_admin_auth', 'true');
-      setLoginError('');
-    } else {
-      setLoginError('Kode akses salah! Silakan coba lagi.');
-    }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('sppg_admin_auth');
-    setInputPasscode('');
-  };
-
   // 1. Data Menu Harian
   const [menuDate, setMenuDate] = useState('2026-10-01');
   const [namaMenu, setNamaMenu] = useState('');
@@ -92,7 +69,7 @@ export default function AdminPage() {
   // 2. Data AKG 5 Kelompok
   const [akgList, setAkgList] = useState<AKGInput[]>(DEFAULT_AKG_PRESETS);
 
-  // 3. State 3 Foto Dapur (Dokumentasi)
+  // 3. State 3 Foto Dapur
   const [prepPhotoUrl, setPrepPhotoUrl] = useState<string | null>(null);
   const [prepUploading, setPrepUploading] = useState<boolean>(false);
 
@@ -102,7 +79,7 @@ export default function AdminPage() {
   const [packPhotoUrl, setPackPhotoUrl] = useState<string | null>(null);
   const [packUploading, setPackUploading] = useState<boolean>(false);
 
-  // 4. Data Alokasi Penerima Manfaat (1.555 Penerima)
+  // 4. Data Alokasi Penerima Manfaat
   const [beneficiaryOverrides, setBeneficiaryOverrides] = useState<Record<string, { condition: 'aktif' | 'libur'; effectiveCount: number; reason: string }>>({});
 
   // 5. Uraian Kegiatan Operasional Dapur
@@ -111,11 +88,94 @@ export default function AdminPage() {
   );
 
   const [publishSuccess, setPublishSuccess] = useState(false);
+  const [draftSavedAlert, setDraftSavedAlert] = useState(false);
 
+  // LOAD DRAFT TERSIMPAN SECARA OTOMATIS SAAT HALAMAN DIBUKA
+  useEffect(() => {
+    const authStatus = sessionStorage.getItem('sppg_admin_auth');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+
+    try {
+      const savedDraft = localStorage.getItem('sppg_admin_draft');
+      if (savedDraft) {
+        const draft = JSON.parse(savedDraft);
+        if (draft.menuDate) setMenuDate(draft.menuDate);
+        if (draft.namaMenu) setNamaMenu(draft.namaMenu);
+        if (draft.components) setComponents(draft.components);
+        if (draft.akgList) setAkgList(draft.akgList);
+        if (draft.menuPhotoUrl) setMenuPhotoUrl(draft.menuPhotoUrl);
+        if (draft.prepPhotoUrl) setPrepPhotoUrl(draft.prepPhotoUrl);
+        if (draft.cookPhotoUrl) setCookPhotoUrl(draft.cookPhotoUrl);
+        if (draft.packPhotoUrl) setPackPhotoUrl(draft.packPhotoUrl);
+        if (draft.beneficiaryOverrides) setBeneficiaryOverrides(draft.beneficiaryOverrides);
+        if (draft.uraianKegiatan) setUraianKegiatan(draft.uraianKegiatan);
+      }
+    } catch {
+      // fallback
+    }
+  }, []);
+
+  // AUTO-SAVE SETIAP KALI USER EDIT APAPUN (AKG, MENU, KOMPONEN, FOTO, DLL)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const draftPayload = {
+      menuDate,
+      namaMenu,
+      components,
+      akgList,
+      menuPhotoUrl,
+      prepPhotoUrl,
+      cookPhotoUrl,
+      packPhotoUrl,
+      beneficiaryOverrides,
+      uraianKegiatan,
+      lastSaved: new Date().toISOString(),
+    };
+    try {
+      localStorage.setItem('sppg_admin_draft', JSON.stringify(draftPayload));
+    } catch {
+      // fallback
+    }
+  }, [
+    isAuthenticated,
+    menuDate,
+    namaMenu,
+    components,
+    akgList,
+    menuPhotoUrl,
+    prepPhotoUrl,
+    cookPhotoUrl,
+    packPhotoUrl,
+    beneficiaryOverrides,
+    uraianKegiatan,
+  ]);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputPasscode === DEFAULT_PASSCODE) {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('sppg_admin_auth', 'true');
+      setLoginError('');
+    } else {
+      setLoginError('Kode akses salah! Silakan coba lagi.');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('sppg_admin_auth');
+    setInputPasscode('');
+  };
+
+  // Ubah nilai AKG dan langsung picu draft auto-save
   const handleAkgChange = (index: number, field: keyof AKGInput, value: string | number) => {
     const updated = [...akgList];
     updated[index] = { ...updated[index], [field]: value };
     setAkgList(updated);
+    setDraftSavedAlert(true);
+    setTimeout(() => setDraftSavedAlert(false), 2000);
   };
 
   const handleAutoDriveUpload = async (
@@ -153,7 +213,7 @@ export default function AdminPage() {
       menuNumber: 1,
       title: namaMenu,
       uraianPekerjaan: uraianKegiatan,
-      menuPhotoUrl: menuPhotoUrl || '/gallery-1.jpg',
+      menuPhotoUrl: menuPhotoUrl || '',
       status: 'published' as const,
       publishedAt: `${menuDate} • 08:30 WIB`,
       components,
@@ -170,24 +230,24 @@ export default function AdminPage() {
           step: 'Persiapan',
           title: 'Sortasi Bahan Baku Higienis',
           description: 'Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.',
-          imageUrl: prepPhotoUrl || '/about-kitchen.jpg',
+          imageUrl: prepPhotoUrl || '',
           timeEstimate: '04:00 - 05:30 WIB',
         },
         {
           step: 'Pengolahan',
           title: 'Pemasakan Suhu Terukur (>85°C)',
           description: 'Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.',
-          imageUrl: cookPhotoUrl || '/hero-kitchen.jpg',
+          imageUrl: cookPhotoUrl || '',
           timeEstimate: '05:30 - 07:15 WIB',
         },
         {
           step: 'Pengemasan',
           title: 'Food Plating & Segel Thermal Box',
           description: 'Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.',
-          imageUrl: packPhotoUrl || '/gallery-1.jpg',
+          imageUrl: packPhotoUrl || '',
           timeEstimate: '07:15 - 08:30 WIB',
         },
-      ],
+      ].filter((p) => p.imageUrl), // Hanya masukkan foto yang benar-benar diunggah
       overrides: overridesList,
     };
 
@@ -196,6 +256,8 @@ export default function AdminPage() {
       let list = existing ? JSON.parse(existing) : [];
       list = [newRecord, ...list.filter((item: { date: string }) => item.date !== menuDate)];
       localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
+      // Bersihkan draft setelah publish sukses
+      localStorage.removeItem('sppg_admin_draft');
     } catch {
       // fallback
     }
@@ -289,7 +351,7 @@ export default function AdminPage() {
                   Admin Panel SPPG Wonodri 3
                 </span>
                 <span className="text-[10px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
-                  <CloudUpload className="w-3 h-3" /> Auto-Save ke Google Drive Aktif
+                  <CloudUpload className="w-3 h-3" /> Auto-Save Google Drive & Auto-Draft Aktif
                 </span>
               </div>
             </div>
@@ -324,6 +386,21 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
+        {/* Banner Auto-Draft Notifier */}
+        <div className="p-3 sm:p-4 rounded-xl bg-blue-50/80 border border-blue-200/80 flex items-center justify-between text-xs text-blue-900">
+          <div className="flex items-center gap-2">
+            <BookmarkCheck className="w-4 h-4 text-blue-600 shrink-0" />
+            <span>
+              <strong>Fitur Auto-Draft Aktif:</strong> Setiap lo ketik angka AKG, nama menu, atau upload foto, data otomatis tersimpan di HP. Jika browser ditutup atau baterai habis, lo bisa langsung lanjut tanpa ulang dari awal.
+            </span>
+          </div>
+          {draftSavedAlert && (
+            <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded shrink-0 animate-fade-in">
+              Draft Tersimpan
+            </span>
+          )}
+        </div>
+
         <form onSubmit={handlePublish} className="space-y-6">
           {publishSuccess && (
             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 flex items-center gap-2 shadow-xs">
@@ -491,7 +568,7 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* ===================== ALUR 2: AKG ===================== */}
+          {/* ===================== ALUR 2: AKG (AUTO-DRAFT SETIAP KALI KETIK) ===================== */}
           <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
@@ -503,7 +580,7 @@ export default function AdminPage() {
                     2. Angka Kandungan Gizi (AKG) 5 Kelompok Porsi
                   </h2>
                   <span className="text-[11px] text-slate-500">
-                    Nilai standar BGN sudah terisi otomatis, tinggal edit angkanya jika ada perbedaan.
+                    Nilai otomatis tersimpan di draft begitu lo selesai mengetik angkanya.
                   </span>
                 </div>
               </div>
@@ -752,7 +829,7 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* ===================== ALUR 4: ALOKASI (PENERIMA MANFAAT) ===================== */}
+          {/* ===================== ALUR 4: ALOKASI ===================== */}
           <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
@@ -764,7 +841,7 @@ export default function AdminPage() {
                     4. Alokasi Penerima Manfaat (12 Sekolah + 1 Posyandu)
                   </h2>
                   <span className="text-[11px] text-slate-500">
-                    Total Master: 1.555 Porsi. Atur sekolah libur / penyesuaian porsi khusus tanggal ini jika ada.
+                    Total Master: 1.555 Porsi. Atur sekolah libur khusus tanggal ini jika ada.
                   </span>
                 </div>
               </div>

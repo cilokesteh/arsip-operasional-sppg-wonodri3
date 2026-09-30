@@ -37,8 +37,8 @@ export interface DailyMenuRecord {
   date: string; // YYYY-MM-DD
   menuNumber: number;
   title: string;
-  uraianPekerjaan?: string; // KOLOM URAIAN PEKERJAAN OPERASIONAL DAPUR
-  menuPhotoUrl?: string; // FOTO SAJIAN MAKANAN UTAMA HARIAN
+  uraianPekerjaan?: string;
+  menuPhotoUrl?: string;
   status: 'draft' | 'review' | 'published';
   publishedAt?: string;
   components: {
@@ -75,7 +75,7 @@ export const INITIAL_BENEFICIARIES: BeneficiarySite[] = [
   { id: 'tk-hapsari', name: 'TK Hapsari', type: 'TK', masterCount: 11 },
 ];
 
-// Standar Acuan Gizi Nasional BGN untuk 5 Kategori Porsi (Selalu aktif sebagai referensi)
+// Standar Acuan Gizi Nasional BGN untuk 5 Kategori Porsi
 export const STANDARD_AKG_REFERENCE: NutritionItem[] = [
   {
     groupName: 'Besar',
@@ -86,7 +86,7 @@ export const STANDARD_AKG_REFERENCE: NutritionItem[] = [
     fatG: 14.5,
     carbsG: 83.9,
     fiberG: 2.4,
-    color: '#2563eb', // Royal Blue
+    color: '#2563eb',
     bgLight: '#eff6ff',
     borderAccent: '#3b82f6',
     recommendedPct: { protein: 25, fat: 23, carbs: 65, fiber: 20 },
@@ -100,7 +100,7 @@ export const STANDARD_AKG_REFERENCE: NutritionItem[] = [
     fatG: 14.4,
     carbsG: 81.7,
     fiberG: 2.4,
-    color: '#059669', // Emerald Green
+    color: '#059669',
     bgLight: '#ecfdf5',
     borderAccent: '#10b981',
     recommendedPct: { protein: 22, fat: 24, carbs: 60, fiber: 18 },
@@ -114,7 +114,7 @@ export const STANDARD_AKG_REFERENCE: NutritionItem[] = [
     fatG: 14.3,
     carbsG: 51.7,
     fiberG: 2.0,
-    color: '#d97706', // Warm Amber
+    color: '#d97706',
     bgLight: '#fffbeb',
     borderAccent: '#f59e0b',
     recommendedPct: { protein: 20, fat: 25, carbs: 45, fiber: 15 },
@@ -128,7 +128,7 @@ export const STANDARD_AKG_REFERENCE: NutritionItem[] = [
     fatG: 14.5,
     carbsG: 83.9,
     fiberG: 2.4,
-    color: '#e11d48', // Rose Pink
+    color: '#e11d48',
     bgLight: '#fff1f2',
     borderAccent: '#f43f5e',
     recommendedPct: { protein: 26, fat: 22, carbs: 64, fiber: 22 },
@@ -142,54 +142,12 @@ export const STANDARD_AKG_REFERENCE: NutritionItem[] = [
     fatG: 14.5,
     carbsG: 83.9,
     fiberG: 2.4,
-    color: '#7c3aed', // Purple Violet
+    color: '#7c3aed',
     bgLight: '#f5f3ff',
     borderAccent: '#8b5cf6',
     recommendedPct: { protein: 26, fat: 22, carbs: 64, fiber: 22 },
   },
 ];
 
-// Riwayat Menu Mulai 01 Oktober 2026
-export const INITIAL_MENU_HISTORY: DailyMenuRecord[] = [
-  {
-    date: '2026-10-01',
-    menuNumber: 1,
-    title: 'Nasi Pandan Wangi, Semur Ayam Suwir, Tahu Bacem Tradisional, Sayur Bening Jagung Manis, & Pisang Cavendish',
-    uraianPekerjaan: '1. Pembersihan dan sterilisasi dapur operasional mulai pukul 04:00 WIB.\n2. Sortasi sayur bayam dan jagung manis segar dari petani lokal.\n3. Pengolahan lauk ayam semur dan tahu bacem dengan suhu mendidih di atas 85°C.\n4. Penataan porsi makanan hangat ke dalam wadah thermal box food-grade.\n5. Pengecekan sampel mikrobiologi dan keberangkatan armada distribusi pukul 08:30 WIB ke 12 sekolah dan 1 posyandu.',
-    menuPhotoUrl: '/gallery-1.jpg',
-    status: 'published',
-    publishedAt: '01 Okt 2026 • 08:30 WIB',
-    components: {
-      karbohidrat: 'Nasi Putih Beras Pandan Wangi',
-      laukHewani: 'Ayam Ungkep Semur Kecap Gurih',
-      laukNabati: 'Tahu Bacem Tradisional',
-      sayur: 'Sayur Bening Jagung Manis & Bayam',
-      buah: 'Pisang Cavendish Matang Alami',
-    },
-    nutritionCards: STANDARD_AKG_REFERENCE,
-    photos: [
-      {
-        step: 'Persiapan',
-        title: 'Sortasi Bahan Baku Higienis',
-        description: 'Pembersihan sayuran segar dengan air mengalir dan sterilisasi peralatan dapur stainless steel.',
-        imageUrl: '/about-kitchen.jpg',
-        timeEstimate: '04:00 - 05:30 WIB',
-      },
-      {
-        step: 'Pengolahan',
-        title: 'Pemasakan Suhu Terukur (>85°C)',
-        description: 'Pengolahan lauk ayam semur dan tahu bacem dengan suhu terjaga untuk memastikan kematangan merata.',
-        imageUrl: '/hero-kitchen.jpg',
-        timeEstimate: '05:30 - 07:15 WIB',
-      },
-      {
-        step: 'Pengemasan',
-        title: 'Food Plating & Segel Thermal Box',
-        description: 'Penataan porsi termonitor gramasi timbangan dan segel kotak makanan hangat siap didistribusikan.',
-        imageUrl: '/gallery-1.jpg',
-        timeEstimate: '07:15 - 08:30 WIB',
-      },
-    ],
-    overrides: [],
-  },
-];
+// DATABASE BERSIH (0 DATA DUMMY) — KOSONG TOTAL UNTUK INPUT ASLI OPERATOR BESOK
+export const INITIAL_MENU_HISTORY: DailyMenuRecord[] = [];

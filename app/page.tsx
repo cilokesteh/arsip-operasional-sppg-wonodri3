@@ -17,6 +17,8 @@ import {
   X,
   FileSpreadsheet,
   Search,
+  Clock,
+  PlusCircle,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -43,7 +45,7 @@ export default function HomePage() {
     }
   }, []);
 
-  const currentMenu = menuHistory.find((m) => m.date === selectedDate) || menuHistory[0];
+  const currentMenu = menuHistory.find((m) => m.date === selectedDate);
   const totalMaster = INITIAL_BENEFICIARIES.reduce((acc, site) => acc + site.masterCount, 0);
 
   const filteredBeneficiaries = INITIAL_BENEFICIARIES.filter((b) =>
@@ -122,7 +124,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 2. DOKUMEN LAPORAN RESMI (URUTAN 1 S/D 5 PRESISI SESUAI PERMINTAAN) */}
+      {/* 2. DOKUMEN LAPORAN RESMI */}
       <main className="max-w-5xl mx-auto w-full px-2.5 sm:px-6 py-4 sm:py-8 flex-1">
         <div className="report-sheet bg-white rounded-xl border border-slate-300 shadow-sm p-4 sm:p-8 md:p-10 space-y-6 sm:space-y-7">
           
@@ -158,323 +160,349 @@ export default function HomePage() {
                 <div className="inline-block px-2 py-0.5 bg-blue-100 text-blue-900 rounded text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
                   Laporan Operasional Resmi
                 </div>
-                <div className="text-[11px] sm:text-xs">Tanggal: <strong className="text-slate-900">{currentMenu.date}</strong></div>
+                <div className="text-[11px] sm:text-xs">Tanggal: <strong className="text-slate-900">{selectedDate}</strong></div>
                 <div className="text-[11px] sm:text-xs">Alokasi: <strong className="text-slate-900">{totalMaster} Porsi (100%)</strong></div>
               </div>
             </div>
           </div>
 
-          {/* ===================== 1. MENU ===================== */}
-          <section className="space-y-3 sm:space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
-              <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                1. Menu Makanan & Komposisi Porsi
-              </h2>
-              <span className="text-[10px] text-slate-500 font-semibold">Menu #{currentMenu.menuNumber || 1}</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5">
-              {/* Foto Porsi Makanan Sajian */}
-              <div className="md:col-span-4 relative h-48 sm:h-56 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={currentMenu.menuPhotoUrl || '/gallery-1.jpg'}
-                  alt={currentMenu.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-white text-[9px] font-bold">
-                  Sajian {currentMenu.date}
-                </div>
+          {/* JIKA BELUM ADA DATA MENU PADA TANGGAL INI */}
+          {!currentMenu ? (
+            <div className="p-8 sm:p-12 text-center space-y-4 border-2 border-dashed border-slate-200 rounded-2xl">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                <Clock className="w-6 h-6 text-blue-600" />
               </div>
-
-              {/* Rincian Menu & 5 Komponen */}
-              <div className="md:col-span-8 flex flex-col justify-between space-y-3">
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <span className="text-[9px] sm:text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Nama Menu:</span>
-                  <h3 className="font-extrabold text-xs sm:text-sm md:text-base text-slate-900 leading-snug">
-                    {currentMenu.title}
-                  </h3>
+              <div className="space-y-1 max-w-md mx-auto">
+                <h3 className="font-extrabold text-base text-slate-900">
+                  Laporan Belum Diterbitkan untuk Tanggal {selectedDate}
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Operasional dimulai pada tanggal 01 Oktober 2026. Operator dapat mengisi rincian menu dan foto melalui panel admin.
+                </p>
+              </div>
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Input Laporan di Panel Admin</span>
+              </Link>
+            </div>
+          ) : (
+            <>
+              {/* ===================== 1. MENU ===================== */}
+              <section className="space-y-3 sm:space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+                  <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                    1. Menu Makanan & Komposisi Porsi
+                  </h2>
+                  <span className="text-[10px] text-slate-500 font-semibold">Menu #{currentMenu.menuNumber || 1}</span>
                 </div>
 
-                {/* Mobile Komponen Card */}
-                <div className="grid grid-cols-1 sm:hidden gap-1.5 text-xs">
-                  <div className="p-2 rounded bg-slate-50 border border-slate-200 flex justify-between">
-                    <span className="font-bold text-slate-600">Karbohidrat:</span>
-                    <span className="font-extrabold text-slate-900 text-right">{currentMenu.components.karbohidrat}</span>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5">
+                  {/* Foto Porsi Makanan Sajian */}
+                  <div className="md:col-span-4 relative h-48 sm:h-56 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={currentMenu.menuPhotoUrl || '/gallery-1.jpg'}
+                      alt={currentMenu.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-white text-[9px] font-bold">
+                      Sajian {currentMenu.date}
+                    </div>
                   </div>
-                  <div className="p-2 rounded bg-slate-50 border border-slate-200 flex justify-between">
-                    <span className="font-bold text-slate-600">Lauk Hewani:</span>
-                    <span className="font-extrabold text-slate-900 text-right">{currentMenu.components.laukHewani}</span>
-                  </div>
-                  <div className="p-2 rounded bg-slate-50 border border-slate-200 flex justify-between">
-                    <span className="font-bold text-slate-600">Lauk Nabati:</span>
-                    <span className="font-extrabold text-slate-900 text-right">{currentMenu.components.laukNabati}</span>
-                  </div>
-                  <div className="p-2 rounded bg-slate-50 border border-slate-200 flex justify-between">
-                    <span className="font-bold text-slate-600">Sayuran:</span>
-                    <span className="font-extrabold text-slate-900 text-right">{currentMenu.components.sayur}</span>
-                  </div>
-                  <div className="p-2 rounded bg-slate-50 border border-slate-200 flex justify-between">
-                    <span className="font-bold text-slate-600">Buah Segar:</span>
-                    <span className="font-extrabold text-slate-900 text-right">{currentMenu.components.buah}</span>
+
+                  {/* Rincian Menu & 5 Komponen */}
+                  <div className="md:col-span-8 flex flex-col justify-between space-y-3">
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <span className="text-[9px] sm:text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Nama Menu:</span>
+                      <h3 className="font-extrabold text-xs sm:text-sm md:text-base text-slate-900 leading-snug">
+                        {currentMenu.title}
+                      </h3>
+                    </div>
+
+                    {/* Mobile Komponen Card */}
+                    <div className="grid grid-cols-1 sm:hidden gap-1.5 text-xs">
+                      <div className="p-2 rounded bg-slate-50 border border-slate-200 flex justify-between">
+                        <span className="font-bold text-slate-600">Karbohidrat:</span>
+                        <span className="font-extrabold text-slate-900 text-right">{currentMenu.components.karbohidrat}</span>
+                      </div>
+                      <div className="p-2 rounded bg-slate-50 border border-slate-200 flex justify-between">
+                        <span className="font-bold text-slate-600">Lauk Hewani:</span>
+                        <span className="font-extrabold text-slate-900 text-right">{currentMenu.components.laukHewani}</span>
+                      </div>
+                      <div className="p-2 rounded bg-slate-50 border border-slate-200 flex justify-between">
+                        <span className="font-bold text-slate-600">Lauk Nabati:</span>
+                        <span className="font-extrabold text-slate-900 text-right">{currentMenu.components.laukNabati}</span>
+                      </div>
+                      <div className="p-2 rounded bg-slate-50 border border-slate-200 flex justify-between">
+                        <span className="font-bold text-slate-600">Sayuran:</span>
+                        <span className="font-extrabold text-slate-900 text-right">{currentMenu.components.sayur}</span>
+                      </div>
+                      <div className="p-2 rounded bg-slate-50 border border-slate-200 flex justify-between">
+                        <span className="font-bold text-slate-600">Buah Segar:</span>
+                        <span className="font-extrabold text-slate-900 text-right">{currentMenu.components.buah}</span>
+                      </div>
+                    </div>
+
+                    {/* Desktop Table Komponen */}
+                    <div className="hidden sm:block border border-slate-200 rounded-lg overflow-hidden">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-100/70 border-b border-slate-200 text-slate-700 font-bold text-[10px] uppercase">
+                          <tr>
+                            <th className="py-2 px-3 w-1/3">Komponen Bahan</th>
+                            <th className="py-2 px-3">Uraian Masakan</th>
+                            <th className="py-2 px-3 w-28 text-center">Fungsi Gizi</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          <tr>
+                            <td className="py-1.5 px-3 font-bold text-slate-700">1. Karbohidrat</td>
+                            <td className="py-1.5 px-3 text-slate-900 font-medium">{currentMenu.components.karbohidrat}</td>
+                            <td className="py-1.5 px-3 text-center text-[10px] text-slate-500">Sumber Energi</td>
+                          </tr>
+                          <tr>
+                            <td className="py-1.5 px-3 font-bold text-slate-700">2. Lauk Hewani</td>
+                            <td className="py-1.5 px-3 text-slate-900 font-medium">{currentMenu.components.laukHewani}</td>
+                            <td className="py-1.5 px-3 text-center text-[10px] text-slate-500">Protein Hewani</td>
+                          </tr>
+                          <tr>
+                            <td className="py-1.5 px-3 font-bold text-slate-700">3. Lauk Nabati</td>
+                            <td className="py-1.5 px-3 text-slate-900 font-medium">{currentMenu.components.laukNabati}</td>
+                            <td className="py-1.5 px-3 text-center text-[10px] text-slate-500">Protein Nabati</td>
+                          </tr>
+                          <tr>
+                            <td className="py-1.5 px-3 font-bold text-slate-700">4. Sayuran</td>
+                            <td className="py-1.5 px-3 text-slate-900 font-medium">{currentMenu.components.sayur}</td>
+                            <td className="py-1.5 px-3 text-center text-[10px] text-slate-500">Serat & Vitamin</td>
+                          </tr>
+                          <tr>
+                            <td className="py-1.5 px-3 font-bold text-slate-700">5. Buah Segar</td>
+                            <td className="py-1.5 px-3 text-slate-900 font-medium">{currentMenu.components.buah}</td>
+                            <td className="py-1.5 px-3 text-center text-[10px] text-slate-500">Mikronutrien</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
+              </section>
 
-                {/* Desktop Table Komponen */}
+              {/* ===================== 2. AKG ===================== */}
+              <section className="space-y-2.5">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+                  <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                    2. Angka Kandungan Gizi (AKG) 5 Kelompok
+                  </h2>
+                  <span className="text-[10px] text-slate-500">Standar BGN</span>
+                </div>
+
+                {/* Mobile View: Kartu Ringkas Gizi */}
+                <div className="grid grid-cols-1 gap-2.5 sm:hidden">
+                  {(currentMenu.nutritionCards || STANDARD_AKG_REFERENCE).map((item, i) => (
+                    <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-black text-xs text-blue-900 block">Porsi {item.groupName}</span>
+                          <span className="text-[10px] text-slate-500 block leading-tight">{item.targetCategory}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-black text-orange-950 block tabular-nums">
+                            {item.energyKcal.toFixed(1)} <span className="text-[10px] text-orange-700 font-bold">Kkal</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-4 gap-1 text-center text-[10px] pt-1 border-t border-slate-200/80">
+                        <div className="p-1 rounded bg-white border border-slate-200">
+                          <span className="text-slate-400 block text-[9px]">Protein</span>
+                          <span className="font-extrabold text-slate-900">{item.proteinG.toFixed(1)}g</span>
+                        </div>
+                        <div className="p-1 rounded bg-white border border-slate-200">
+                          <span className="text-slate-400 block text-[9px]">Lemak</span>
+                          <span className="font-extrabold text-slate-900">{item.fatG.toFixed(1)}g</span>
+                        </div>
+                        <div className="p-1 rounded bg-white border border-slate-200">
+                          <span className="text-slate-400 block text-[9px]">Karbo</span>
+                          <span className="font-extrabold text-slate-900">{item.carbsG.toFixed(1)}g</span>
+                        </div>
+                        <div className="p-1 rounded bg-white border border-slate-200">
+                          <span className="text-slate-400 block text-[9px]">Serat</span>
+                          <span className="font-extrabold text-slate-900">{item.fiberG.toFixed(1)}g</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
                 <div className="hidden sm:block border border-slate-200 rounded-lg overflow-hidden">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-100/70 border-b border-slate-200 text-slate-700 font-bold text-[10px] uppercase">
+                    <thead className="bg-slate-100 border-b border-slate-200 text-slate-800 font-black text-[10px] uppercase">
                       <tr>
-                        <th className="py-2 px-3 w-1/3">Komponen Bahan</th>
-                        <th className="py-2 px-3">Uraian Masakan</th>
-                        <th className="py-2 px-3 w-28 text-center">Fungsi Gizi</th>
+                        <th className="py-2.5 px-3">Kelompok</th>
+                        <th className="py-2.5 px-3">Sasaran Penerima</th>
+                        <th className="py-2.5 px-3 text-right">Energi</th>
+                        <th className="py-2.5 px-3 text-right">Protein</th>
+                        <th className="py-2.5 px-3 text-right">Lemak</th>
+                        <th className="py-2.5 px-3 text-right">Karbohidrat</th>
+                        <th className="py-2.5 px-3 text-right">Serat</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      <tr>
-                        <td className="py-1.5 px-3 font-bold text-slate-700">1. Karbohidrat</td>
-                        <td className="py-1.5 px-3 text-slate-900 font-medium">{currentMenu.components.karbohidrat}</td>
-                        <td className="py-1.5 px-3 text-center text-[10px] text-slate-500">Sumber Energi</td>
-                      </tr>
-                      <tr>
-                        <td className="py-1.5 px-3 font-bold text-slate-700">2. Lauk Hewani</td>
-                        <td className="py-1.5 px-3 text-slate-900 font-medium">{currentMenu.components.laukHewani}</td>
-                        <td className="py-1.5 px-3 text-center text-[10px] text-slate-500">Protein Hewani</td>
-                      </tr>
-                      <tr>
-                        <td className="py-1.5 px-3 font-bold text-slate-700">3. Lauk Nabati</td>
-                        <td className="py-1.5 px-3 text-slate-900 font-medium">{currentMenu.components.laukNabati}</td>
-                        <td className="py-1.5 px-3 text-center text-[10px] text-slate-500">Protein Nabati</td>
-                      </tr>
-                      <tr>
-                        <td className="py-1.5 px-3 font-bold text-slate-700">4. Sayuran</td>
-                        <td className="py-1.5 px-3 text-slate-900 font-medium">{currentMenu.components.sayur}</td>
-                        <td className="py-1.5 px-3 text-center text-[10px] text-slate-500">Serat & Vitamin</td>
-                      </tr>
-                      <tr>
-                        <td className="py-1.5 px-3 font-bold text-slate-700">5. Buah Segar</td>
-                        <td className="py-1.5 px-3 text-slate-900 font-medium">{currentMenu.components.buah}</td>
-                        <td className="py-1.5 px-3 text-center text-[10px] text-slate-500">Mikronutrien</td>
-                      </tr>
+                    <tbody className="divide-y divide-slate-200">
+                      {(currentMenu.nutritionCards || STANDARD_AKG_REFERENCE).map((item, i) => (
+                        <tr key={i} className="hover:bg-slate-50">
+                          <td className="py-2 px-3 font-extrabold text-blue-900 bg-slate-50/50">
+                            {item.groupName}
+                          </td>
+                          <td className="py-2 px-3 text-slate-700 font-medium">
+                            {item.targetCategory}
+                          </td>
+                          <td className="py-2 px-3 text-right font-black text-slate-900 tabular-nums">
+                            {item.energyKcal.toFixed(1)} <span className="text-[10px] font-normal text-slate-500">Kkal</span>
+                          </td>
+                          <td className="py-2 px-3 text-right tabular-nums">{item.proteinG.toFixed(1)} g</td>
+                          <td className="py-2 px-3 text-right tabular-nums">{item.fatG.toFixed(1)} g</td>
+                          <td className="py-2 px-3 text-right tabular-nums">{item.carbsG.toFixed(1)} g</td>
+                          <td className="py-2 px-3 text-right tabular-nums">{item.fiberG.toFixed(1)} g</td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
-              </div>
-            </div>
-          </section>
+              </section>
 
-          {/* ===================== 2. AKG ===================== */}
-          <section className="space-y-2.5">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
-              <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                2. Angka Kandungan Gizi (AKG) 5 Kelompok
-              </h2>
-              <span className="text-[10px] text-slate-500">Standar BGN</span>
-            </div>
-
-            {/* Mobile View: Kartu Ringkas Gizi */}
-            <div className="grid grid-cols-1 gap-2.5 sm:hidden">
-              {(currentMenu.nutritionCards || STANDARD_AKG_REFERENCE).map((item, i) => (
-                <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-black text-xs text-blue-900 block">Porsi {item.groupName}</span>
-                      <span className="text-[10px] text-slate-500 block leading-tight">{item.targetCategory}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-sm font-black text-orange-950 block tabular-nums">
-                        {item.energyKcal.toFixed(1)} <span className="text-[10px] text-orange-700 font-bold">Kkal</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-1 text-center text-[10px] pt-1 border-t border-slate-200/80">
-                    <div className="p-1 rounded bg-white border border-slate-200">
-                      <span className="text-slate-400 block text-[9px]">Protein</span>
-                      <span className="font-extrabold text-slate-900">{item.proteinG.toFixed(1)}g</span>
-                    </div>
-                    <div className="p-1 rounded bg-white border border-slate-200">
-                      <span className="text-slate-400 block text-[9px]">Lemak</span>
-                      <span className="font-extrabold text-slate-900">{item.fatG.toFixed(1)}g</span>
-                    </div>
-                    <div className="p-1 rounded bg-white border border-slate-200">
-                      <span className="text-slate-400 block text-[9px]">Karbo</span>
-                      <span className="font-extrabold text-slate-900">{item.carbsG.toFixed(1)}g</span>
-                    </div>
-                    <div className="p-1 rounded bg-white border border-slate-200">
-                      <span className="text-slate-400 block text-[9px]">Serat</span>
-                      <span className="font-extrabold text-slate-900">{item.fiberG.toFixed(1)}g</span>
-                    </div>
-                  </div>
+              {/* ===================== 3. DOKUMENTASI ===================== */}
+              <section className="space-y-2">
+                <div className="border-b border-slate-200 pb-1.5">
+                  <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                    3. Dokumentasi Dapur (3 Tahap Wajib)
+                  </h2>
                 </div>
-              ))}
-            </div>
 
-            {/* Desktop Table View */}
-            <div className="hidden sm:block border border-slate-200 rounded-lg overflow-hidden">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 border-b border-slate-200 text-slate-800 font-black text-[10px] uppercase">
-                  <tr>
-                    <th className="py-2.5 px-3">Kelompok</th>
-                    <th className="py-2.5 px-3">Sasaran Penerima</th>
-                    <th className="py-2.5 px-3 text-right">Energi</th>
-                    <th className="py-2.5 px-3 text-right">Protein</th>
-                    <th className="py-2.5 px-3 text-right">Lemak</th>
-                    <th className="py-2.5 px-3 text-right">Karbohidrat</th>
-                    <th className="py-2.5 px-3 text-right">Serat</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {(currentMenu.nutritionCards || STANDARD_AKG_REFERENCE).map((item, i) => (
-                    <tr key={i} className="hover:bg-slate-50">
-                      <td className="py-2 px-3 font-extrabold text-blue-900 bg-slate-50/50">
-                        {item.groupName}
-                      </td>
-                      <td className="py-2 px-3 text-slate-700 font-medium">
-                        {item.targetCategory}
-                      </td>
-                      <td className="py-2 px-3 text-right font-black text-slate-900 tabular-nums">
-                        {item.energyKcal.toFixed(1)} <span className="text-[10px] font-normal text-slate-500">Kkal</span>
-                      </td>
-                      <td className="py-2 px-3 text-right tabular-nums">{item.proteinG.toFixed(1)} g</td>
-                      <td className="py-2 px-3 text-right tabular-nums">{item.fatG.toFixed(1)} g</td>
-                      <td className="py-2 px-3 text-right tabular-nums">{item.carbsG.toFixed(1)} g</td>
-                      <td className="py-2 px-3 text-right tabular-nums">{item.fiberG.toFixed(1)} g</td>
-                    </tr>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {currentMenu.photos.map((p, idx) => (
+                    <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                      <div className="relative h-36 sm:h-32 w-full bg-slate-200">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover" />
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/75 text-white text-[9px] font-black uppercase">
+                          {p.step}
+                        </div>
+                      </div>
+                      <div className="p-2.5 space-y-0.5">
+                        <span className="font-extrabold text-xs text-slate-900 block truncate">{p.title}</span>
+                        <span className="text-[10px] text-slate-500 block leading-tight">{p.description}</span>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                </div>
+              </section>
 
-          {/* ===================== 3. DOKUMENTASI ===================== */}
-          <section className="space-y-2">
-            <div className="border-b border-slate-200 pb-1.5">
-              <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                3. Dokumentasi Dapur (3 Tahap Wajib)
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {currentMenu.photos.map((p, idx) => (
-                <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
-                  <div className="relative h-36 sm:h-32 w-full bg-slate-200">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover" />
-                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/75 text-white text-[9px] font-black uppercase">
-                      {p.step}
-                    </div>
-                  </div>
-                  <div className="p-2.5 space-y-0.5">
-                    <span className="font-extrabold text-xs text-slate-900 block truncate">{p.title}</span>
-                    <span className="text-[10px] text-slate-500 block leading-tight">{p.description}</span>
+              {/* ===================== 4. ALOKASI ===================== */}
+              <section className="space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-1.5">
+                  <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                    4. Alokasi Penerima Manfaat ({totalMaster} Porsi)
+                  </h2>
+                  <div className="relative w-full sm:w-56 no-print">
+                    <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Cari sekolah..."
+                      value={searchBeneficiary}
+                      onChange={(e) => setSearchBeneficiary(e.target.value)}
+                      className="w-full pl-7 pr-2 py-1 text-[11px] border border-slate-300 rounded bg-white"
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
-          </section>
 
-          {/* ===================== 4. ALOKASI ===================== */}
-          <section className="space-y-2">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-1.5">
-              <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                4. Alokasi Penerima Manfaat ({totalMaster} Porsi)
-              </h2>
-              <div className="relative w-full sm:w-56 no-print">
-                <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Cari sekolah..."
-                  value={searchBeneficiary}
-                  onChange={(e) => setSearchBeneficiary(e.target.value)}
-                  className="w-full pl-7 pr-2 py-1 text-[11px] border border-slate-300 rounded bg-white"
-                />
-              </div>
-            </div>
-
-            {/* Mobile View: List Card Sekolah */}
-            <div className="grid grid-cols-1 gap-1.5 sm:hidden text-xs">
-              {filteredBeneficiaries.map((site, index) => (
-                <div key={site.id} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
-                  <div className="min-w-0 pr-2">
-                    <span className="font-extrabold text-slate-900 block truncate text-xs">
-                      {index + 1}. {site.name}
-                    </span>
-                    <span className="text-[9px] text-slate-500 uppercase font-semibold">
-                      Kategori {site.type}
-                    </span>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <span className="font-black text-blue-900 text-xs block tabular-nums">
-                      {site.masterCount} Porsi
-                    </span>
-                    <span className="text-[9px] text-emerald-700 font-bold">Tersalurkan</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Desktop Table View */}
-            <div className="hidden sm:block border border-slate-200 rounded-lg overflow-hidden">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 border-b border-slate-200 text-slate-800 font-bold text-[10px] uppercase">
-                  <tr>
-                    <th className="py-2 px-3 w-10">No</th>
-                    <th className="py-2 px-3">Nama Lembaga Sekolah / Posyandu</th>
-                    <th className="py-2 px-3 w-28">Kategori</th>
-                    <th className="py-2 px-3 w-32 text-right">Alokasi Porsi</th>
-                    <th className="py-2 px-3 w-28 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
+                {/* Mobile View: List Card Sekolah */}
+                <div className="grid grid-cols-1 gap-1.5 sm:hidden text-xs">
                   {filteredBeneficiaries.map((site, index) => (
-                    <tr key={site.id} className="hover:bg-slate-50">
-                      <td className="py-1.5 px-3 text-slate-400 font-semibold">{index + 1}</td>
-                      <td className="py-1.5 px-3 font-extrabold text-slate-900">{site.name}</td>
-                      <td className="py-1.5 px-3">
-                        <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200">
-                          {site.type}
+                    <tr key={site.id} className="block p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
+                      <td className="min-w-0 pr-2">
+                        <span className="font-extrabold text-slate-900 block truncate text-xs">
+                          {index + 1}. {site.name}
+                        </span>
+                        <span className="text-[9px] text-slate-500 uppercase font-semibold">
+                          Kategori {site.type}
                         </span>
                       </td>
-                      <td className="py-1.5 px-3 text-right font-black text-slate-900 tabular-nums">
-                        {site.masterCount}
-                      </td>
-                      <td className="py-1.5 px-3 text-center">
-                        <span className="text-[10px] font-bold text-emerald-700">Tersalurkan</span>
+                      <td className="text-right shrink-0">
+                        <span className="font-black text-blue-900 text-xs block tabular-nums">
+                          {site.masterCount} Porsi
+                        </span>
+                        <span className="text-[9px] text-emerald-700 font-bold">Tersalurkan</span>
                       </td>
                     </tr>
                   ))}
-                </tbody>
-                <tfoot className="bg-slate-100 border-t-2 border-slate-300 font-black text-slate-900 text-xs">
-                  <tr>
-                    <td colSpan={3} className="py-2.5 px-3">
-                      TOTAL AKUMULASI DISTRIBUSI HARIAN
-                    </td>
-                    <td className="py-2.5 px-3 text-right text-sm font-black text-blue-900 tabular-nums">
-                      {totalMaster} Porsi
-                    </td>
-                    <td className="py-2.5 px-3 text-center text-emerald-800 font-extrabold text-[10px]">
-                      100% LENGKAP
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </section>
+                </div>
 
-          {/* ===================== 5. URAIAN KEGIATAN ===================== */}
-          <section className="space-y-2">
-            <div className="border-b border-slate-200 pb-1.5">
-              <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                5. Uraian Kegiatan Operasional Dapur & Distribusi
-              </h2>
-            </div>
-            <div className="p-3 sm:p-4 rounded-lg bg-slate-50 border border-slate-200 text-[11px] sm:text-xs text-slate-800 leading-relaxed whitespace-pre-line font-mono">
-              {currentMenu.uraianPekerjaan || (
-                '1. Pembersihan dan sterilisasi dapur operasional mulai pukul 04:00 WIB.\n2. Sortasi sayur dan bahan baku segar dari petani lokal.\n3. Pengolahan masakan dengan suhu inti di atas 85°C untuk menjamin keamanan pangan.\n4. Penataan porsi makanan hangat sesuai gramasi standar BGN.\n5. Penyegelan kotak makanan dan keberangkatan armada distribusi pukul 08:30 WIB ke 12 sekolah dan 1 posyandu.'
-              )}
-            </div>
-          </section>
+                {/* Desktop Table View */}
+                <div className="hidden sm:block border border-slate-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-100 border-b border-slate-200 text-slate-800 font-bold text-[10px] uppercase">
+                      <tr>
+                        <th className="py-2 px-3 w-10">No</th>
+                        <th className="py-2 px-3">Nama Lembaga Sekolah / Posyandu</th>
+                        <th className="py-2 px-3 w-28">Kategori</th>
+                        <th className="py-2 px-3 w-32 text-right">Alokasi Porsi</th>
+                        <th className="py-2 px-3 w-28 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredBeneficiaries.map((site, index) => (
+                        <tr key={site.id} className="hover:bg-slate-50">
+                          <td className="py-1.5 px-3 text-slate-400 font-semibold">{index + 1}</td>
+                          <td className="py-1.5 px-3 font-extrabold text-slate-900">{site.name}</td>
+                          <td className="py-1.5 px-3">
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200">
+                              {site.type}
+                            </span>
+                          </td>
+                          <td className="py-1.5 px-3 text-right font-black text-slate-900 tabular-nums">
+                            {site.masterCount}
+                          </td>
+                          <td className="py-1.5 px-3 text-center">
+                            <span className="text-[10px] font-bold text-emerald-700">Tersalurkan</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-slate-100 border-t-2 border-slate-300 font-black text-slate-900 text-xs">
+                      <tr>
+                        <td colSpan={3} className="py-2.5 px-3">
+                          TOTAL AKUMULASI DISTRIBUSI HARIAN
+                        </td>
+                        <td className="py-2.5 px-3 text-right text-sm font-black text-blue-900 tabular-nums">
+                          {totalMaster} Porsi
+                        </td>
+                        <td className="py-2.5 px-3 text-center text-emerald-800 font-extrabold text-[10px]">
+                          100% LENGKAP
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </section>
+
+              {/* ===================== 5. URAIAN KEGIATAN ===================== */}
+              <section className="space-y-2">
+                <div className="border-b border-slate-200 pb-1.5">
+                  <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                    5. Uraian Kegiatan Operasional Dapur & Distribusi
+                  </h2>
+                </div>
+                <div className="p-3 sm:p-4 rounded-lg bg-slate-50 border border-slate-200 text-[11px] sm:text-xs text-slate-800 leading-relaxed whitespace-pre-line font-mono">
+                  {currentMenu.uraianPekerjaan || (
+                    '1. Pembersihan dan sterilisasi dapur operasional mulai pukul 04:00 WIB.\n2. Sortasi sayur dan bahan baku segar dari petani lokal.\n3. Pengolahan masakan dengan suhu inti di atas 85°C untuk menjamin keamanan pangan.\n4. Penataan porsi makanan hangat sesuai gramasi standar BGN.\n5. Penyegelan kotak makanan dan keberangkatan armada distribusi pukul 08:30 WIB ke 12 sekolah dan 1 posyandu.'
+                  )}
+                </div>
+              </section>
+            </>
+          )}
 
           {/* TANDA TANGAN / PENGESAHAN DOKUMEN RESMI SESUAI HIERARKI */}
           <div className="pt-6 sm:pt-8 border-t border-slate-200 space-y-6 text-center text-xs text-slate-700">
@@ -552,7 +580,7 @@ export default function HomePage() {
                 return (
                   <button
                     key={dateStr}
-                    disabled={!hasMenu}
+                    disabled={!hasMenu && dateStr !== '2026-10-01'}
                     onClick={() => {
                       setSelectedDate(dateStr);
                       setShowCalendarModal(false);
@@ -562,6 +590,8 @@ export default function HomePage() {
                         ? 'bg-blue-600 text-white'
                         : hasMenu
                         ? 'bg-blue-50 text-blue-900 hover:bg-blue-100 cursor-pointer font-black'
+                        : dateStr === '2026-10-01'
+                        ? 'border border-dashed border-blue-600 text-blue-600 hover:bg-blue-50 cursor-pointer'
                         : 'text-slate-300 cursor-not-allowed'
                     }`}
                   >
