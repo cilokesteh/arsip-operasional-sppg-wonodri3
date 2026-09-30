@@ -19,7 +19,7 @@ import {
 
 interface AKGInput {
   groupName: string; // Besar, Kecil, Balita, Busui, Bumil
-  targetCategory: string; // SD 4-6/SMP, PAUD/TK, dll
+  targetCategory: string; // SD 4-6 / SMP / SMK / GURU, PAUD / TK / SD 1-3, dll
   energyKcal: number;
   proteinG: number;
   fatG: number;
@@ -64,7 +64,7 @@ export default function AdminPage() {
   const [publishSuccess, setPublishSuccess] = useState(false);
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
 
-  const handleAkgChange = (index: number, field: keyof AKGInput, value: number) => {
+  const handleAkgChange = (index: number, field: keyof AKGInput, value: string | number) => {
     const updated = [...akgList];
     updated[index] = { ...updated[index], [field]: value };
     setAkgList(updated);
@@ -108,9 +108,9 @@ export default function AdminPage() {
     setTimeout(() => setCopiedTab(null), 2500);
   };
 
-  // Header yang sudah disederhanakan sesuai instruksi Tuan
-  const sheet1Header = "tanggal\tnama_menu\tkarbohidrat\tlauk_hewani\tlauk_nabati\tsayur\tbuah\tpelengkap\tstatus";
-  const sheet2Header = "tanggal\tkelompok\tenergi_kkal\tprotein_g\tlemak_g\tkarbo_g\tserat_g";
+  // Header alami dengan SPASI (tanpa underscore) sesuai instruksi Tuan
+  const sheet1Header = "tanggal\tnama menu\tkarbohidrat\tlauk hewani\tlauk nabati\tsayur\tbuah\tpelengkap\tstatus";
+  const sheet2Header = "tanggal\tkelompok\ttarget kategori\tenergi kkal\tprotein g\tlemak g\tkarbo g\tserat g";
 
   return (
     <div className="min-h-screen bg-[#f4f9ff] text-[#0d1b2e] pb-16">
@@ -261,7 +261,7 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Bagian 2: INPUT ANGKA KANDUNGAN GIZI (AKG) */}
+            {/* Bagian 2: INPUT ANGKA KANDUNGAN GIZI (AKG) LENGKAP DENGAN TARGET KATEGORI */}
             <div className="sppg-card rounded-2xl p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-[#cfe4fc] pb-2.5">
                 <div className="flex items-center gap-2">
@@ -273,24 +273,31 @@ export default function AdminPage() {
                       2. Angka Kandungan Gizi (AKG) 5 Kelompok
                     </h2>
                     <span className="text-[10px] text-slate-500">
-                      Nilai awal standar BGN sudah terisi otomatis, tinggal disesuaikan.
+                      Termasuk Kelompok, Target Kategori, dan 5 nilai gizi.
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* 5 Kelompok Input Accordion/Cards */}
+              {/* 5 Kelompok Input Cards */}
               <div className="space-y-3">
                 {akgList.map((item, idx) => (
-                  <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                    <div className="flex items-center justify-between">
+                  <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#1759ab] text-white">
-                          {item.groupName}
+                        <span className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-[#1759ab] text-white">
+                          Kelompok: {item.groupName}
                         </span>
-                        <span className="text-xs font-bold text-slate-600">
-                          ({item.targetCategory})
-                        </span>
+                      </div>
+                      <div className="flex-1 max-w-sm">
+                        <input
+                          type="text"
+                          title="Target Kategori"
+                          placeholder="Target Kategori (contoh: SD 4-6 / SMP)"
+                          value={item.targetCategory}
+                          onChange={(e) => handleAkgChange(idx, 'targetCategory', e.target.value)}
+                          className="w-full px-2.5 py-1 text-xs border border-slate-300 rounded-lg bg-white font-semibold text-slate-800"
+                        />
                       </div>
                     </div>
 
@@ -485,7 +492,7 @@ export default function AdminPage() {
                 Hubungkan dengan Google Spreadsheet
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Struktur sederhana 2 tab: <strong>Menu_Harian</strong> dan <strong>AKG</strong>.
+                Format penulisan kolom menggunakan <strong>SPASI biasa</strong> (tanpa underscore) agar nyaman dibaca dan diketik di Excel/Google Sheet.
               </p>
             </div>
 
@@ -517,22 +524,22 @@ export default function AdminPage() {
             {syncStatus === 'success' && (
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-bold flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Google Sheet berhasil tersambung! Data Menu_Harian dan AKG siap disinkronkan.</span>
+                <span>Google Sheet berhasil tersambung! Data Menu dan AKG siap disinkronkan.</span>
               </div>
             )}
 
-            {/* Format Ringkas 2 Tab Wajib */}
+            {/* Format Ringkas 2 Tab Wajib dengan SPASI (No Underscore) */}
             <div className="space-y-3 pt-2">
               <h3 className="text-xs font-black text-[#0b1e3a] uppercase tracking-wider">
-                Struktur 2 Tab Google Sheet (Tinggal Salin Header):
+                Struktur 2 Tab Google Sheet (Header Menggunakan Spasi Biasa):
               </h3>
 
               {/* Tab 1: Menu */}
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="font-extrabold text-slate-900 block">Tab 1: Menu_Harian</span>
-                    <span className="text-[10px] text-slate-500">Cukup tanggal dan nama menu (nomor menu sudah dihapus)</span>
+                    <span className="font-extrabold text-slate-900 block">Tab 1: Menu Harian</span>
+                    <span className="text-[10px] text-slate-500">Header kolom menggunakan spasi biasa</span>
                   </div>
                   <button
                     type="button"
@@ -544,7 +551,7 @@ export default function AdminPage() {
                   </button>
                 </div>
                 <p className="font-mono text-[10px] text-slate-600 bg-white p-2 rounded border border-slate-200 overflow-x-auto">
-                  tanggal | nama_menu | karbohidrat | lauk_hewani | lauk_nabati | sayur | buah | pelengkap | status
+                  tanggal | nama menu | karbohidrat | lauk hewani | lauk nabati | sayur | buah | pelengkap | status
                 </p>
               </div>
 
@@ -553,7 +560,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-slate-900 block">Tab 2: AKG</span>
-                    <span className="text-[10px] text-slate-500">Cukup kolom kelompok (Besar, Kecil, Balita, Busui, Bumil) + 5 nilai gizi</span>
+                    <span className="text-[10px] text-slate-500">Termasuk kolom target kategori & 5 nilai gizi (spasi biasa)</span>
                   </div>
                   <button
                     type="button"
@@ -565,7 +572,7 @@ export default function AdminPage() {
                   </button>
                 </div>
                 <p className="font-mono text-[10px] text-slate-600 bg-white p-2 rounded border border-slate-200 overflow-x-auto">
-                  tanggal | kelompok | energi_kkal | protein_g | lemak_g | karbo_g | serat_g
+                  tanggal | kelompok | target kategori | energi kkal | protein g | lemak g | karbo g | serat g
                 </p>
               </div>
             </div>
