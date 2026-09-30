@@ -26,22 +26,23 @@ import {
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
 import { INITIAL_BENEFICIARIES } from '@/lib/data';
 
-interface AKGInput {
+// AKG input disimpan sebagai string agar saat dihapus / backspace tidak memaksakan angka 0 di depan
+interface AKGInputRaw {
   groupName: string;
   targetCategory: string;
-  energyKcal: number;
-  proteinG: number;
-  fatG: number;
-  carbsG: number;
-  fiberG: number;
+  energyKcal: string;
+  proteinG: string;
+  fatG: string;
+  carbsG: string;
+  fiberG: string;
 }
 
-const DEFAULT_AKG_PRESETS: AKGInput[] = [
-  { groupName: 'Besar', targetCategory: 'SD 4-6 / SMP / SMK / GURU', energyKcal: 572.4, proteinG: 15.5, fatG: 14.5, carbsG: 83.9, fiberG: 2.4 },
-  { groupName: 'Kecil', targetCategory: 'PAUD / TK / SD 1-3', energyKcal: 462.9, proteinG: 13.6, fatG: 14.4, carbsG: 81.7, fiberG: 2.4 },
-  { groupName: 'Balita', targetCategory: '6 - 60 Bulan (Balita)', energyKcal: 426.9, proteinG: 13.0, fatG: 14.3, carbsG: 51.7, fiberG: 2.0 },
-  { groupName: 'Busui', targetCategory: 'Ibu Menyusui', energyKcal: 572.4, proteinG: 15.5, fatG: 14.5, carbsG: 83.9, fiberG: 2.4 },
-  { groupName: 'Bumil', targetCategory: 'Ibu Hamil', energyKcal: 572.4, proteinG: 15.5, fatG: 14.5, carbsG: 83.9, fiberG: 2.4 },
+const DEFAULT_AKG_PRESETS: AKGInputRaw[] = [
+  { groupName: 'Besar', targetCategory: 'SD 4-6 / SMP / SMK / GURU', energyKcal: '572.4', proteinG: '15.5', fatG: '14.5', carbsG: '83.9', fiberG: '2.4' },
+  { groupName: 'Kecil', targetCategory: 'PAUD / TK / SD 1-3', energyKcal: '462.9', proteinG: '13.6', fatG: '14.4', carbsG: '81.7', fiberG: '2.4' },
+  { groupName: 'Balita', targetCategory: '6 - 60 Bulan (Balita)', energyKcal: '426.9', proteinG: '13.0', fatG: '14.3', carbsG: '51.7', fiberG: '2.0' },
+  { groupName: 'Busui', targetCategory: 'Ibu Menyusui', energyKcal: '572.4', proteinG: '15.5', fatG: '14.5', carbsG: '83.9', fiberG: '2.4' },
+  { groupName: 'Bumil', targetCategory: 'Ibu Hamil', energyKcal: '572.4', proteinG: '15.5', fatG: '14.5', carbsG: '83.9', fiberG: '2.4' },
 ];
 
 const DEFAULT_PASSCODE = '91206';
@@ -66,8 +67,8 @@ export default function AdminPage() {
   const [menuPhotoUrl, setMenuPhotoUrl] = useState<string | null>(null);
   const [menuPhotoUploading, setMenuPhotoUploading] = useState<boolean>(false);
 
-  // 2. Data AKG 5 Kelompok
-  const [akgList, setAkgList] = useState<AKGInput[]>(DEFAULT_AKG_PRESETS);
+  // 2. Data AKG 5 Kelompok (Raw String State agar bebas dari bug leading 0)
+  const [akgList, setAkgList] = useState<AKGInputRaw[]>(DEFAULT_AKG_PRESETS);
 
   // 3. State 3 Foto Dapur
   const [prepPhotoUrl, setPrepPhotoUrl] = useState<string | null>(null);
@@ -169,10 +170,20 @@ export default function AdminPage() {
     setInputPasscode('');
   };
 
+  // Bersihkan string angka agar tidak ada leading zero yang tidak diinginkan
+  const sanitizeNumberString = (val: string) => {
+    // izinkan koma/titik desimal, tapi buang 0 di depan jika diikuti angka bulat lain (misal "0746" -> "746")
+    if (val.length > 1 && val.startsWith('0') && !val.startsWith('0.') && !val.startsWith('0,')) {
+      return val.replace(/^0+/, '');
+    }
+    return val;
+  };
+
   // Ubah nilai AKG dan langsung picu draft auto-save
-  const handleAkgChange = (index: number, field: keyof AKGInput, value: string | number) => {
+  const handleAkgChange = (index: number, field: keyof AKGInputRaw, rawValue: string) => {
+    const cleanValue = sanitizeNumberString(rawValue);
     const updated = [...akgList];
-    updated[index] = { ...updated[index], [field]: value };
+    updated[index] = { ...updated[index], [field]: cleanValue };
     setAkgList(updated);
     setDraftSavedAlert(true);
     setTimeout(() => setDraftSavedAlert(false), 2000);
@@ -218,8 +229,14 @@ export default function AdminPage() {
       publishedAt: `${menuDate} • 08:30 WIB`,
       components,
       nutritionCards: akgList.map((a) => ({
-        ...a,
+        groupName: a.groupName,
+        targetCategory: a.targetCategory,
         portionBadge: 'Porsi Terstandar BGN',
+        energyKcal: parseFloat(a.energyKcal.replace(',', '.')) || 0,
+        proteinG: parseFloat(a.proteinG.replace(',', '.')) || 0,
+        fatG: parseFloat(a.fatG.replace(',', '.')) || 0,
+        carbsG: parseFloat(a.carbsG.replace(',', '.')) || 0,
+        fiberG: parseFloat(a.fiberG.replace(',', '.')) || 0,
         color: '#2563eb',
         bgLight: '#eff6ff',
         borderAccent: '#3b82f6',
@@ -247,7 +264,7 @@ export default function AdminPage() {
           imageUrl: packPhotoUrl || '',
           timeEstimate: '07:15 - 08:30 WIB',
         },
-      ].filter((p) => p.imageUrl), // Hanya masukkan foto yang benar-benar diunggah
+      ].filter((p) => p.imageUrl),
       overrides: overridesList,
     };
 
@@ -256,7 +273,6 @@ export default function AdminPage() {
       let list = existing ? JSON.parse(existing) : [];
       list = [newRecord, ...list.filter((item: { date: string }) => item.date !== menuDate)];
       localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
-      // Bersihkan draft setelah publish sukses
       localStorage.removeItem('sppg_admin_draft');
     } catch {
       // fallback
@@ -391,7 +407,7 @@ export default function AdminPage() {
           <div className="flex items-center gap-2">
             <BookmarkCheck className="w-4 h-4 text-blue-600 shrink-0" />
             <span>
-              <strong>Fitur Auto-Draft Aktif:</strong> Setiap lo ketik angka AKG, nama menu, atau upload foto, data otomatis tersimpan di HP. Jika browser ditutup atau baterai habis, lo bisa langsung lanjut tanpa ulang dari awal.
+              <strong>Auto-Draft Aktif:</strong> Angka AKG yang lo ketik langsung tersimpan tanpa kendala angka 0 di depan.
             </span>
           </div>
           {draftSavedAlert && (
@@ -568,7 +584,7 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* ===================== ALUR 2: AKG (AUTO-DRAFT SETIAP KALI KETIK) ===================== */}
+          {/* ===================== ALUR 2: AKG (INPUT BEBAS TANPA LEADING ZERO BUG) ===================== */}
           <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
@@ -580,7 +596,7 @@ export default function AdminPage() {
                     2. Angka Kandungan Gizi (AKG) 5 Kelompok Porsi
                   </h2>
                   <span className="text-[11px] text-slate-500">
-                    Nilai otomatis tersimpan di draft begitu lo selesai mengetik angkanya.
+                    Bisa diedit atau dihapus bebas tanpa kendala angka 0 di depan.
                   </span>
                 </div>
               </div>
@@ -610,11 +626,12 @@ export default function AdminPage() {
                         Energi (Kkal)
                       </label>
                       <input
-                        type="number"
-                        step="0.1"
+                        type="text"
+                        inputMode="decimal"
                         value={item.energyKcal}
-                        onChange={(e) => handleAkgChange(idx, 'energyKcal', parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1.5 border border-amber-300 rounded-lg bg-amber-50/60 font-black text-amber-950"
+                        onChange={(e) => handleAkgChange(idx, 'energyKcal', e.target.value)}
+                        placeholder="Contoh: 572.4"
+                        className="w-full px-2 py-1.5 border border-amber-300 rounded-lg bg-amber-50/60 font-black text-amber-950 focus:bg-white focus:ring-1 focus:ring-amber-500"
                       />
                     </div>
                     <div>
@@ -622,11 +639,12 @@ export default function AdminPage() {
                         Protein (g)
                       </label>
                       <input
-                        type="number"
-                        step="0.01"
+                        type="text"
+                        inputMode="decimal"
                         value={item.proteinG}
-                        onChange={(e) => handleAkgChange(idx, 'proteinG', parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                        onChange={(e) => handleAkgChange(idx, 'proteinG', e.target.value)}
+                        placeholder="Contoh: 15.5"
+                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-white font-bold focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
                     <div>
@@ -634,11 +652,12 @@ export default function AdminPage() {
                         Lemak (g)
                       </label>
                       <input
-                        type="number"
-                        step="0.01"
+                        type="text"
+                        inputMode="decimal"
                         value={item.fatG}
-                        onChange={(e) => handleAkgChange(idx, 'fatG', parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                        onChange={(e) => handleAkgChange(idx, 'fatG', e.target.value)}
+                        placeholder="Contoh: 14.5"
+                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-white font-bold focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
                     <div>
@@ -646,11 +665,12 @@ export default function AdminPage() {
                         Karbo (g)
                       </label>
                       <input
-                        type="number"
-                        step="0.01"
+                        type="text"
+                        inputMode="decimal"
                         value={item.carbsG}
-                        onChange={(e) => handleAkgChange(idx, 'carbsG', parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                        onChange={(e) => handleAkgChange(idx, 'carbsG', e.target.value)}
+                        placeholder="Contoh: 83.9"
+                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-white font-bold focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
                     <div>
@@ -658,11 +678,12 @@ export default function AdminPage() {
                         Serat (g)
                       </label>
                       <input
-                        type="number"
-                        step="0.01"
+                        type="text"
+                        inputMode="decimal"
                         value={item.fiberG}
-                        onChange={(e) => handleAkgChange(idx, 'fiberG', parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                        onChange={(e) => handleAkgChange(idx, 'fiberG', e.target.value)}
+                        placeholder="Contoh: 2.4"
+                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-white font-bold focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
                   </div>
