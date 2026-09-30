@@ -357,7 +357,11 @@ export default function AdminPage() {
     }
 
     setPublishSuccess(true);
-    setTimeout(() => setPublishSuccess(false), 5000);
+    // Scroll otomatis ke paling atas layar agar notifikasi sukses langsung terlihat jelas di HP
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Tampilkan notifikasi konfirmasi langsung
+    alert(`BERHASIL DISIMPAN & DIRILIS!\n\nMenu untuk tanggal ${menuDate} ("${namaMenu}") telah berhasil dipublikasikan ke arsip operasional.`);
+    setTimeout(() => setPublishSuccess(false), 8000);
   };
 
   // JIKA BELUM LOGIN
@@ -1123,24 +1127,33 @@ export default function AdminPage() {
           </div>
 
           {/* Action Footer */}
-          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
-            >
-              <Printer className="w-4 h-4 text-slate-600" />
-              <span>Cetak Laporan Lengkap</span>
-            </button>
+          <div className="space-y-3 pt-2">
+            {publishSuccess && (
+              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-xs font-bold text-emerald-800 flex items-center gap-2">
+                <Check className="w-5 h-5 text-emerald-600 shrink-0" />
+                <span>Menu dan laporan tanggal {menuDate} berhasil disimpan dan dipublikasikan ke arsip!</span>
+              </div>
+            )}
 
-            <button
-              type="submit"
-              disabled={menuPhotoUploading || prepUploading || cookUploading || packUploading}
-              className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              <Save className="w-4 h-4" />
-              <span>Simpan & Rilis Laporan Harian</span>
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+              >
+                <Printer className="w-4 h-4 text-slate-600" />
+                <span>Cetak Laporan Lengkap</span>
+              </button>
+
+              <button
+                type="submit"
+                disabled={menuPhotoUploading || prepUploading || cookUploading || packUploading}
+                className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                <span>Simpan & Rilis Laporan Harian</span>
+              </button>
+            </div>
           </div>
         </form>
       </main>
