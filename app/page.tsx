@@ -16,15 +16,19 @@ import {
   ChevronRight,
   X,
   FileSpreadsheet,
+  CheckCircle2,
+  FileText,
+  Building2,
+  ShieldCheck,
+  Search,
 } from 'lucide-react';
 
 export default function HomePage() {
   const [menuHistory, setMenuHistory] = useState<DailyMenuRecord[]>(INITIAL_MENU_HISTORY);
   const [selectedDate, setSelectedDate] = useState<string>('2026-10-01');
   const [showCalendarModal, setShowCalendarModal] = useState<boolean>(false);
-  const [showAllSchools, setShowAllSchools] = useState<boolean>(false);
+  const [searchBeneficiary, setSearchBeneficiary] = useState<string>('');
 
-  // Month navigation in calendar popup
   const [calendarMonth, setCalendarMonth] = useState<number>(9);
   const [calendarYear, setCalendarYear] = useState<number>(2026);
 
@@ -45,6 +49,10 @@ export default function HomePage() {
 
   const currentMenu = menuHistory.find((m) => m.date === selectedDate) || menuHistory[0];
   const totalMaster = INITIAL_BENEFICIARIES.reduce((acc, site) => acc + site.masterCount, 0);
+
+  const filteredBeneficiaries = INITIAL_BENEFICIARIES.filter((b) =>
+    b.name.toLowerCase().includes(searchBeneficiary.toLowerCase())
+  );
 
   const availableDatesSet = new Set(menuHistory.map((m) => m.date));
   const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
@@ -74,36 +82,43 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
-      {/* 1. Header Minimalis & Elegan */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 no-print">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="Logo" width={26} height={26} className="object-contain" priority />
-            <span className="font-extrabold text-sm text-slate-900 tracking-tight">
-              SPPG Wonodri 3
-            </span>
+    <div className="min-h-screen bg-[#f1f5f9] text-[#1e293b] flex flex-col font-sans">
+      {/* 1. Top Bar Navigasi Sistem */}
+      <header className="bg-[#0f172a] text-white border-b border-slate-800 sticky top-0 z-40 no-print">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded bg-white p-0.5 flex items-center justify-center shrink-0">
+              <Image src="/logo.png" alt="Logo BGN" width={24} height={24} className="object-contain" priority />
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white block leading-tight tracking-tight">
+                Sistem Informasi & Arsip Operasional MBG
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium block">
+                SPPG Wonodri 3 • Badan Gizi Nasional
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowCalendarModal(true)}
-              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center gap-1.5 cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1.5 cursor-pointer"
             >
-              <CalendarIcon className="w-3.5 h-3.5 text-blue-600" />
-              <span>{selectedDate}</span>
+              <CalendarIcon className="w-3.5 h-3.5 text-blue-400" />
+              <span>Arsip: {selectedDate}</span>
             </button>
             <button
               onClick={() => window.print()}
               className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Cetak</span>
+              <span>Cetak Laporan</span>
             </button>
             <Link
               href="/admin"
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100"
-              title="Panel Admin"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+              title="Panel Operator"
             >
               <FileSpreadsheet className="w-4 h-4" />
             </Link>
@@ -111,202 +126,296 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 2. Lembar Laporan Harian Terpadu (Single Clean Sheet) */}
-      <main className="max-w-4xl mx-auto w-full px-4 py-6 flex-1 space-y-6">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-8 space-y-6">
-          {/* Header Lembar Kerja */}
-          <div className="border-b border-slate-100 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider block">
-                Laporan Operasional MBG Harian
-              </span>
-              <h1 className="text-lg sm:text-2xl font-black text-slate-900 mt-0.5 leading-snug">
-                {currentMenu.title}
-              </h1>
-              <p className="text-xs text-slate-500 mt-1">
-                Tanggal: <strong>{currentMenu.date}</strong> • Penerima: <strong>{totalMaster} Porsi (12 Sekolah + 1 Posyandu)</strong>
-              </p>
-            </div>
+      {/* 2. DOKUMEN LAPORAN RESMI (STANDARD OPERATIONAL REPORT) */}
+      <main className="max-w-5xl mx-auto w-full px-3 sm:px-6 py-6 sm:py-8 flex-1">
+        <div className="report-sheet bg-white rounded-xl border border-slate-300 shadow-sm p-6 sm:p-10 space-y-7">
+          {/* KOP RESMI LAPORAN */}
+          <div className="border-b-2 border-slate-800 pb-5">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <Image
+                  src="/logo.png"
+                  alt="Logo BGN"
+                  width={56}
+                  height={56}
+                  className="object-contain shrink-0 mt-0.5"
+                  priority
+                />
+                <div className="space-y-0.5">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">
+                    Badan Gizi Nasional (BGN) Republik Indonesia
+                  </span>
+                  <h1 className="text-base sm:text-xl font-black uppercase text-slate-900 tracking-tight leading-snug">
+                    Satuan Pelayanan Pemenuhan Gizi (SPPG) Wonodri 3
+                  </h1>
+                  <p className="text-xs text-slate-600 leading-tight">
+                    Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang
+                  </p>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Program Makan Bergizi Gratis (MBG) • Wilayah Pelayanan Semarang Selatan
+                  </p>
+                </div>
+              </div>
 
-            <button
-              onClick={() => window.print()}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 no-print cursor-pointer shrink-0"
-            >
-              <Printer className="w-3.5 h-3.5 text-slate-500" />
-              <span>Cetak Dokumen</span>
-            </button>
+              {/* Status Dokumen Metadata */}
+              <div className="sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 text-xs text-slate-600 shrink-0 space-y-1">
+                <div className="inline-block px-2.5 py-0.5 bg-slate-100 rounded text-[10px] font-black uppercase tracking-wider text-slate-800 border border-slate-200">
+                  Dokumen Operasional Resmi
+                </div>
+                <div>Tanggal: <strong className="text-slate-900">{currentMenu.date}</strong></div>
+                <div>Status: <strong className="text-emerald-700">Terdistribusi (100%)</strong></div>
+                <div>Total Porsi: <strong className="text-slate-900">{totalMaster} Siswa</strong></div>
+              </div>
+            </div>
           </div>
 
-          {/* Foto Sajian & 5 Komponen Makanan Pokok */}
-          <div className="space-y-3">
-            <h2 className="text-xs font-black uppercase text-slate-400 tracking-wider">
-              1. Menu & Komposisi Makanan
-            </h2>
+          {/* I. INFORMASI MENU & KOMPOSISI MAKANAN */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+              <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                <span>I. Menu Harian & Komposisi Porsi</span>
+              </h2>
+              <span className="text-[10px] text-slate-500">Nomor Menu #{currentMenu.menuNumber || 1}</span>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
-              {/* Foto Porsi Makanan */}
-              <div className="md:col-span-5 relative h-52 sm:h-56 w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+              {/* Foto Porsi Makanan Sajian */}
+              <div className="md:col-span-4 relative h-56 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={currentMenu.menuPhotoUrl || '/gallery-1.jpg'}
                   alt={currentMenu.title}
                   className="w-full h-full object-cover"
                 />
-              </div>
-
-              {/* 5 Komponen Menu */}
-              <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                  <span className="text-[10px] text-slate-400 font-semibold block">Karbohidrat</span>
-                  <span className="font-bold text-slate-900">{currentMenu.components.karbohidrat}</span>
-                </div>
-                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                  <span className="text-[10px] text-slate-400 font-semibold block">Lauk Hewani</span>
-                  <span className="font-bold text-slate-900">{currentMenu.components.laukHewani}</span>
-                </div>
-                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                  <span className="text-[10px] text-slate-400 font-semibold block">Lauk Nabati</span>
-                  <span className="font-bold text-slate-900">{currentMenu.components.laukNabati}</span>
-                </div>
-                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                  <span className="text-[10px] text-slate-400 font-semibold block">Sayuran</span>
-                  <span className="font-bold text-slate-900">{currentMenu.components.sayur}</span>
-                </div>
-                <div className="sm:col-span-2 p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                  <span className="text-[10px] text-slate-400 font-semibold block">Buah Segar</span>
-                  <span className="font-bold text-slate-900">{currentMenu.components.buah}</span>
+                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-white text-[9px] font-bold">
+                  Foto Sajian MBG {currentMenu.date}
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Uraian Pekerjaan Operasional */}
-          <div className="space-y-2 pt-2 border-t border-slate-100">
-            <h2 className="text-xs font-black uppercase text-slate-400 tracking-wider">
-              2. Uraian Pekerjaan Operasional
-            </h2>
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700 leading-relaxed whitespace-pre-line font-mono text-[11px]">
-              {currentMenu.uraianPekerjaan ||
-                '1. Sterilisasi dapur & higienitas (04:00 WIB)\n2. Sortasi bahan baku sayur & lauk segar\n3. Pengolahan masakan suhu >85°C\n4. Food plating gramasi porsi BGN\n5. Penyegelan thermal box & distribusi (08:30 WIB)'}
-            </div>
-          </div>
+              {/* Rincian Menu & 5 Komponen */}
+              <div className="md:col-span-8 flex flex-col justify-between space-y-3">
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Nama Menu:</span>
+                  <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
+                    {currentMenu.title}
+                  </h3>
+                </div>
 
-          {/* Tabel Nilai Gizi (AKG) — 1 Tabel Ringkas, Bersih, Enak Dibaca */}
-          <div className="space-y-2 pt-2 border-t border-slate-100">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-black uppercase text-slate-400 tracking-wider">
-                3. Angka Kandungan Gizi (AKG)
-              </h2>
-              <span className="text-[10px] text-slate-400">Standar BGN</span>
-            </div>
-
-            <div className="border border-slate-200 rounded-xl overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-[10px] uppercase">
-                    <tr>
-                      <th className="py-2.5 px-3">Kelompok</th>
-                      <th className="py-2.5 px-3">Sasaran</th>
-                      <th className="py-2.5 px-3 text-right">Energi</th>
-                      <th className="py-2.5 px-3 text-right">Protein</th>
-                      <th className="py-2.5 px-3 text-right">Lemak</th>
-                      <th className="py-2.5 px-3 text-right">Karbo</th>
-                      <th className="py-2.5 px-3 text-right">Serat</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {(currentMenu.nutritionCards || STANDARD_AKG_REFERENCE).map((item, i) => (
-                      <tr key={i} className="hover:bg-slate-50/60">
-                        <td className="py-2.5 px-3 font-extrabold text-blue-700">{item.groupName}</td>
-                        <td className="py-2.5 px-3 text-slate-600">{item.targetCategory}</td>
-                        <td className="py-2.5 px-3 text-right font-black text-slate-900 tabular-nums">
-                          {item.energyKcal.toFixed(1)} <span className="text-[10px] text-slate-400 font-normal">Kkal</span>
-                        </td>
-                        <td className="py-2.5 px-3 text-right tabular-nums">{item.proteinG.toFixed(1)}g</td>
-                        <td className="py-2.5 px-3 text-right tabular-nums">{item.fatG.toFixed(1)}g</td>
-                        <td className="py-2.5 px-3 text-right tabular-nums">{item.carbsG.toFixed(1)}g</td>
-                        <td className="py-2.5 px-3 text-right tabular-nums">{item.fiberG.toFixed(1)}g</td>
+                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-100/70 border-b border-slate-200 text-slate-700 font-bold text-[10px] uppercase">
+                      <tr>
+                        <th className="py-2 px-3 w-1/3">Komponen Bahan</th>
+                        <th className="py-2 px-3">Uraian Masakan</th>
+                        <th className="py-2 px-3 w-28 text-center">Fungsi Gizi</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      <tr>
+                        <td className="py-2 px-3 font-bold text-slate-700">1. Karbohidrat</td>
+                        <td className="py-2 px-3 text-slate-900 font-medium">{currentMenu.components.karbohidrat}</td>
+                        <td className="py-2 px-3 text-center text-[10px] text-slate-500">Sumber Energi</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-bold text-slate-700">2. Lauk Hewani</td>
+                        <td className="py-2 px-3 text-slate-900 font-medium">{currentMenu.components.laukHewani}</td>
+                        <td className="py-2 px-3 text-center text-[10px] text-slate-500">Protein Hewani</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-bold text-slate-700">3. Lauk Nabati</td>
+                        <td className="py-2 px-3 text-slate-900 font-medium">{currentMenu.components.laukNabati}</td>
+                        <td className="py-2 px-3 text-center text-[10px] text-slate-500">Protein Nabati</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-bold text-slate-700">4. Sayuran</td>
+                        <td className="py-2 px-3 text-slate-900 font-medium">{currentMenu.components.sayur}</td>
+                        <td className="py-2 px-3 text-center text-[10px] text-slate-500">Serat & Vitamin</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-bold text-slate-700">5. Buah Segar</td>
+                        <td className="py-2 px-3 text-slate-900 font-medium">{currentMenu.components.buah}</td>
+                        <td className="py-2 px-3 text-center text-[10px] text-slate-500">Mikronutrien</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* Foto Dokumentasi Dapur 3 Tahap */}
-          <div className="space-y-2 pt-2 border-t border-slate-100">
-            <h2 className="text-xs font-black uppercase text-slate-400 tracking-wider">
-              4. Dokumentasi Dapur
-            </h2>
+          {/* II. URAIAN PEKERJAAN OPERASIONAL & DISTRIBUSI */}
+          <section className="space-y-2">
+            <div className="border-b border-slate-200 pb-1.5">
+              <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                II. Uraian Pekerjaan Operasional & Distribusi
+              </h2>
+            </div>
+            <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-800 leading-relaxed whitespace-pre-line font-mono text-[11px]">
+              {currentMenu.uraianPekerjaan || (
+                '1. Pembersihan dan sterilisasi dapur operasional mulai pukul 04:00 WIB.\n2. Sortasi sayur dan bahan baku segar dari petani lokal.\n3. Pengolahan masakan dengan suhu inti di atas 85°C untuk menjamin keamanan pangan.\n4. Penataan porsi makanan hangat sesuai gramasi standar BGN.\n5. Penyegelan kotak makanan dan keberangkatan armada distribusi pukul 08:30 WIB ke 12 sekolah dan 1 posyandu.'
+              )}
+            </div>
+          </section>
+
+          {/* III. TABEL STANDAR ANGKA KANDUNGAN GIZI (AKG) */}
+          <section className="space-y-2">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+              <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                III. Verifikasi Angka Kandungan Gizi (AKG) 5 Kelompok
+              </h2>
+              <span className="text-[10px] text-slate-500">Rujukan: Pedoman Gizi Seimbang BGN</span>
+            </div>
+
+            <div className="border border-slate-200 rounded-lg overflow-hidden">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-100 border-b border-slate-200 text-slate-800 font-black text-[10px] uppercase">
+                  <tr>
+                    <th className="py-2.5 px-3">Kelompok Porsi</th>
+                    <th className="py-2.5 px-3">Sasaran Penerima</th>
+                    <th className="py-2.5 px-3 text-right">Energi Total</th>
+                    <th className="py-2.5 px-3 text-right">Protein</th>
+                    <th className="py-2.5 px-3 text-right">Lemak</th>
+                    <th className="py-2.5 px-3 text-right">Karbohidrat</th>
+                    <th className="py-2.5 px-3 text-right">Serat</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {(currentMenu.nutritionCards || STANDARD_AKG_REFERENCE).map((item, i) => (
+                    <tr key={i} className="hover:bg-slate-50">
+                      <td className="py-2.5 px-3 font-extrabold text-blue-900 bg-slate-50/50">
+                        {item.groupName}
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-700 font-medium">
+                        {item.targetCategory}
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-black text-slate-900 tabular-nums">
+                        {item.energyKcal.toFixed(1)} <span className="text-[10px] font-normal text-slate-500">Kkal</span>
+                      </td>
+                      <td className="py-2.5 px-3 text-right tabular-nums">{item.proteinG.toFixed(1)} g</td>
+                      <td className="py-2.5 px-3 text-right tabular-nums">{item.fatG.toFixed(1)} g</td>
+                      <td className="py-2.5 px-3 text-right tabular-nums">{item.carbsG.toFixed(1)} g</td>
+                      <td className="py-2.5 px-3 text-right tabular-nums">{item.fiberG.toFixed(1)} g</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* IV. DOKUMENTASI PROSES DAPUR 3 TAHAP */}
+          <section className="space-y-2">
+            <div className="border-b border-slate-200 pb-1.5">
+              <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                IV. Dokumentasi Higienitas Dapur (3 Tahap Wajib)
+              </h2>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {currentMenu.photos.map((p, i) => (
-                <div key={i} className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
-                  <div className="relative h-28 w-full bg-slate-200">
+              {currentMenu.photos.map((p, idx) => (
+                <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                  <div className="relative h-32 w-full bg-slate-200">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover" />
+                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/75 text-white text-[9px] font-black uppercase">
+                      {p.step}
+                    </div>
                   </div>
-                  <div className="p-2.5">
-                    <span className="text-[10px] font-black uppercase text-blue-600 block">{p.step}</span>
-                    <span className="text-xs font-bold text-slate-800 block truncate">{p.title}</span>
+                  <div className="p-2.5 space-y-0.5">
+                    <span className="font-extrabold text-xs text-slate-900 block truncate">{p.title}</span>
+                    <span className="text-[10px] text-slate-500 block leading-tight">{p.description}</span>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* 5. Penerima Manfaat (Ringkas & Bisa Dibuka Lengkap) */}
-          <div className="space-y-2 pt-2 border-t border-slate-100">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-black uppercase text-slate-400 tracking-wider">
-                5. Penerima Manfaat ({totalMaster} Siswa)
+          {/* V. DATA PENERIMA MANFAAT (12 SEKOLAH + 1 POSYANDU) */}
+          <section className="space-y-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-1.5">
+              <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                V. Daftar Alokasi Penerima Manfaat ({totalMaster} Porsi)
               </h2>
-              <button
-                onClick={() => setShowAllSchools(!showAllSchools)}
-                className="text-xs font-bold text-blue-600 hover:underline no-print cursor-pointer"
-              >
-                {showAllSchools ? 'Tutup Daftar' : 'Lihat 13 Sekolah/Posyandu'}
-              </button>
+              <div className="relative w-full sm:w-56 no-print">
+                <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Cari sekolah..."
+                  value={searchBeneficiary}
+                  onChange={(e) => setSearchBeneficiary(e.target.value)}
+                  className="w-full pl-7 pr-2 py-1 text-[11px] border border-slate-300 rounded bg-white"
+                />
+              </div>
             </div>
 
-            {showAllSchools ? (
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-[10px] uppercase">
-                    <tr>
-                      <th className="py-2 px-3">No</th>
-                      <th className="py-2 px-3">Lembaga</th>
-                      <th className="py-2 px-3">Tipe</th>
-                      <th className="py-2 px-3 text-right">Kuota</th>
+            <div className="border border-slate-200 rounded-lg overflow-hidden">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-100 border-b border-slate-200 text-slate-800 font-bold text-[10px] uppercase">
+                  <tr>
+                    <th className="py-2 px-3 w-10">No</th>
+                    <th className="py-2 px-3">Nama Lembaga Sekolah / Posyandu</th>
+                    <th className="py-2 px-3 w-28">Kategori</th>
+                    <th className="py-2 px-3 w-32 text-right">Alokasi Porsi</th>
+                    <th className="py-2 px-3 w-28 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredBeneficiaries.map((site, index) => (
+                    <tr key={site.id} className="hover:bg-slate-50">
+                      <td className="py-1.5 px-3 text-slate-400 font-semibold">{index + 1}</td>
+                      <td className="py-1.5 px-3 font-extrabold text-slate-900">{site.name}</td>
+                      <td className="py-1.5 px-3">
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200">
+                          {site.type}
+                        </span>
+                      </td>
+                      <td className="py-1.5 px-3 text-right font-black text-slate-900 tabular-nums">
+                        {site.masterCount}
+                      </td>
+                      <td className="py-1.5 px-3 text-center">
+                        <span className="text-[10px] font-bold text-emerald-700">Tersalurkan</span>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {INITIAL_BENEFICIARIES.map((s, idx) => (
-                      <tr key={s.id}>
-                        <td className="py-2 px-3 text-slate-400">{idx + 1}</td>
-                        <td className="py-2 px-3 font-bold text-slate-800">{s.name}</td>
-                        <td className="py-2 px-3 text-slate-500">{s.type}</td>
-                        <td className="py-2 px-3 text-right font-black text-slate-900">{s.masterCount}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600 flex items-center justify-between">
-                <span>Total 12 Sekolah Dasar/TK + 1 Posyandu Erlangga di Semarang Selatan</span>
-                <span className="font-black text-slate-900">{totalMaster} Porsi</span>
-              </div>
-            )}
+                  ))}
+                </tbody>
+                <tfoot className="bg-slate-100 border-t-2 border-slate-300 font-black text-slate-900 text-xs">
+                  <tr>
+                    <td colSpan={3} className="py-2.5 px-3">
+                      TOTAL AKUMULASI DISTRIBUSI HARIAN
+                    </td>
+                    <td className="py-2.5 px-3 text-right text-sm font-black text-blue-900 tabular-nums">
+                      {totalMaster} Porsi
+                    </td>
+                    <td className="py-2.5 px-3 text-center text-emerald-800 font-extrabold text-[10px]">
+                      100% LENGKAP
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </section>
+
+          {/* TANDA TANGAN / PENGESAHAN DOKUMEN (OTOMATIS RAPI SAAT CETAK) */}
+          <div className="pt-8 border-t border-slate-200 grid grid-cols-2 text-center text-xs text-slate-700">
+            <div>
+              <p className="font-semibold text-slate-500">Penanggung Jawab Gizi</p>
+              <div className="h-16" />
+              <p className="font-black text-slate-900 underline">Tim Ahli Gizi SPPG</p>
+              <p className="text-[10px] text-slate-500">SPPG Wonodri 3 Kota Semarang</p>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-500">Kepala Dapur Operasional</p>
+              <div className="h-16" />
+              <p className="font-black text-slate-900 underline">Koordinator Lapangan</p>
+              <p className="text-[10px] text-slate-500">Badan Gizi Nasional</p>
+            </div>
           </div>
         </div>
       </main>
 
-      {/* Calendar Modal */}
+      {/* Modal Kalender */}
       {showCalendarModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 no-print">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-xs w-full p-4 space-y-3">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xl max-w-xs w-full p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <span className="font-extrabold text-sm text-slate-900">
                 {monthNames[calendarMonth]} {calendarYear}
@@ -346,7 +455,7 @@ export default function HomePage() {
                       setSelectedDate(dateStr);
                       setShowCalendarModal(false);
                     }}
-                    className={`h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center ${
+                    className={`h-8 rounded text-xs font-bold transition-all flex items-center justify-center ${
                       isSelected
                         ? 'bg-blue-600 text-white'
                         : hasMenu
@@ -363,9 +472,9 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Footer Minimalis */}
-      <footer className="py-4 text-center text-[11px] text-slate-400 border-t border-slate-200 bg-white no-print">
-        SPPG Wonodri 3 • Badan Gizi Nasional (BGN) • Built by CilokTech Studio
+      {/* Footer */}
+      <footer className="py-4 text-center text-[11px] text-slate-500 border-t border-slate-200 bg-white no-print">
+        Dokumen Pengawasan Program MBG • SPPG Wonodri 3 Kota Semarang
       </footer>
     </div>
   );
