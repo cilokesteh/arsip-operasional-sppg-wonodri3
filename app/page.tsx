@@ -394,8 +394,8 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* TANDA TANGAN / PENGESAHAN DOKUMEN (OTOMATIS RAPI SAAT CETAK) */}
-          <div className="pt-8 border-t border-slate-200 grid grid-cols-2 text-center text-xs text-slate-700">
+          {/* TANDA TANGAN / PENGESAHAN DOKUMEN RESMI (3 KOLOM RESMI) */}
+          <div className="pt-8 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center text-xs text-slate-700">
             <div>
               <p className="font-semibold text-slate-500">Penanggung Jawab Gizi</p>
               <div className="h-16" />
@@ -405,8 +405,14 @@ export default function HomePage() {
             <div>
               <p className="font-semibold text-slate-500">Kepala Dapur Operasional</p>
               <div className="h-16" />
-              <p className="font-black text-slate-900 underline">Koordinator Lapangan</p>
-              <p className="text-[10px] text-slate-500">Badan Gizi Nasional</p>
+              <p className="font-black text-slate-900 underline">Koordinator Produksi</p>
+              <p className="text-[10px] text-slate-500">Dapur MBG Wonodri 3</p>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-500">Mengetahui & Menyetujui</p>
+              <div className="h-16" />
+              <p className="font-black text-slate-900 underline">Ka. SPPG Wonodri 3</p>
+              <p className="text-[10px] text-slate-500">Kepala Satuan Pelayanan</p>
             </div>
           </div>
         </div>
