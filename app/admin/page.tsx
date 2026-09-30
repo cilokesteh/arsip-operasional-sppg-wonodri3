@@ -80,7 +80,7 @@ export default function AdminPage() {
     setInputPasscode('');
   };
 
-  // 1. Data Menu Harian
+  // 1. Data Menu Harian (5 Komponen Murni: Karbohidrat, Hewani, Nabati, Sayur, Buah)
   const [menuDate, setMenuDate] = useState('2026-10-01');
   const [namaMenu, setNamaMenu] = useState('');
   const [components, setComponents] = useState({
@@ -89,7 +89,6 @@ export default function AdminPage() {
     laukNabati: '',
     sayur: '',
     buah: '',
-    pelengkap: 'Susu UHT / Pasteurisasi',
   });
 
   // 2. Data AKG 5 Kelompok
@@ -118,7 +117,6 @@ export default function AdminPage() {
     setAkgList(updated);
   };
 
-  // Fungsi Upload Foto Langsung ke Google Drive Saat Dipilih/Dijepret
   const handleAutoDriveUpload = async (
     file: File,
     setUrl: React.Dispatch<React.SetStateAction<string | null>>,
@@ -224,8 +222,8 @@ export default function AdminPage() {
     setTimeout(() => setCopiedTab(null), 2500);
   };
 
-  // Header Google Sheet Bersih (Tanpa Link Foto — Foto Cukup Di-upload Lewat Web Langsung)
-  const sheet1Header = "tanggal\tnama menu\tkarbohidrat\tlauk hewani\tlauk nabati\tsayur\tbuah\tpelengkap\tstatus";
+  // Header Bersih: Tanpa kolom Pelengkap & Tanpa kolom foto
+  const sheet1Header = "tanggal\tnama menu\tkarbohidrat\tlauk hewani\tlauk nabati\tsayur\tbuah\tstatus";
   const sheet2Header = "tanggal\tkelompok\ttarget kategori\tenergi kkal\tprotein g\tlemak g\tkarbo g\tserat g";
 
   // JIKA BELUM LOGIN
@@ -333,7 +331,7 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 pt-6 space-y-5">
-        {/* Toggle Mode: Input Langsung vs Google Sheet */}
+        {/* Toggle Mode */}
         <div className="flex bg-slate-200/70 p-1 rounded-xl max-w-sm mx-auto text-xs font-bold">
           <button
             type="button"
@@ -361,7 +359,7 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* ===================== MODE 1: FORM INPUT CEPAT + AUTO SAVE GDRIVE ===================== */}
+        {/* ===================== MODE 1: FORM INPUT CEPAT ===================== */}
         {mode === 'form' && (
           <form onSubmit={handlePublish} className="space-y-5">
             {publishSuccess && (
@@ -392,7 +390,7 @@ export default function AdminPage() {
                 <label className="text-xs font-bold text-slate-700 block mb-1">Nama Menu</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Nasi Putih, Ayam Semur Kecap, Tahu Bacem, Tumis Buncis, Pisang, Susu"
+                  placeholder="Contoh: Nasi Putih, Ayam Semur Kecap, Tahu Bacem, Tumis Buncis, & Pisang"
                   value={namaMenu}
                   onChange={(e) => setNamaMenu(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-[#1759ab]"
@@ -400,50 +398,45 @@ export default function AdminPage() {
                 />
               </div>
 
-              {/* Rincian Komponen 6 Kotak */}
+              {/* Rincian Komponen 5 Kotak Bersih (Tanpa Pelengkap) */}
               <div className="pt-1">
-                <span className="text-[11px] font-bold text-slate-500 block mb-1.5">Rincian Komponen Makanan:</span>
+                <span className="text-[11px] font-bold text-slate-500 block mb-1.5">
+                  Rincian 5 Komponen Makanan Pokok:
+                </span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                   <input
                     type="text"
-                    placeholder="Karbo (Nasi Pulen)"
+                    placeholder="1. Karbohidrat (Nasi Pulen)"
                     value={components.karbohidrat}
                     onChange={(e) => setComponents({ ...components, karbohidrat: e.target.value })}
                     className="px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white"
                   />
                   <input
                     type="text"
-                    placeholder="Lauk Hewani (Ayam Semur)"
+                    placeholder="2. Lauk Hewani (Ayam Semur)"
                     value={components.laukHewani}
                     onChange={(e) => setComponents({ ...components, laukHewani: e.target.value })}
                     className="px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white"
                   />
                   <input
                     type="text"
-                    placeholder="Lauk Nabati (Tahu Bacem)"
+                    placeholder="3. Lauk Nabati (Tahu Bacem)"
                     value={components.laukNabati}
                     onChange={(e) => setComponents({ ...components, laukNabati: e.target.value })}
                     className="px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white"
                   />
                   <input
                     type="text"
-                    placeholder="Sayur (Tumis Buncis)"
+                    placeholder="4. Sayuran (Tumis Buncis)"
                     value={components.sayur}
                     onChange={(e) => setComponents({ ...components, sayur: e.target.value })}
                     className="px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white"
                   />
                   <input
                     type="text"
-                    placeholder="Buah (Pisang Cavendish)"
+                    placeholder="5. Buah (Pisang Cavendish)"
                     value={components.buah}
                     onChange={(e) => setComponents({ ...components, buah: e.target.value })}
-                    className="px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Pelengkap (Susu UHT)"
-                    value={components.pelengkap}
-                    onChange={(e) => setComponents({ ...components, pelengkap: e.target.value })}
                     className="px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white"
                   />
                 </div>
@@ -726,7 +719,7 @@ export default function AdminPage() {
           </form>
         )}
 
-        {/* ===================== MODE 2: SINKRONISASI GOOGLE SHEET (BERSIH DARI LINK FOTO) ===================== */}
+        {/* ===================== MODE 2: SINKRONISASI GOOGLE SHEET ===================== */}
         {mode === 'sheet' && (
           <div className="sppg-card rounded-2xl p-5 sm:p-7 space-y-6">
             <div>
@@ -734,7 +727,7 @@ export default function AdminPage() {
                 Hubungkan dengan Google Spreadsheet
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Google Sheet khusus untuk teks Menu & Angka Gizi (AKG). Foto cukup di-upload langsung dari HP di tab sebelah tanpa perlu taruh link lagi di spreadsheet.
+                Google Sheet khusus untuk data Menu & Angka Gizi (AKG). Foto dapur di-upload langsung dari kamera HP di tab sebelah.
               </p>
             </div>
 
@@ -777,10 +770,10 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Format Ringkas 2 Tab Wajib dengan SPASI (Bersih Tanpa Kolom Link Foto) */}
+            {/* Format Ringkas 2 Tab Wajib dengan SPASI (Tanpa Pelengkap & Tanpa Link Foto) */}
             <div className="space-y-3 pt-2">
               <h3 className="text-xs font-black text-[#0b1e3a] uppercase tracking-wider">
-                Struktur 2 Tab Google Sheet (Bersih Tanpa Kolom Foto):
+                Struktur 2 Tab Google Sheet (Bersih & Sederhana):
               </h3>
 
               {/* Tab 1: Menu */}
@@ -788,7 +781,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-slate-900 block">Tab 1: Menu Harian</span>
-                    <span className="text-[10px] text-slate-500">Murni hanya data makanan harian (spasi biasa)</span>
+                    <span className="text-[10px] text-slate-500">5 Komponen pokok makanan (Karbo, Hewani, Nabati, Sayur, Buah)</span>
                   </div>
                   <button
                     type="button"
@@ -800,7 +793,7 @@ export default function AdminPage() {
                   </button>
                 </div>
                 <p className="font-mono text-[10px] text-slate-600 bg-white p-2 rounded border border-slate-200 overflow-x-auto">
-                  tanggal | nama menu | karbohidrat | lauk hewani | lauk nabati | sayur | buah | pelengkap | status
+                  tanggal | nama menu | karbohidrat | lauk hewani | lauk nabati | sayur | buah | status
                 </p>
               </div>
 

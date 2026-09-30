@@ -472,7 +472,6 @@ export default function HomePage() {
                 { label: 'Lauk Nabati', val: currentMenu.components.laukNabati, tag: 'Tahu / Tempe Tradisional' },
                 { label: 'Sayuran & Serat', val: currentMenu.components.sayur, tag: 'Sayur Segar Kaya Vitamin' },
                 { label: 'Buah Segar', val: currentMenu.components.buah, tag: 'Buah Pilihan Segar' },
-                { label: 'Pelengkap Susu', val: currentMenu.components.pelengkap || 'Susu Pasteurisasi BGN', tag: 'Kalsium & Nutrisi Mikro' },
               ].map((item, i) => (
                 <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
                   <div>

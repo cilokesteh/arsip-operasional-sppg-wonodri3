@@ -45,7 +45,6 @@ export interface DailyMenuRecord {
     laukNabati: string;
     sayur: string;
     buah: string;
-    pelengkap: string;
   };
   nutritionCards: NutritionItem[];
   photos: ProcessPhoto[];
@@ -148,12 +147,12 @@ export const STANDARD_AKG_REFERENCE: NutritionItem[] = [
   },
 ];
 
-// Riwayat Menu Mulai 01 Oktober 2026 (Siap diisi operator)
+// Riwayat Menu Mulai 01 Oktober 2026 (Komponen 5 item: Karbohidrat, Lauk Hewani, Lauk Nabati, Sayur, Buah)
 export const INITIAL_MENU_HISTORY: DailyMenuRecord[] = [
   {
     date: '2026-10-01',
     menuNumber: 1,
-    title: 'Nasi Pandan Wangi, Semur Ayam Suwir, Tahu Bacem Tradisional, Sayur Bening Jagung Manis, Pisang Cavendish, & Susu UHT',
+    title: 'Nasi Pandan Wangi, Semur Ayam Suwir, Tahu Bacem Tradisional, Sayur Bening Jagung Manis, & Pisang Cavendish',
     status: 'published',
     publishedAt: '01 Okt 2026 • 08:30 WIB',
     components: {
@@ -162,7 +161,6 @@ export const INITIAL_MENU_HISTORY: DailyMenuRecord[] = [
       laukNabati: 'Tahu Bacem Tradisional',
       sayur: 'Sayur Bening Jagung Manis & Bayam',
       buah: 'Pisang Cavendish Matang Alami',
-      pelengkap: 'Susu Pasteurisasi Segar BGN',
     },
     nutritionCards: STANDARD_AKG_REFERENCE,
     photos: [

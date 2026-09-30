@@ -1,7 +1,6 @@
 import { formatGoogleDriveImageUrl } from './drive';
 import { DailyMenuRecord, NutritionItem, STANDARD_AKG_REFERENCE } from './data';
 
-// Helper parser CSV sederhana yang menangani kutip dan koma
 function parseCSV(text: string): string[][] {
   const lines = text.trim().split(/\r\n|\n/);
   return lines.map((line) => {
@@ -36,7 +35,7 @@ export async function fetchGoogleSheetData(sheetUrl: string): Promise<{
   const sheetId = match[1];
 
   try {
-    // 1. Tarik Tab 1: Menu Harian (gid=0 atau nama sheet 'Menu Harian')
+    // 1. Tarik Tab 1: Menu Harian
     const menuCsvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=Menu%20Harian`;
     const resMenu = await fetch(menuCsvUrl);
     if (!resMenu.ok) {
@@ -61,7 +60,6 @@ export async function fetchGoogleSheetData(sheetUrl: string): Promise<{
     const idxNabati = getIndex(['lauk nabati', 'nabati']);
     const idxSayur = getIndex(['sayur']);
     const idxBuah = getIndex(['buah']);
-    const idxSusu = getIndex(['pelengkap', 'susu']);
     const idxFotoPrep = getIndex(['persiapan']);
     const idxFotoCook = getIndex(['pengolahan', 'masak']);
     const idxFotoPack = getIndex(['pengemasan', 'packing']);
@@ -118,7 +116,7 @@ export async function fetchGoogleSheetData(sheetUrl: string): Promise<{
         }
       }
     } catch {
-      // Fallback ke default standard AKG jika Tab AKG kosong
+      // Fallback
     }
 
     // 3. Gabungkan Data Menu
@@ -169,7 +167,6 @@ export async function fetchGoogleSheetData(sheetUrl: string): Promise<{
           laukNabati: row[idxNabati] || 'Lauk Nabati Tradisional',
           sayur: row[idxSayur] || 'Sayur Segar Kaya Serat',
           buah: row[idxBuah] || 'Buah Pilihan Segar',
-          pelengkap: row[idxSusu] || 'Susu Pasteurisasi BGN',
         },
         nutritionCards: akgMapByDate[tanggal] && akgMapByDate[tanggal].length > 0 ? akgMapByDate[tanggal] : STANDARD_AKG_REFERENCE,
         photos,
