@@ -58,13 +58,13 @@ export interface DailyMenuRecord {
   }[];
 }
 
-// 13 Titik Layanan Resmi SPPG Wonodri 3 (Total: 1.554 Penerima Manfaat)
+// 13 Titik Layanan Resmi SPPG Wonodri 3 (Total: 1.555 Penerima Manfaat)
 export const INITIAL_BENEFICIARIES: BeneficiarySite[] = [
   { id: 'sd-it-al-firdaus', name: 'SD IT Al Firdaus', type: 'SD', masterCount: 349 },
-  { id: 'sdn-pleburan-03', name: 'SDN Pleburan 03', type: 'SD', masterCount: 341 },
+  { id: 'sdn-pleburan-03', name: 'SDN Pleburan 03', type: 'SD', masterCount: 342 },
   { id: 'sdn-lamper-lor', name: 'SDN Lamper Lor', type: 'SD', masterCount: 154 },
-  { id: 'sdn-pleburan-b', name: 'SDN Pleburan B', type: 'SD', masterCount: 150 },
-  { id: 'sdn-pleburan-a', name: 'SDN Pleburan A', type: 'SD', masterCount: 120 },
+  { id: 'sdn-pleburan-04', name: 'SDN Pleburan 04', type: 'SD', masterCount: 150 },
+  { id: 'sdn-pleburan-01', name: 'SDN Pleburan 01', type: 'SD', masterCount: 120 },
   { id: 'tk-it-sultan-agung', name: 'TK IT Sultan Agung', type: 'TK', masterCount: 100 },
   { id: 'sdn-wonodri', name: 'SDN Wonodri', type: 'SD', masterCount: 91 },
   { id: 'posyandu-erlangga', name: 'Posyandu Erlangga', type: 'Posyandu', masterCount: 74 },
@@ -149,5 +149,5 @@ export const STANDARD_AKG_REFERENCE: NutritionItem[] = [
   },
 ];
 
-// DATABASE BERSIH (0 DATA DUMMY) — KOSONG TOTAL UNTUK INPUT ASLI OPERATOR BESOK
+// Database Menu Awal Bersih
 export const INITIAL_MENU_HISTORY: DailyMenuRecord[] = [];
