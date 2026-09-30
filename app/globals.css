@@ -26,12 +26,31 @@
   border-color: #cbd5e1;
 }
 
-.gradient-hero-clean {
-  background: linear-gradient(135deg, #0284c7 0%, #1e40af 100%);
-}
+/* Print Styles: Cetak Sekali Klik Rapi Standar Dokumen Laporan Resmi */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
 
-.badge-gold {
-  background: #fef9c3;
-  color: #854d0e;
-  border: 1px solid #fef08a;
+  header,
+  footer,
+  .no-print,
+  button,
+  input {
+    display: none !important;
+  }
+
+  .app-card {
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .print-page-break {
+    page-break-before: always !important;
+  }
 }
