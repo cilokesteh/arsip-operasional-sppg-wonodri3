@@ -21,12 +21,12 @@ import {
   FileText,
   Printer,
   Users,
-  Sparkles,
-  History,
   Calendar,
+  Edit,
+  RotateCcw,
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
-import { INITIAL_BENEFICIARIES } from '@/lib/data';
+import { INITIAL_BENEFICIARIES, DailyMenuRecord } from '@/lib/data';
 
 interface AKGInputRaw {
   groupName: string;
@@ -45,9 +45,12 @@ export default function AdminPage() {
   const [inputPasscode, setInputPasscode] = useState<string>('');
   const [loginError, setLoginError] = useState<string>('');
 
+  // Mode panel: 'input' (input baru/edit form) atau 'list' (kelola/edit daftar arsip)
+  const [activeTab, setActiveTab] = useState<'input' | 'list'>('input');
+  const [savedMenuList, setSavedMenuList] = useState<DailyMenuRecord[]>([]);
+
   // 1. Data Menu Harian & Fitur Backdate
   const [menuDate, setMenuDate] = useState('2026-10-01');
-  const [isBackdate, setIsBackdate] = useState(false);
   const [namaMenu, setNamaMenu] = useState('');
   const [components, setComponents] = useState({
     karbohidrat: '',
@@ -97,14 +100,29 @@ export default function AdminPage() {
   );
 
   const [publishSuccess, setPublishSuccess] = useState(false);
-  const [draftSavedAlert, setDraftSavedAlert] = useState(false);
+  const [editingAlert, setEditingAlert] = useState<string | null>(null);
 
-  // LOAD DRAFT TERSIMPAN SECARA OTOMATIS
+  // Load daftar arsip dan draft
+  const loadSavedMenus = () => {
+    try {
+      const stored = localStorage.getItem('sppg_synced_menus');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setSavedMenuList(parsed);
+        }
+      }
+    } catch {
+      // fallback
+    }
+  };
+
   useEffect(() => {
     const authStatus = sessionStorage.getItem('sppg_admin_auth');
     if (authStatus === 'true') {
       setIsAuthenticated(true);
     }
+    loadSavedMenus();
 
     try {
       const savedDraft = localStorage.getItem('sppg_admin_draft_v2');
@@ -127,42 +145,99 @@ export default function AdminPage() {
     }
   }, []);
 
-  // AUTO-SAVE SETIAP KALI USER KETIK
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const draftPayload = {
-      menuDate,
-      namaMenu,
-      components,
-      akgBesar,
-      akgKecil,
-      menuPhotoUrl,
-      prepPhotoUrl,
-      cookPhotoUrl,
-      packPhotoUrl,
-      beneficiaryOverrides,
-      uraianKegiatan,
-      lastSaved: new Date().toISOString(),
-    };
-    try {
-      localStorage.setItem('sppg_admin_draft_v2', JSON.stringify(draftPayload));
-    } catch {
-      // fallback
+  // FUNGSI PILIH & MUAT DATA ARSIP LAMA KE FORM UNTUK DI-EDIT
+  const handleLoadMenuToEdit = (menu: DailyMenuRecord) => {
+    setMenuDate(menu.date);
+    setNamaMenu(menu.title || '');
+    if (menu.components) {
+      setComponents(menu.components);
     }
-  }, [
-    isAuthenticated,
-    menuDate,
-    namaMenu,
-    components,
-    akgBesar,
-    akgKecil,
-    menuPhotoUrl,
-    prepPhotoUrl,
-    cookPhotoUrl,
-    packPhotoUrl,
-    beneficiaryOverrides,
-    uraianKegiatan,
-  ]);
+    setMenuPhotoUrl(menu.menuPhotoUrl || null);
+    if (menu.uraianPekerjaan) {
+      setUraianKegiatan(menu.uraianPekerjaan);
+    }
+
+    // Ekstrak nilai AKG Besar & Kecil dari arsip yang dipilih
+    const besarCard = menu.nutritionCards?.find((c) => c.groupName.toLowerCase() === 'besar');
+    if (besarCard) {
+      setAkgBesar({
+        energyKcal: String(besarCard.energyKcal || ''),
+        proteinG: String(besarCard.proteinG || ''),
+        fatG: String(besarCard.fatG || ''),
+        carbsG: String(besarCard.carbsG || ''),
+        fiberG: String(besarCard.fiberG || ''),
+      });
+    }
+
+    const kecilCard = menu.nutritionCards?.find((c) => c.groupName.toLowerCase() === 'kecil');
+    if (kecilCard) {
+      setAkgKecil({
+        energyKcal: String(kecilCard.energyKcal || ''),
+        proteinG: String(kecilCard.proteinG || ''),
+        fatG: String(kecilCard.fatG || ''),
+        carbsG: String(kecilCard.carbsG || ''),
+        fiberG: String(kecilCard.fiberG || ''),
+      });
+    }
+
+    // Foto Dapur
+    const pPrep = menu.photos?.find((p) => p.step.toLowerCase().includes('persiapan'));
+    if (pPrep) setPrepPhotoUrl(pPrep.imageUrl);
+
+    const pCook = menu.photos?.find((p) => p.step.toLowerCase().includes('pengolahan'));
+    if (pCook) setCookPhotoUrl(pCook.imageUrl);
+
+    const pPack = menu.photos?.find((p) => p.step.toLowerCase().includes('pengemasan'));
+    if (pPack) setPackPhotoUrl(pPack.imageUrl);
+
+    // Overrides
+    if (menu.overrides && menu.overrides.length > 0) {
+      const ovMap: Record<string, { condition: 'aktif' | 'libur'; effectiveCount: number; reason: string }> = {};
+      menu.overrides.forEach((o) => {
+        ovMap[o.siteId] = { condition: o.condition === 'libur' ? 'libur' : 'aktif', effectiveCount: o.effectiveCount, reason: o.reason };
+      });
+      setBeneficiaryOverrides(ovMap);
+    } else {
+      setBeneficiaryOverrides({});
+    }
+
+    setActiveTab('input');
+    setEditingAlert(`Memuat data menu tanggal ${menu.date}. Silakan ubah bagian yang diinginkan lalu klik Simpan.`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => setEditingAlert(null), 7000);
+  };
+
+  // FUNGSI HAPUS SATU ARSIP MENU
+  const handleDeleteMenu = (dateToDelete: string) => {
+    if (confirm(`Yakin ingin menghapus arsip menu untuk tanggal ${dateToDelete}?`)) {
+      try {
+        const stored = localStorage.getItem('sppg_synced_menus');
+        if (stored) {
+          const list = JSON.parse(stored);
+          const updated = list.filter((m: { date: string }) => m.date !== dateToDelete);
+          localStorage.setItem('sppg_synced_menus', JSON.stringify(updated));
+          setSavedMenuList(updated);
+          alert(`Arsip menu tanggal ${dateToDelete} berhasil dihapus.`);
+        }
+      } catch {
+        // fallback
+      }
+    }
+  };
+
+  // Bersihkan form untuk mulai input tanggal baru
+  const handleResetForm = () => {
+    setNamaMenu('');
+    setMenuPhotoUrl(null);
+    setPrepPhotoUrl(null);
+    setCookPhotoUrl(null);
+    setPackPhotoUrl(null);
+    setComponents({ karbohidrat: '', laukHewani: '', laukNabati: '', sayur: '', buah: '' });
+    setAkgBesar({ energyKcal: '', proteinG: '', fatG: '', carbsG: '', fiberG: '' });
+    setAkgKecil({ energyKcal: '', proteinG: '', fatG: '', carbsG: '', fiberG: '' });
+    setBeneficiaryOverrides({});
+    alert('Form dikosongkan. Siap untuk input baru.');
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,6 +245,7 @@ export default function AdminPage() {
       setIsAuthenticated(true);
       sessionStorage.setItem('sppg_admin_auth', 'true');
       setLoginError('');
+      loadSavedMenus();
     } else {
       setLoginError('Kode akses salah! Silakan coba lagi.');
     }
@@ -190,14 +266,10 @@ export default function AdminPage() {
 
   const handleAkgBesarChange = (field: keyof typeof akgBesar, rawValue: string) => {
     setAkgBesar((prev) => ({ ...prev, [field]: sanitizeNumberString(rawValue) }));
-    setDraftSavedAlert(true);
-    setTimeout(() => setDraftSavedAlert(false), 2000);
   };
 
   const handleAkgKecilChange = (field: keyof typeof akgKecil, rawValue: string) => {
     setAkgKecil((prev) => ({ ...prev, [field]: sanitizeNumberString(rawValue) }));
-    setDraftSavedAlert(true);
-    setTimeout(() => setDraftSavedAlert(false), 2000);
   };
 
   const handleAutoDriveUpload = async (
@@ -308,7 +380,7 @@ export default function AdminPage() {
       reason: data.reason,
     }));
 
-    const newRecord = {
+    const newRecord: DailyMenuRecord = {
       date: menuDate,
       menuNumber: 1,
       title: namaMenu,
@@ -346,21 +418,20 @@ export default function AdminPage() {
 
     try {
       const existing = localStorage.getItem('sppg_synced_menus');
-      let list = existing ? JSON.parse(existing) : [];
+      let list: DailyMenuRecord[] = existing ? JSON.parse(existing) : [];
+      // Simpan pembaruan atau tambah baru
       list = [newRecord, ...list.filter((item: { date: string }) => item.date !== menuDate)];
-      // Urutkan riwayat menu berdasarkan tanggal terbaru di atas
-      list.sort((a: { date: string }, b: { date: string }) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
+      setSavedMenuList(list);
       localStorage.removeItem('sppg_admin_draft_v2');
     } catch {
       // fallback
     }
 
     setPublishSuccess(true);
-    // Scroll otomatis ke paling atas layar agar notifikasi sukses langsung terlihat jelas di HP
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Tampilkan notifikasi konfirmasi langsung
-    alert(`BERHASIL DISIMPAN & DIRILIS!\n\nMenu untuk tanggal ${menuDate} ("${namaMenu}") telah berhasil dipublikasikan ke arsip operasional.`);
+    alert(`BERHASIL DISIMPAN!\n\nLaporan menu tanggal ${menuDate} ("${namaMenu}") telah berhasil disimpan dan terbit di arsip.`);
     setTimeout(() => setPublishSuccess(false), 8000);
   };
 
@@ -449,7 +520,7 @@ export default function AdminPage() {
                   Admin Panel SPPG Wonodri 3
                 </span>
                 <span className="text-[10px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
-                  <CloudUpload className="w-3 h-3" /> Auto-Save GDrive & Backdate Aktif
+                  <CloudUpload className="w-3 h-3" /> Auto-Save GDrive & Edit Arsip
                 </span>
               </div>
             </div>
@@ -463,8 +534,7 @@ export default function AdminPage() {
               className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Cetak Laporan</span>
-              <span className="sm:hidden">Cetak</span>
+              <span className="hidden sm:inline">Cetak</span>
             </button>
             <Link
               href="/"
@@ -484,678 +554,770 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
-        {/* Banner Fitur Backdate & Auto-Draft */}
-        <div className="p-3.5 sm:p-4 rounded-xl bg-blue-50/80 border border-blue-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-blue-900">
-          <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-blue-600 shrink-0" />
-            <span>
-              <strong>Fitur Backdate Aktif:</strong> Lo bisa bebas memilih tanggal lampau (bulan lalu atau hari kemarin) untuk melengkapi arsip operasional yang belum sempat terinput.
-            </span>
-          </div>
-          {draftSavedAlert && (
-            <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded shrink-0 self-start sm:self-auto">
-              Draft Tersimpan
-            </span>
-          )}
+        {/* Toggle Mode: Input Baru vs Kelola / Edit Arsip Lama */}
+        <div className="flex bg-slate-200/70 p-1 rounded-xl max-w-sm mx-auto text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => setActiveTab('input')}
+            className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              activeTab === 'input'
+                ? 'bg-white text-[#1759ab] shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Utensils className="w-3.5 h-3.5 text-blue-600" />
+            <span>Form Input / Edit</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              loadSavedMenus();
+              setActiveTab('list');
+            }}
+            className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              activeTab === 'list'
+                ? 'bg-white text-[#1759ab] shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Edit className="w-3.5 h-3.5 text-amber-600" />
+            <span>Kelola Arsip ({savedMenuList.length})</span>
+          </button>
         </div>
 
-        <form onSubmit={handlePublish} className="space-y-6">
-          {publishSuccess && (
-            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 flex items-center gap-2 shadow-xs">
-              <Check className="w-5 h-5 text-emerald-600 shrink-0" />
-              <span>Arsip menu untuk tanggal {menuDate} berhasil dipublikasikan & tersimpan ke arsip kalender!</span>
-            </div>
-          )}
-
-          {/* ===================== ALUR 1: MENU & PILIHAN BACKDATE ===================== */}
-          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
-                  <Utensils className="w-4 h-4" />
-                </div>
-                <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                  1. Menu Makanan & Tanggal Arsip (Backdate)
-                </h2>
-              </div>
-              <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded">Alur 1</span>
-            </div>
-
-            {/* Kotak Pilihan Tanggal Bebas (Backdate Selector) */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Pilih Tanggal Layanan (Bisa Hari Ini, Kemarin, atau Bulan Lalu):</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setIsBackdate(!isBackdate)}
-                  className="text-[11px] font-bold text-blue-600 hover:underline cursor-pointer"
-                >
-                  {isBackdate ? 'Mode Normal' : 'Mode Backdate Arsip'}
-                </button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-2 items-center">
-                <input
-                  type="date"
-                  value={menuDate}
-                  onChange={(e) => setMenuDate(e.target.value)}
-                  className="w-full sm:w-auto px-3.5 py-2 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-900 focus:ring-2 focus:ring-blue-600"
-                  required
-                />
-                <span className="text-[11px] text-slate-500">
-                  {new Date(menuDate) < new Date(new Date().setHours(0, 0, 0, 0)) ? (
-                    <strong className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-flex items-center gap-1">
-                      <History className="w-3 h-3" /> Menginput Arsip Tanggal Lampau (Backdate)
-                    </strong>
-                  ) : (
-                    'Tanggal operasional hari ini / mendatang'
-                  )}
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Nama Menu Lengkap</label>
-              <input
-                type="text"
-                placeholder="Contoh: Nasi Pandan Wangi, Ayam Semur, Tahu Bacem, Tumis Buncis, & Pisang"
-                value={namaMenu}
-                onChange={(e) => setNamaMenu(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600"
-                required
-              />
-            </div>
-
-            {/* Upload Foto Makanan Utama */}
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-xs font-black text-slate-900 block">
-                    Foto Sajian Porsi Makanan (Tampil di Web Publik)
-                  </label>
-                  <span className="text-[11px] text-slate-500">
-                    Jepret langsung foto piring/box makanan matang.
-                  </span>
-                </div>
-                <span className="text-[10px] font-bold text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                  <CloudUpload className="w-3 h-3" /> Auto-Save GDrive
-                </span>
-              </div>
-
-              <div className="relative h-44 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
-                {menuPhotoUploading ? (
-                  <div className="flex flex-col items-center gap-1.5 text-blue-600">
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                    <span className="text-xs font-bold">Menyimpan foto ke Google Drive...</span>
-                  </div>
-                ) : menuPhotoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={menuPhotoUrl} alt="Foto Menu" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="text-slate-400 flex flex-col items-center gap-1.5 p-4 text-center">
-                    <Camera className="w-7 h-7 text-blue-600" />
-                    <span className="text-xs font-bold text-slate-700">Tap untuk Jepret / Ambil Foto</span>
-                    <span className="text-[10px] text-slate-400">Otomatis tersimpan langsung di Google Drive SPPG</span>
-                  </div>
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  disabled={menuPhotoUploading}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleAutoDriveUpload(file, setMenuPhotoUrl, setMenuPhotoUploading, 'Makanan');
-                  }}
-                  className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                />
-              </div>
-
-              {menuPhotoUrl && (
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <span className="text-emerald-700 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Foto Tersimpan Permanen di Google Drive
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setMenuPhotoUrl(null)}
-                    className="text-rose-600 hover:underline inline-flex items-center gap-0.5 cursor-pointer text-[11px]"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" /> Ganti Foto
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 5 Komponen Makanan */}
-            <div className="space-y-2 pt-1">
-              <span className="text-xs font-bold text-slate-700 block">
-                Rincian 5 Komponen Pokok Makanan:
-              </span>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
-                <div>
-                  <label className="text-[10px] font-bold text-slate-500 block mb-0.5">1. Karbohidrat</label>
-                  <input
-                    type="text"
-                    placeholder="Nasi Pulen"
-                    value={components.karbohidrat}
-                    onChange={(e) => setComponents({ ...components, karbohidrat: e.target.value })}
-                    className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold text-slate-500 block mb-0.5">2. Lauk Hewani</label>
-                  <input
-                    type="text"
-                    placeholder="Ayam Semur"
-                    value={components.laukHewani}
-                    onChange={(e) => setComponents({ ...components, laukHewani: e.target.value })}
-                    className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold text-slate-500 block mb-0.5">3. Lauk Nabati</label>
-                  <input
-                    type="text"
-                    placeholder="Tahu Bacem"
-                    value={components.laukNabati}
-                    onChange={(e) => setComponents({ ...components, laukNabati: e.target.value })}
-                    className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold text-slate-500 block mb-0.5">4. Sayur</label>
-                  <input
-                    type="text"
-                    placeholder="Tumis Buncis"
-                    value={components.sayur}
-                    onChange={(e) => setComponents({ ...components, sayur: e.target.value })}
-                    className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
-                  />
-                </div>
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="text-[10px] font-bold text-slate-500 block mb-0.5">5. Buah</label>
-                  <input
-                    type="text"
-                    placeholder="Pisang Cavendish"
-                    value={components.buah}
-                    onChange={(e) => setComponents({ ...components, buah: e.target.value })}
-                    className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
-                  />
-                </div>
-              </div>
-            </div>
+        {/* Notifikasi Sedang Mengedit Arsip Tertentu */}
+        {editingAlert && (
+          <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-xs font-bold text-amber-900 flex items-center justify-between">
+            <span>{editingAlert}</span>
+            <button
+              type="button"
+              onClick={handleResetForm}
+              className="text-xs text-blue-700 underline font-extrabold cursor-pointer ml-2"
+            >
+              Reset ke Form Kosong
+            </button>
           </div>
+        )}
 
-          {/* ===================== ALUR 2: AKG 2 INPUT ===================== */}
-          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
-                  <Flame className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                    2. Angka Kandungan Gizi (AKG) — Cukup Isi 2 Kelompok
-                  </h2>
-                  <span className="text-[11px] text-slate-500">
-                    Otomatis mengisi Busui, Bumil, dan Balita di laporan akhir.
-                  </span>
-                </div>
-              </div>
-              <span className="text-[10px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded">Alur 2</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* PORSI BESAR */}
-              <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200 space-y-3">
-                <div className="flex items-center justify-between border-b border-blue-200/80 pb-2">
-                  <div>
-                    <span className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-blue-600 text-white">
-                      1. PORSI BESAR
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-600 block mt-1">
-                      SD 4-6 / SMP / SMK / GURU
-                    </span>
-                  </div>
-                  <span className="text-[9px] font-extrabold text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-right">
-                    Auto-Copy ke:<br />Busui & Bumil
-                  </span>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div>
-                    <label className="text-[10px] font-bold text-amber-900 block mb-0.5">Energi (Kkal)</label>
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      value={akgBesar.energyKcal}
-                      onChange={(e) => handleAkgBesarChange('energyKcal', e.target.value)}
-                      placeholder="Contoh: 746.15"
-                      className="w-full px-2.5 py-2 border border-amber-300 rounded-lg bg-white font-black text-amber-950 focus:ring-1 focus:ring-amber-500"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Protein (g)</label>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={akgBesar.proteinG}
-                        onChange={(e) => handleAkgBesarChange('proteinG', e.target.value)}
-                        placeholder="Contoh: 24.08"
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Lemak (g)</label>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={akgBesar.fatG}
-                        onChange={(e) => handleAkgBesarChange('fatG', e.target.value)}
-                        placeholder="Contoh: 24.32"
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Karbo (g)</label>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={akgBesar.carbsG}
-                        onChange={(e) => handleAkgBesarChange('carbsG', e.target.value)}
-                        placeholder="Contoh: 109.13"
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Serat (g)</label>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={akgBesar.fiberG}
-                        onChange={(e) => handleAkgBesarChange('fiberG', e.target.value)}
-                        placeholder="Contoh: 3.31"
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* PORSI KECIL */}
-              <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-200 space-y-3">
-                <div className="flex items-center justify-between border-b border-emerald-200/80 pb-2">
-                  <div>
-                    <span className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-600 text-white">
-                      2. PORSI KECIL
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-600 block mt-1">
-                      PAUD / TK / SD 1-3
-                    </span>
-                  </div>
-                  <span className="text-[9px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-right">
-                    Auto-Copy ke:<br />Balita 6-60 Bln
-                  </span>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div>
-                    <label className="text-[10px] font-bold text-amber-900 block mb-0.5">Energi (Kkal)</label>
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      value={akgKecil.energyKcal}
-                      onChange={(e) => handleAkgKecilChange('energyKcal', e.target.value)}
-                      placeholder="Contoh: 656.90"
-                      className="w-full px-2.5 py-2 border border-amber-300 rounded-lg bg-white font-black text-amber-950 focus:ring-1 focus:ring-amber-500"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Protein (g)</label>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={akgKecil.proteinG}
-                        onChange={(e) => handleAkgKecilChange('proteinG', e.target.value)}
-                        placeholder="Contoh: 21.98"
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Lemak (g)</label>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={akgKecil.fatG}
-                        onChange={(e) => handleAkgKecilChange('fatG', e.target.value)}
-                        placeholder="Contoh: 23.90"
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Karbo (g)</label>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={akgKecil.carbsG}
-                        onChange={(e) => handleAkgKecilChange('carbsG', e.target.value)}
-                        placeholder="Contoh: 89.86"
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Serat (g)</label>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={akgKecil.fiberG}
-                        onChange={(e) => handleAkgKecilChange('fiberG', e.target.value)}
-                        placeholder="Contoh: 3.26"
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ===================== ALUR 3: DOKUMENTASI ===================== */}
-          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                  <Camera className="w-4 h-4" />
-                </div>
-                <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                  3. Dokumentasi Dapur (3 Tahap)
-                </h2>
-              </div>
-              <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded">Alur 3</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-              {/* 1. Persiapan */}
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                <span className="text-xs font-bold text-slate-800 block">1. Persiapan Bahan</span>
-                <div className="relative h-32 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
-                  {prepUploading ? (
-                    <div className="flex flex-col items-center gap-1 text-blue-600">
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                      <span className="text-[10px] font-bold">Uploading ke GDrive...</span>
-                    </div>
-                  ) : prepPhotoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={prepPhotoUrl} alt="Persiapan" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="text-slate-400 flex flex-col items-center gap-1">
-                      <Camera className="w-6 h-6 text-blue-600" />
-                      <span className="text-[11px] font-bold text-slate-700">Jepret / Ambil Foto</span>
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={prepUploading}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleAutoDriveUpload(file, setPrepPhotoUrl, setPrepUploading, 'Persiapan');
-                    }}
-                    className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  />
-                </div>
-                {prepPhotoUrl && (
-                  <div className="flex items-center justify-between text-[11px] pt-0.5">
-                    <span className="text-emerald-700 font-bold flex items-center gap-0.5">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Tersimpan di GDrive
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setPrepPhotoUrl(null)}
-                      className="text-rose-600 hover:underline cursor-pointer text-[10px]"
-                    >
-                      <Trash2 className="w-3 h-3" /> Hapus
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* 2. Pengolahan */}
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                <span className="text-xs font-bold text-slate-800 block">2. Pengolahan Masak</span>
-                <div className="relative h-32 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
-                  {cookUploading ? (
-                    <div className="flex flex-col items-center gap-1 text-blue-600">
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                      <span className="text-[10px] font-bold">Uploading ke GDrive...</span>
-                    </div>
-                  ) : cookPhotoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cookPhotoUrl} alt="Pengolahan" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="text-slate-400 flex flex-col items-center gap-1">
-                      <Camera className="w-6 h-6 text-blue-600" />
-                      <span className="text-[11px] font-bold text-slate-700">Jepret / Ambil Foto</span>
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={cookUploading}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleAutoDriveUpload(file, setCookPhotoUrl, setCookUploading, 'Pengolahan');
-                    }}
-                    className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  />
-                </div>
-                {cookPhotoUrl && (
-                  <div className="flex items-center justify-between text-[11px] pt-0.5">
-                    <span className="text-emerald-700 font-bold flex items-center gap-0.5">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Tersimpan di GDrive
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setCookPhotoUrl(null)}
-                      className="text-rose-600 hover:underline cursor-pointer text-[10px]"
-                    >
-                      <Trash2 className="w-3 h-3" /> Hapus
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* 3. Pengemasan */}
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                <span className="text-xs font-bold text-slate-800 block">3. Pengemasan Box</span>
-                <div className="relative h-32 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
-                  {packUploading ? (
-                    <div className="flex flex-col items-center gap-1 text-blue-600">
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                      <span className="text-[10px] font-bold">Uploading ke GDrive...</span>
-                    </div>
-                  ) : packPhotoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={packPhotoUrl} alt="Pengemasan" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="text-slate-400 flex flex-col items-center gap-1">
-                      <Camera className="w-6 h-6 text-blue-600" />
-                      <span className="text-[11px] font-bold text-slate-700">Jepret / Ambil Foto</span>
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={packUploading}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleAutoDriveUpload(file, setPackPhotoUrl, setPackUploading, 'Pengemasan');
-                    }}
-                    className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  />
-                </div>
-                {packPhotoUrl && (
-                  <div className="flex items-center justify-between text-[11px] pt-0.5">
-                    <span className="text-emerald-700 font-bold flex items-center gap-0.5">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Tersimpan di GDrive
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setPackPhotoUrl(null)}
-                      className="text-rose-600 hover:underline cursor-pointer text-[10px]"
-                    >
-                      <Trash2 className="w-3 h-3" /> Hapus
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* ===================== ALUR 4: ALOKASI ===================== */}
-          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
-                  <Users className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                    4. Alokasi Penerima Manfaat (12 Sekolah + 1 Posyandu)
-                  </h2>
-                  <span className="text-[11px] text-slate-500">
-                    Total Master: 1.554 Porsi. Atur sekolah libur khusus tanggal ini jika ada.
-                  </span>
-                </div>
-              </div>
-              <span className="text-[10px] text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded">Alur 4</span>
-            </div>
-
-            <div className="border border-slate-200 rounded-xl overflow-hidden">
-              <div className="max-h-64 overflow-y-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold text-[10px] uppercase sticky top-0">
-                    <tr>
-                      <th className="py-2.5 px-3">Lembaga Sekolah / Posyandu</th>
-                      <th className="py-2.5 px-3 w-24">Tipe</th>
-                      <th className="py-2.5 px-3 w-28 text-right">Master Kuota</th>
-                      <th className="py-2.5 px-3 w-32 text-center">Status Hari Ini</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {INITIAL_BENEFICIARIES.map((site) => {
-                      const isOverridden = beneficiaryOverrides[site.id]?.condition === 'libur';
-                      return (
-                        <tr key={site.id} className="hover:bg-slate-50">
-                          <td className="py-2 px-3 font-extrabold text-slate-900">{site.name}</td>
-                          <td className="py-2 px-3 text-slate-500">{site.type}</td>
-                          <td className="py-2 px-3 text-right font-black text-slate-900">{site.masterCount}</td>
-                          <td className="py-2 px-3 text-center">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const current = beneficiaryOverrides[site.id];
-                                if (current?.condition === 'libur') {
-                                  const updated = { ...beneficiaryOverrides };
-                                  delete updated[site.id];
-                                  setBeneficiaryOverrides(updated);
-                                } else {
-                                  setBeneficiaryOverrides({
-                                    ...beneficiaryOverrides,
-                                    [site.id]: { condition: 'libur', effectiveCount: 0, reason: 'Libur Sekolah' },
-                                  });
-                                }
-                              }}
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
-                                isOverridden
-                                  ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                                  : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
-                              }`}
-                            >
-                              {isOverridden ? 'Libur (0 Porsi)' : 'Aktif Distribusi'}
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* ===================== ALUR 5: URAIAN KEGIATAN ===================== */}
-          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center">
-                  <FileText className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                    5. Uraian Kegiatan Operasional Dapur & Distribusi
-                  </h2>
-                  <span className="text-[11px] text-slate-500">
-                    Log urutan tahapan kerja persiapan, masak, packing, dan keberangkatan armada.
-                  </span>
-                </div>
-              </div>
-              <span className="text-[10px] text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded">Alur 5</span>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                Catatan / Log Uraian Kegiatan:
-              </label>
-              <textarea
-                rows={5}
-                value={uraianKegiatan}
-                onChange={(e) => setUraianKegiatan(e.target.value)}
-                placeholder="Tuliskan uraian tahapan kegiatan operasional..."
-                className="w-full p-3 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600 leading-relaxed font-sans"
-              />
-            </div>
-          </div>
-
-          {/* Action Footer */}
-          <div className="space-y-3 pt-2">
+        {/* ===================== TAB 1: FORM INPUT / EDIT MENU ===================== */}
+        {activeTab === 'input' && (
+          <form onSubmit={handlePublish} className="space-y-6">
             {publishSuccess && (
-              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-xs font-bold text-emerald-800 flex items-center gap-2">
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 flex items-center gap-2 shadow-xs">
                 <Check className="w-5 h-5 text-emerald-600 shrink-0" />
-                <span>Menu dan laporan tanggal {menuDate} berhasil disimpan dan dipublikasikan ke arsip!</span>
+                <span>Arsip menu untuk tanggal {menuDate} berhasil diperbarui & tersimpan!</span>
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row items-center justify-end gap-3">
+            {/* ===================== ALUR 1: MENU ===================== */}
+            <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                    <Utensils className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                    1. Menu Makanan & Tanggal Arsip
+                  </h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleResetForm}
+                    className="text-[11px] font-bold text-slate-500 hover:text-blue-600 flex items-center gap-1 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset Form</span>
+                  </button>
+                  <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded">Alur 1</span>
+                </div>
+              </div>
+
+              {/* Tanggal Layanan */}
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Tanggal Layanan (Bisa Hari Ini, Kemarin, atau Tanggal Lampau):</span>
+                </label>
+
+                <div className="flex flex-col sm:flex-row gap-2 items-center">
+                  <input
+                    type="date"
+                    value={menuDate}
+                    onChange={(e) => setMenuDate(e.target.value)}
+                    className="w-full sm:w-auto px-3.5 py-2 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-900 focus:ring-2 focus:ring-blue-600"
+                    required
+                  />
+                  <span className="text-[11px] text-slate-500">
+                    *Mengedit tanggal yang sudah ada akan otomatis memperbarui arsip tanggal tersebut.
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Nama Menu Lengkap</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Nasi Pandan Wangi, Ayam Semur, Tahu Bacem, Tumis Buncis, & Pisang"
+                  value={namaMenu}
+                  onChange={(e) => setNamaMenu(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600"
+                  required
+                />
+              </div>
+
+              {/* Upload Foto Makanan Utama */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-black text-slate-900 block">
+                      Foto Sajian Porsi Makanan (Tampil di Web Publik)
+                    </label>
+                    <span className="text-[11px] text-slate-500">
+                      Jepret langsung foto piring/box makanan matang.
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    <CloudUpload className="w-3 h-3" /> Auto-Save GDrive
+                  </span>
+                </div>
+
+                <div className="relative h-44 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
+                  {menuPhotoUploading ? (
+                    <div className="flex flex-col items-center gap-1.5 text-blue-600">
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <span className="text-xs font-bold">Menyimpan foto ke Google Drive...</span>
+                    </div>
+                  ) : menuPhotoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={menuPhotoUrl} alt="Foto Menu" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-slate-400 flex flex-col items-center gap-1.5 p-4 text-center">
+                      <Camera className="w-7 h-7 text-blue-600" />
+                      <span className="text-xs font-bold text-slate-700">Tap untuk Jepret / Ambil Foto</span>
+                      <span className="text-[10px] text-slate-400">Otomatis tersimpan langsung di Google Drive SPPG</span>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={menuPhotoUploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleAutoDriveUpload(file, setMenuPhotoUrl, setMenuPhotoUploading, 'Makanan');
+                    }}
+                    className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                  />
+                </div>
+
+                {menuPhotoUrl && (
+                  <div className="flex items-center justify-between text-xs pt-1">
+                    <span className="text-emerald-700 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Foto Tersimpan Permanen di Google Drive
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setMenuPhotoUrl(null)}
+                      className="text-rose-600 hover:underline inline-flex items-center gap-0.5 cursor-pointer text-[11px]"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Ganti Foto
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* 5 Komponen Makanan */}
+              <div className="space-y-2 pt-1">
+                <span className="text-xs font-bold text-slate-700 block">
+                  Rincian 5 Komponen Pokok Makanan:
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-0.5">1. Karbohidrat</label>
+                    <input
+                      type="text"
+                      placeholder="Nasi Pulen"
+                      value={components.karbohidrat}
+                      onChange={(e) => setComponents({ ...components, karbohidrat: e.target.value })}
+                      className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-0.5">2. Lauk Hewani</label>
+                    <input
+                      type="text"
+                      placeholder="Ayam Semur"
+                      value={components.laukHewani}
+                      onChange={(e) => setComponents({ ...components, laukHewani: e.target.value })}
+                      className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-0.5">3. Lauk Nabati</label>
+                    <input
+                      type="text"
+                      placeholder="Tahu Bacem"
+                      value={components.laukNabati}
+                      onChange={(e) => setComponents({ ...components, laukNabati: e.target.value })}
+                      className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-0.5">4. Sayur</label>
+                    <input
+                      type="text"
+                      placeholder="Tumis Buncis"
+                      value={components.sayur}
+                      onChange={(e) => setComponents({ ...components, sayur: e.target.value })}
+                      className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
+                    />
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="text-[10px] font-bold text-slate-500 block mb-0.5">5. Buah</label>
+                    <input
+                      type="text"
+                      placeholder="Pisang Cavendish"
+                      value={components.buah}
+                      onChange={(e) => setComponents({ ...components, buah: e.target.value })}
+                      className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ===================== ALUR 2: AKG ===================== */}
+            <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+                    <Flame className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                      2. Angka Kandungan Gizi (AKG) — Cukup Isi 2 Kelompok
+                    </h2>
+                    <span className="text-[11px] text-slate-500">
+                      Otomatis mengisi Busui, Bumil, dan Balita di laporan akhir.
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded">Alur 2</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* PORSI BESAR */}
+                <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200 space-y-3">
+                  <div className="flex items-center justify-between border-b border-blue-200/80 pb-2">
+                    <div>
+                      <span className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-blue-600 text-white">
+                        1. PORSI BESAR
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-600 block mt-1">
+                        SD 4-6 / SMP / SMK / GURU
+                      </span>
+                    </div>
+                    <span className="text-[9px] font-extrabold text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-right">
+                      Auto-Copy ke:<br />Busui & Bumil
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <label className="text-[10px] font-bold text-amber-900 block mb-0.5">Energi (Kkal)</label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={akgBesar.energyKcal}
+                        onChange={(e) => handleAkgBesarChange('energyKcal', e.target.value)}
+                        placeholder="Contoh: 746.15"
+                        className="w-full px-2.5 py-2 border border-amber-300 rounded-lg bg-white font-black text-amber-950 focus:ring-1 focus:ring-amber-500"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Protein (g)</label>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={akgBesar.proteinG}
+                          onChange={(e) => handleAkgBesarChange('proteinG', e.target.value)}
+                          placeholder="Contoh: 24.08"
+                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Lemak (g)</label>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={akgBesar.fatG}
+                          onChange={(e) => handleAkgBesarChange('fatG', e.target.value)}
+                          placeholder="Contoh: 24.32"
+                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Karbo (g)</label>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={akgBesar.carbsG}
+                          onChange={(e) => handleAkgBesarChange('carbsG', e.target.value)}
+                          placeholder="Contoh: 109.13"
+                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Serat (g)</label>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={akgBesar.fiberG}
+                          onChange={(e) => handleAkgBesarChange('fiberG', e.target.value)}
+                          placeholder="Contoh: 3.31"
+                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* PORSI KECIL */}
+                <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-200 space-y-3">
+                  <div className="flex items-center justify-between border-b border-emerald-200/80 pb-2">
+                    <div>
+                      <span className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-600 text-white">
+                        2. PORSI KECIL
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-600 block mt-1">
+                        PAUD / TK / SD 1-3
+                      </span>
+                    </div>
+                    <span className="text-[9px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-right">
+                      Auto-Copy ke:<br />Balita 6-60 Bln
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <label className="text-[10px] font-bold text-amber-900 block mb-0.5">Energi (Kkal)</label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={akgKecil.energyKcal}
+                        onChange={(e) => handleAkgKecilChange('energyKcal', e.target.value)}
+                        placeholder="Contoh: 656.90"
+                        className="w-full px-2.5 py-2 border border-amber-300 rounded-lg bg-white font-black text-amber-950 focus:ring-1 focus:ring-amber-500"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Protein (g)</label>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={akgKecil.proteinG}
+                          onChange={(e) => handleAkgKecilChange('proteinG', e.target.value)}
+                          placeholder="Contoh: 21.98"
+                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Lemak (g)</label>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={akgKecil.fatG}
+                          onChange={(e) => handleAkgKecilChange('fatG', e.target.value)}
+                          placeholder="Contoh: 23.90"
+                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Karbo (g)</label>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={akgKecil.carbsG}
+                          onChange={(e) => handleAkgKecilChange('carbsG', e.target.value)}
+                          placeholder="Contoh: 89.86"
+                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Serat (g)</label>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={akgKecil.fiberG}
+                          onChange={(e) => handleAkgKecilChange('fiberG', e.target.value)}
+                          placeholder="Contoh: 3.26"
+                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ===================== ALUR 3: DOKUMENTASI ===================== */}
+            <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                    <Camera className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                    3. Dokumentasi Dapur (3 Tahap)
+                  </h2>
+                </div>
+                <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded">Alur 3</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                {/* 1. Persiapan */}
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                  <span className="text-xs font-bold text-slate-800 block">1. Persiapan Bahan</span>
+                  <div className="relative h-32 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
+                    {prepUploading ? (
+                      <div className="flex flex-col items-center gap-1 text-blue-600">
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                        <span className="text-[10px] font-bold">Uploading ke GDrive...</span>
+                      </div>
+                    ) : prepPhotoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={prepPhotoUrl} alt="Persiapan" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-slate-400 flex flex-col items-center gap-1">
+                        <Camera className="w-6 h-6 text-blue-600" />
+                        <span className="text-[11px] font-bold text-slate-700">Jepret / Ambil Foto</span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={prepUploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleAutoDriveUpload(file, setPrepPhotoUrl, setPrepUploading, 'Persiapan');
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                  </div>
+                  {prepPhotoUrl && (
+                    <div className="flex items-center justify-between text-[11px] pt-0.5">
+                      <span className="text-emerald-700 font-bold flex items-center gap-0.5">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Tersimpan di GDrive
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setPrepPhotoUrl(null)}
+                        className="text-rose-600 hover:underline cursor-pointer text-[10px]"
+                      >
+                        <Trash2 className="w-3 h-3" /> Hapus
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Pengolahan */}
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                  <span className="text-xs font-bold text-slate-800 block">2. Pengolahan Masak</span>
+                  <div className="relative h-32 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
+                    {cookUploading ? (
+                      <div className="flex flex-col items-center gap-1 text-blue-600">
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                        <span className="text-[10px] font-bold">Uploading ke GDrive...</span>
+                      </div>
+                    ) : cookPhotoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={cookPhotoUrl} alt="Pengolahan" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-slate-400 flex flex-col items-center gap-1">
+                        <Camera className="w-6 h-6 text-blue-600" />
+                        <span className="text-[11px] font-bold text-slate-700">Jepret / Ambil Foto</span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={cookUploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleAutoDriveUpload(file, setCookPhotoUrl, setCookUploading, 'Pengolahan');
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                  </div>
+                  {cookPhotoUrl && (
+                    <div className="flex items-center justify-between text-[11px] pt-0.5">
+                      <span className="text-emerald-700 font-bold flex items-center gap-0.5">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Tersimpan di GDrive
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setCookPhotoUrl(null)}
+                        className="text-rose-600 hover:underline cursor-pointer text-[10px]"
+                      >
+                        <Trash2 className="w-3 h-3" /> Hapus
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Pengemasan */}
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                  <span className="text-xs font-bold text-slate-800 block">3. Pengemasan Box</span>
+                  <div className="relative h-32 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
+                    {packUploading ? (
+                      <div className="flex flex-col items-center gap-1 text-blue-600">
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                        <span className="text-[10px] font-bold">Uploading ke GDrive...</span>
+                      </div>
+                    ) : packPhotoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={packPhotoUrl} alt="Pengemasan" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-slate-400 flex flex-col items-center gap-1">
+                        <Camera className="w-6 h-6 text-blue-600" />
+                        <span className="text-[11px] font-bold text-slate-700">Jepret / Ambil Foto</span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={packUploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleAutoDriveUpload(file, setPackPhotoUrl, setPackUploading, 'Pengemasan');
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                  </div>
+                  {packPhotoUrl && (
+                    <div className="flex items-center justify-between text-[11px] pt-0.5">
+                      <span className="text-emerald-700 font-bold flex items-center gap-0.5">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Tersimpan di GDrive
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setPackPhotoUrl(null)}
+                        className="text-rose-600 hover:underline cursor-pointer text-[10px]"
+                      >
+                        <Trash2 className="w-3 h-3" /> Hapus
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ===================== ALUR 4: ALOKASI ===================== */}
+            <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                      4. Alokasi Penerima Manfaat (12 Sekolah + 1 Posyandu)
+                    </h2>
+                    <span className="text-[11px] text-slate-500">
+                      Total Master: 1.554 Porsi. Atur sekolah libur khusus tanggal ini jika ada.
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded">Alur 4</span>
+              </div>
+
+              <div className="border border-slate-200 rounded-xl overflow-hidden">
+                <div className="max-h-64 overflow-y-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold text-[10px] uppercase sticky top-0">
+                      <tr>
+                        <th className="py-2.5 px-3">Lembaga Sekolah / Posyandu</th>
+                        <th className="py-2.5 px-3 w-24">Tipe</th>
+                        <th className="py-2.5 px-3 w-28 text-right">Master Kuota</th>
+                        <th className="py-2.5 px-3 w-32 text-center">Status Hari Ini</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {INITIAL_BENEFICIARIES.map((site) => {
+                        const isOverridden = beneficiaryOverrides[site.id]?.condition === 'libur';
+                        return (
+                          <tr key={site.id} className="hover:bg-slate-50">
+                            <td className="py-2 px-3 font-extrabold text-slate-900">{site.name}</td>
+                            <td className="py-2 px-3 text-slate-500">{site.type}</td>
+                            <td className="py-2 px-3 text-right font-black text-slate-900">{site.masterCount}</td>
+                            <td className="py-2 px-3 text-center">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const current = beneficiaryOverrides[site.id];
+                                  if (current?.condition === 'libur') {
+                                    const updated = { ...beneficiaryOverrides };
+                                    delete updated[site.id];
+                                    setBeneficiaryOverrides(updated);
+                                  } else {
+                                    setBeneficiaryOverrides({
+                                      ...beneficiaryOverrides,
+                                      [site.id]: { condition: 'libur', effectiveCount: 0, reason: 'Libur Sekolah' },
+                                    });
+                                  }
+                                }}
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
+                                  isOverridden
+                                    ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                                    : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                                }`}
+                              >
+                                {isOverridden ? 'Libur (0 Porsi)' : 'Aktif Distribusi'}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* ===================== ALUR 5: URAIAN KEGIATAN ===================== */}
+            <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                      5. Uraian Kegiatan Operasional Dapur & Distribusi
+                    </h2>
+                    <span className="text-[11px] text-slate-500">
+                      Log urutan tahapan kerja persiapan, masak, packing, dan keberangkatan armada.
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded">Alur 5</span>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  Catatan / Log Uraian Kegiatan:
+                </label>
+                <textarea
+                  rows={5}
+                  value={uraianKegiatan}
+                  onChange={(e) => setUraianKegiatan(e.target.value)}
+                  placeholder="Tuliskan uraian tahapan kegiatan operasional..."
+                  className="w-full p-3 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600 leading-relaxed font-sans"
+                />
+              </div>
+            </div>
+
+            {/* Action Footer */}
+            <div className="space-y-3 pt-2">
+              <div className="flex flex-col sm:flex-row items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+                >
+                  <Printer className="w-4 h-4 text-slate-600" />
+                  <span>Cetak Laporan Lengkap</span>
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={menuPhotoUploading || prepUploading || cookUploading || packUploading}
+                  className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Simpan & Rilis Laporan Harian</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        )}
+
+        {/* ===================== TAB 2: PANEL KELOLA & EDIT ARSIP ===================== */}
+        {activeTab === 'list' && (
+          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <h2 className="text-base font-black text-slate-900">
+                  Daftar Arsip Operasional Tersimpan
+                </h2>
+                <span className="text-xs text-slate-500">
+                  Klik tombol <strong>Edit</strong> untuk mengubah data menu, foto, atau AKG tanggal tertentu.
+                </span>
+              </div>
               <button
                 type="button"
-                onClick={() => window.print()}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+                onClick={() => {
+                  handleResetForm();
+                  setActiveTab('input');
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 cursor-pointer shadow-xs"
               >
-                <Printer className="w-4 h-4 text-slate-600" />
-                <span>Cetak Laporan Lengkap</span>
-              </button>
-
-              <button
-                type="submit"
-                disabled={menuPhotoUploading || prepUploading || cookUploading || packUploading}
-                className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                <Save className="w-4 h-4" />
-                <span>Simpan & Rilis Laporan Harian</span>
+                + Input Menu Baru
               </button>
             </div>
+
+            {savedMenuList.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-xs border-2 border-dashed border-slate-200 rounded-xl">
+                Belum ada arsip yang tersimpan. Silakan isi form di tab &quot;Form Input / Edit&quot;.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {savedMenuList.map((menu) => (
+                  <div key={menu.date} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 p-2 rounded-xl transition-colors">
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-100 text-blue-900">
+                          {menu.date}
+                        </span>
+                        <span className="text-xs font-bold text-slate-900 truncate">
+                          {menu.title}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate">
+                        Karbo: {menu.components?.karbohidrat || '-'} • Hewani: {menu.components?.laukHewani || '-'} • Sayur: {menu.components?.sayur || '-'}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                      <button
+                        type="button"
+                        onClick={() => handleLoadMenuToEdit(menu)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                        <span>Edit Arsip Ini</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteMenu(menu.date)}
+                        className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
+                        title="Hapus Arsip"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </form>
+        )}
       </main>
     </div>
   );
