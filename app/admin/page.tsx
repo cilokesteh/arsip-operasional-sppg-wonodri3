@@ -22,11 +22,11 @@ import {
   Printer,
   Users,
   BookmarkCheck,
+  Sparkles,
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
 import { INITIAL_BENEFICIARIES } from '@/lib/data';
 
-// AKG input disimpan sebagai string agar saat dihapus / backspace tidak memaksakan angka 0 di depan
 interface AKGInputRaw {
   groupName: string;
   targetCategory: string;
@@ -36,14 +36,6 @@ interface AKGInputRaw {
   carbsG: string;
   fiberG: string;
 }
-
-const DEFAULT_AKG_PRESETS: AKGInputRaw[] = [
-  { groupName: 'Besar', targetCategory: 'SD 4-6 / SMP / SMK / GURU', energyKcal: '572.4', proteinG: '15.5', fatG: '14.5', carbsG: '83.9', fiberG: '2.4' },
-  { groupName: 'Kecil', targetCategory: 'PAUD / TK / SD 1-3', energyKcal: '462.9', proteinG: '13.6', fatG: '14.4', carbsG: '81.7', fiberG: '2.4' },
-  { groupName: 'Balita', targetCategory: '6 - 60 Bulan (Balita)', energyKcal: '426.9', proteinG: '13.0', fatG: '14.3', carbsG: '51.7', fiberG: '2.0' },
-  { groupName: 'Busui', targetCategory: 'Ibu Menyusui', energyKcal: '572.4', proteinG: '15.5', fatG: '14.5', carbsG: '83.9', fiberG: '2.4' },
-  { groupName: 'Bumil', targetCategory: 'Ibu Hamil', energyKcal: '572.4', proteinG: '15.5', fatG: '14.5', carbsG: '83.9', fiberG: '2.4' },
-];
 
 const DEFAULT_PASSCODE = '91206';
 
@@ -67,8 +59,24 @@ export default function AdminPage() {
   const [menuPhotoUrl, setMenuPhotoUrl] = useState<string | null>(null);
   const [menuPhotoUploading, setMenuPhotoUploading] = useState<boolean>(false);
 
-  // 2. Data AKG 5 Kelompok (Raw String State agar bebas dari bug leading 0)
-  const [akgList, setAkgList] = useState<AKGInputRaw[]>(DEFAULT_AKG_PRESETS);
+  // 2. INPUT AKG MASTER HANYA 2 KELOMPOK (BESAR & KECIL)
+  // Besar -> otomatis mengisi Busui & Bumil
+  // Kecil -> otomatis mengisi Balita
+  const [akgBesar, setAkgBesar] = useState<Omit<AKGInputRaw, 'groupName' | 'targetCategory'>>({
+    energyKcal: '',
+    proteinG: '',
+    fatG: '',
+    carbsG: '',
+    fiberG: '',
+  });
+
+  const [akgKecil, setAkgKecil] = useState<Omit<AKGInputRaw, 'groupName' | 'targetCategory'>>({
+    energyKcal: '',
+    proteinG: '',
+    fatG: '',
+    carbsG: '',
+    fiberG: '',
+  });
 
   // 3. State 3 Foto Dapur
   const [prepPhotoUrl, setPrepPhotoUrl] = useState<string | null>(null);
@@ -91,7 +99,7 @@ export default function AdminPage() {
   const [publishSuccess, setPublishSuccess] = useState(false);
   const [draftSavedAlert, setDraftSavedAlert] = useState(false);
 
-  // LOAD DRAFT TERSIMPAN SECARA OTOMATIS SAAT HALAMAN DIBUKA
+  // LOAD DRAFT TERSIMPAN SECARA OTOMATIS
   useEffect(() => {
     const authStatus = sessionStorage.getItem('sppg_admin_auth');
     if (authStatus === 'true') {
@@ -99,13 +107,14 @@ export default function AdminPage() {
     }
 
     try {
-      const savedDraft = localStorage.getItem('sppg_admin_draft');
+      const savedDraft = localStorage.getItem('sppg_admin_draft_v2');
       if (savedDraft) {
         const draft = JSON.parse(savedDraft);
         if (draft.menuDate) setMenuDate(draft.menuDate);
         if (draft.namaMenu) setNamaMenu(draft.namaMenu);
         if (draft.components) setComponents(draft.components);
-        if (draft.akgList) setAkgList(draft.akgList);
+        if (draft.akgBesar) setAkgBesar(draft.akgBesar);
+        if (draft.akgKecil) setAkgKecil(draft.akgKecil);
         if (draft.menuPhotoUrl) setMenuPhotoUrl(draft.menuPhotoUrl);
         if (draft.prepPhotoUrl) setPrepPhotoUrl(draft.prepPhotoUrl);
         if (draft.cookPhotoUrl) setCookPhotoUrl(draft.cookPhotoUrl);
@@ -118,14 +127,15 @@ export default function AdminPage() {
     }
   }, []);
 
-  // AUTO-SAVE SETIAP KALI USER EDIT APAPUN (AKG, MENU, KOMPONEN, FOTO, DLL)
+  // AUTO-SAVE SETIAP KALI USER KETIK
   useEffect(() => {
     if (!isAuthenticated) return;
     const draftPayload = {
       menuDate,
       namaMenu,
       components,
-      akgList,
+      akgBesar,
+      akgKecil,
       menuPhotoUrl,
       prepPhotoUrl,
       cookPhotoUrl,
@@ -135,7 +145,7 @@ export default function AdminPage() {
       lastSaved: new Date().toISOString(),
     };
     try {
-      localStorage.setItem('sppg_admin_draft', JSON.stringify(draftPayload));
+      localStorage.setItem('sppg_admin_draft_v2', JSON.stringify(draftPayload));
     } catch {
       // fallback
     }
@@ -144,7 +154,8 @@ export default function AdminPage() {
     menuDate,
     namaMenu,
     components,
-    akgList,
+    akgBesar,
+    akgKecil,
     menuPhotoUrl,
     prepPhotoUrl,
     cookPhotoUrl,
@@ -170,21 +181,22 @@ export default function AdminPage() {
     setInputPasscode('');
   };
 
-  // Bersihkan string angka agar tidak ada leading zero yang tidak diinginkan
+  // Bersihkan string angka dari leading zero
   const sanitizeNumberString = (val: string) => {
-    // izinkan koma/titik desimal, tapi buang 0 di depan jika diikuti angka bulat lain (misal "0746" -> "746")
     if (val.length > 1 && val.startsWith('0') && !val.startsWith('0.') && !val.startsWith('0,')) {
       return val.replace(/^0+/, '');
     }
     return val;
   };
 
-  // Ubah nilai AKG dan langsung picu draft auto-save
-  const handleAkgChange = (index: number, field: keyof AKGInputRaw, rawValue: string) => {
-    const cleanValue = sanitizeNumberString(rawValue);
-    const updated = [...akgList];
-    updated[index] = { ...updated[index], [field]: cleanValue };
-    setAkgList(updated);
+  const handleAkgBesarChange = (field: keyof typeof akgBesar, rawValue: string) => {
+    setAkgBesar((prev) => ({ ...prev, [field]: sanitizeNumberString(rawValue) }));
+    setDraftSavedAlert(true);
+    setTimeout(() => setDraftSavedAlert(false), 2000);
+  };
+
+  const handleAkgKecilChange = (field: keyof typeof akgKecil, rawValue: string) => {
+    setAkgKecil((prev) => ({ ...prev, [field]: sanitizeNumberString(rawValue) }));
     setDraftSavedAlert(true);
     setTimeout(() => setDraftSavedAlert(false), 2000);
   };
@@ -212,6 +224,90 @@ export default function AdminPage() {
       return;
     }
 
+    const parseNum = (s: string, def: number) => {
+      const v = parseFloat(s.replace(',', '.'));
+      return isNaN(v) ? def : v;
+    };
+
+    // Auto-Generate 5 Kelompok Sesuai Aturan User:
+    // 1. Besar (SD 4-6, SMP, SMK, Guru) -> input user
+    // 2. Kecil (PAUD, TK, SD 1-3) -> input user
+    // 3. Balita -> auto fill sama dengan Kecil
+    // 4. Busui -> auto fill sama dengan Besar
+    // 5. Bumil -> auto fill sama dengan Besar
+    const generatedNutritionCards = [
+      {
+        groupName: 'Besar',
+        targetCategory: 'SD 4-6 / SMP / SMK / GURU',
+        portionBadge: 'Porsi Remaja & Dewasa',
+        energyKcal: parseNum(akgBesar.energyKcal, 746.15),
+        proteinG: parseNum(akgBesar.proteinG, 24.08),
+        fatG: parseNum(akgBesar.fatG, 24.32),
+        carbsG: parseNum(akgBesar.carbsG, 109.13),
+        fiberG: parseNum(akgBesar.fiberG, 3.31),
+        color: '#2563eb',
+        bgLight: '#eff6ff',
+        borderAccent: '#3b82f6',
+        recommendedPct: { protein: 25, fat: 23, carbs: 65, fiber: 20 },
+      },
+      {
+        groupName: 'Kecil',
+        targetCategory: 'PAUD / TK / SD 1-3',
+        portionBadge: 'Porsi Anak Usia Dini',
+        energyKcal: parseNum(akgKecil.energyKcal, 656.9),
+        proteinG: parseNum(akgKecil.proteinG, 21.98),
+        fatG: parseNum(akgKecil.fatG, 23.9),
+        carbsG: parseNum(akgKecil.carbsG, 89.86),
+        fiberG: parseNum(akgKecil.fiberG, 3.26),
+        color: '#059669',
+        bgLight: '#ecfdf5',
+        borderAccent: '#10b981',
+        recommendedPct: { protein: 22, fat: 24, carbs: 60, fiber: 18 },
+      },
+      {
+        groupName: 'Balita',
+        targetCategory: '6 - 60 Bulan (Balita)',
+        portionBadge: 'Sama dengan Porsi Kecil',
+        energyKcal: parseNum(akgKecil.energyKcal, 656.9),
+        proteinG: parseNum(akgKecil.proteinG, 21.98),
+        fatG: parseNum(akgKecil.fatG, 23.9),
+        carbsG: parseNum(akgKecil.carbsG, 89.86),
+        fiberG: parseNum(akgKecil.fiberG, 3.26),
+        color: '#d97706',
+        bgLight: '#fffbeb',
+        borderAccent: '#f59e0b',
+        recommendedPct: { protein: 20, fat: 25, carbs: 45, fiber: 15 },
+      },
+      {
+        groupName: 'Busui',
+        targetCategory: 'Ibu Menyusui (Masa Laktasi)',
+        portionBadge: 'Sama dengan Porsi Besar',
+        energyKcal: parseNum(akgBesar.energyKcal, 746.15),
+        proteinG: parseNum(akgBesar.proteinG, 24.08),
+        fatG: parseNum(akgBesar.fatG, 24.32),
+        carbsG: parseNum(akgBesar.carbsG, 109.13),
+        fiberG: parseNum(akgBesar.fiberG, 3.31),
+        color: '#e11d48',
+        bgLight: '#fff1f2',
+        borderAccent: '#f43f5e',
+        recommendedPct: { protein: 26, fat: 22, carbs: 64, fiber: 22 },
+      },
+      {
+        groupName: 'Bumil',
+        targetCategory: 'Ibu Hamil (Trimester 1, 2, & 3)',
+        portionBadge: 'Sama dengan Porsi Besar',
+        energyKcal: parseNum(akgBesar.energyKcal, 746.15),
+        proteinG: parseNum(akgBesar.proteinG, 24.08),
+        fatG: parseNum(akgBesar.fatG, 24.32),
+        carbsG: parseNum(akgBesar.carbsG, 109.13),
+        fiberG: parseNum(akgBesar.fiberG, 3.31),
+        color: '#7c3aed',
+        bgLight: '#f5f3ff',
+        borderAccent: '#8b5cf6',
+        recommendedPct: { protein: 26, fat: 22, carbs: 64, fiber: 22 },
+      },
+    ];
+
     const overridesList = Object.entries(beneficiaryOverrides).map(([siteId, data]) => ({
       siteId,
       condition: data.condition as 'libur' | 'penyesuaian',
@@ -228,20 +324,7 @@ export default function AdminPage() {
       status: 'published' as const,
       publishedAt: `${menuDate} • 08:30 WIB`,
       components,
-      nutritionCards: akgList.map((a) => ({
-        groupName: a.groupName,
-        targetCategory: a.targetCategory,
-        portionBadge: 'Porsi Terstandar BGN',
-        energyKcal: parseFloat(a.energyKcal.replace(',', '.')) || 0,
-        proteinG: parseFloat(a.proteinG.replace(',', '.')) || 0,
-        fatG: parseFloat(a.fatG.replace(',', '.')) || 0,
-        carbsG: parseFloat(a.carbsG.replace(',', '.')) || 0,
-        fiberG: parseFloat(a.fiberG.replace(',', '.')) || 0,
-        color: '#2563eb',
-        bgLight: '#eff6ff',
-        borderAccent: '#3b82f6',
-        recommendedPct: { protein: 25, fat: 23, carbs: 65, fiber: 20 },
-      })),
+      nutritionCards: generatedNutritionCards,
       photos: [
         {
           step: 'Persiapan',
@@ -273,7 +356,7 @@ export default function AdminPage() {
       let list = existing ? JSON.parse(existing) : [];
       list = [newRecord, ...list.filter((item: { date: string }) => item.date !== menuDate)];
       localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
-      localStorage.removeItem('sppg_admin_draft');
+      localStorage.removeItem('sppg_admin_draft_v2');
     } catch {
       // fallback
     }
@@ -367,7 +450,7 @@ export default function AdminPage() {
                   Admin Panel SPPG Wonodri 3
                 </span>
                 <span className="text-[10px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
-                  <CloudUpload className="w-3 h-3" /> Auto-Save Google Drive & Auto-Draft Aktif
+                  <CloudUpload className="w-3 h-3" /> Auto-Save GDrive & Auto-Draft Aktif
                 </span>
               </div>
             </div>
@@ -405,14 +488,14 @@ export default function AdminPage() {
         {/* Banner Auto-Draft Notifier */}
         <div className="p-3 sm:p-4 rounded-xl bg-blue-50/80 border border-blue-200/80 flex items-center justify-between text-xs text-blue-900">
           <div className="flex items-center gap-2">
-            <BookmarkCheck className="w-4 h-4 text-blue-600 shrink-0" />
+            <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
             <span>
-              <strong>Auto-Draft Aktif:</strong> Angka AKG yang lo ketik langsung tersimpan tanpa kendala angka 0 di depan.
+              <strong>Fitur Efisiensi Aktif:</strong> Lo cukup mengisi <strong>AKG Besar</strong> dan <strong>AKG Kecil</strong>. Data Busui & Bumil otomatis disamakan dengan Porsi Besar, dan Balita otomatis disamakan dengan Porsi Kecil.
             </span>
           </div>
           {draftSavedAlert && (
-            <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded shrink-0 animate-fade-in">
-              Draft Tersimpan
+            <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded shrink-0">
+              Auto-Saved
             </span>
           )}
         </div>
@@ -584,8 +667,8 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* ===================== ALUR 2: AKG (INPUT BEBAS TANPA LEADING ZERO BUG) ===================== */}
-          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
+          {/* ===================== ALUR 2: AKG HANYA 2 INPUT (AUTO FILL BALITA, BUSUI, BUMIL) ===================== */}
+          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
@@ -593,102 +676,182 @@ export default function AdminPage() {
                 </div>
                 <div>
                   <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                    2. Angka Kandungan Gizi (AKG) 5 Kelompok Porsi
+                    2. Angka Kandungan Gizi (AKG) — Cukup Isi 2 Kelompok
                   </h2>
                   <span className="text-[11px] text-slate-500">
-                    Bisa diedit atau dihapus bebas tanpa kendala angka 0 di depan.
+                    Otomatis mengisi Busui, Bumil, dan Balita di laporan akhir.
                   </span>
                 </div>
               </div>
               <span className="text-[10px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded">Alur 2</span>
             </div>
 
-            <div className="space-y-3">
-              {akgList.map((item, idx) => (
-                <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <span className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-blue-600 text-white w-fit">
-                      Kelompok: {item.groupName}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* KELOMPOK 1: PORSI BESAR (Otomatis dipakai untuk Busui & Bumil) */}
+              <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200 space-y-3">
+                <div className="flex items-center justify-between border-b border-blue-200/80 pb-2">
+                  <div>
+                    <span className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-blue-600 text-white">
+                      1. PORSI BESAR
                     </span>
+                    <span className="text-[10px] font-bold text-slate-600 block mt-1">
+                      SD 4-6 / SMP / SMK / GURU
+                    </span>
+                  </div>
+                  <span className="text-[9px] font-extrabold text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-right">
+                    Auto-Copy ke:<br />Busui & Bumil
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <label className="text-[10px] font-bold text-amber-900 block mb-0.5">
+                      Energi (Kkal)
+                    </label>
                     <input
                       type="text"
-                      title="Target Kategori"
-                      placeholder="Target Kategori (contoh: SD 4-6 / SMP)"
-                      value={item.targetCategory}
-                      onChange={(e) => handleAkgChange(idx, 'targetCategory', e.target.value)}
-                      className="px-2.5 py-1 text-xs border border-slate-300 rounded-lg bg-white font-semibold text-slate-800 flex-1 max-w-sm"
+                      inputMode="decimal"
+                      value={akgBesar.energyKcal}
+                      onChange={(e) => handleAkgBesarChange('energyKcal', e.target.value)}
+                      placeholder="Contoh: 746.15"
+                      className="w-full px-2.5 py-2 border border-amber-300 rounded-lg bg-white font-black text-amber-950 focus:ring-1 focus:ring-amber-500"
                     />
                   </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[9px] font-bold text-amber-900 block mb-0.5">
-                        Energi (Kkal)
-                      </label>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Protein (g)</label>
                       <input
                         type="text"
                         inputMode="decimal"
-                        value={item.energyKcal}
-                        onChange={(e) => handleAkgChange(idx, 'energyKcal', e.target.value)}
-                        placeholder="Contoh: 572.4"
-                        className="w-full px-2 py-1.5 border border-amber-300 rounded-lg bg-amber-50/60 font-black text-amber-950 focus:bg-white focus:ring-1 focus:ring-amber-500"
+                        value={akgBesar.proteinG}
+                        onChange={(e) => handleAkgBesarChange('proteinG', e.target.value)}
+                        placeholder="Contoh: 24.08"
+                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
                       />
                     </div>
                     <div>
-                      <label className="text-[9px] font-bold text-slate-600 block mb-0.5">
-                        Protein (g)
-                      </label>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Lemak (g)</label>
                       <input
                         type="text"
                         inputMode="decimal"
-                        value={item.proteinG}
-                        onChange={(e) => handleAkgChange(idx, 'proteinG', e.target.value)}
-                        placeholder="Contoh: 15.5"
-                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-white font-bold focus:ring-1 focus:ring-blue-500"
+                        value={akgBesar.fatG}
+                        onChange={(e) => handleAkgBesarChange('fatG', e.target.value)}
+                        placeholder="Contoh: 24.32"
+                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Karbo (g)</label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={akgBesar.carbsG}
+                        onChange={(e) => handleAkgBesarChange('carbsG', e.target.value)}
+                        placeholder="Contoh: 109.13"
+                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
                       />
                     </div>
                     <div>
-                      <label className="text-[9px] font-bold text-slate-600 block mb-0.5">
-                        Lemak (g)
-                      </label>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Serat (g)</label>
                       <input
                         type="text"
                         inputMode="decimal"
-                        value={item.fatG}
-                        onChange={(e) => handleAkgChange(idx, 'fatG', e.target.value)}
-                        placeholder="Contoh: 14.5"
-                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-white font-bold focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-bold text-slate-600 block mb-0.5">
-                        Karbo (g)
-                      </label>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={item.carbsG}
-                        onChange={(e) => handleAkgChange(idx, 'carbsG', e.target.value)}
-                        placeholder="Contoh: 83.9"
-                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-white font-bold focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-bold text-slate-600 block mb-0.5">
-                        Serat (g)
-                      </label>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={item.fiberG}
-                        onChange={(e) => handleAkgChange(idx, 'fiberG', e.target.value)}
-                        placeholder="Contoh: 2.4"
-                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-white font-bold focus:ring-1 focus:ring-blue-500"
+                        value={akgBesar.fiberG}
+                        onChange={(e) => handleAkgBesarChange('fiberG', e.target.value)}
+                        placeholder="Contoh: 3.31"
+                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
                       />
                     </div>
                   </div>
                 </div>
-              ))}
+              </div>
+
+              {/* KELOMPOK 2: PORSI KECIL (Otomatis dipakai untuk Balita) */}
+              <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-200 space-y-3">
+                <div className="flex items-center justify-between border-b border-emerald-200/80 pb-2">
+                  <div>
+                    <span className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-600 text-white">
+                      2. PORSI KECIL
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-600 block mt-1">
+                      PAUD / TK / SD 1-3
+                    </span>
+                  </div>
+                  <span className="text-[9px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-right">
+                    Auto-Copy ke:<br />Balita 6-60 Bln
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <label className="text-[10px] font-bold text-amber-900 block mb-0.5">
+                      Energi (Kkal)
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={akgKecil.energyKcal}
+                      onChange={(e) => handleAkgKecilChange('energyKcal', e.target.value)}
+                      placeholder="Contoh: 656.90"
+                      className="w-full px-2.5 py-2 border border-amber-300 rounded-lg bg-white font-black text-amber-950 focus:ring-1 focus:ring-amber-500"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Protein (g)</label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={akgKecil.proteinG}
+                        onChange={(e) => handleAkgKecilChange('proteinG', e.target.value)}
+                        placeholder="Contoh: 21.98"
+                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Lemak (g)</label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={akgKecil.fatG}
+                        onChange={(e) => handleAkgKecilChange('fatG', e.target.value)}
+                        placeholder="Contoh: 23.90"
+                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Karbo (g)</label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={akgKecil.carbsG}
+                        onChange={(e) => handleAkgKecilChange('carbsG', e.target.value)}
+                        placeholder="Contoh: 89.86"
+                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Serat (g)</label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={akgKecil.fiberG}
+                        onChange={(e) => handleAkgKecilChange('fiberG', e.target.value)}
+                        placeholder="Contoh: 3.26"
+                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-bold"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-600 font-medium">
+              💡 <strong>Ringkasan Sistem Otomatis:</strong> Di tabel laporan resmi nantinya tetap tercetak 5 baris lengkap (Besar, Kecil, Balita, Busui, Bumil) sesuai standar BGN tanpa lo perlu ngetik ulang 3 kelompok lainnya!
             </div>
           </div>
 
@@ -955,7 +1118,7 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Action Footer: Tombol Simpan & Rilis + Tombol Cetak 1-Klik */}
+          {/* Action Footer */}
           <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
             <button
               type="button"
