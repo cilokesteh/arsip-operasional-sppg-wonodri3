@@ -60,9 +60,7 @@ export async function fetchGoogleSheetData(sheetUrl: string): Promise<{
     const idxNabati = getIndex(['lauk nabati', 'nabati']);
     const idxSayur = getIndex(['sayur']);
     const idxBuah = getIndex(['buah']);
-    const idxFotoPrep = getIndex(['persiapan']);
-    const idxFotoCook = getIndex(['pengolahan', 'masak']);
-    const idxFotoPack = getIndex(['pengemasan', 'packing']);
+    const idxFotoMenu = getIndex(['foto menu', 'foto_menu', 'foto makanan']);
 
     // 2. Tarik Tab 2: AKG
     const akgMapByDate: Record<string, NutritionItem[]> = {};
@@ -127,38 +125,13 @@ export async function fetchGoogleSheetData(sheetUrl: string): Promise<{
       const nama = row[idxNama];
       if (!tanggal || !nama) continue;
 
-      const rawPrep = idxFotoPrep !== -1 ? row[idxFotoPrep] : '';
-      const rawCook = idxFotoCook !== -1 ? row[idxFotoCook] : '';
-      const rawPack = idxFotoPack !== -1 ? row[idxFotoPack] : '';
-
-      const photos = [
-        {
-          step: 'Persiapan',
-          title: 'Sortasi Bahan Baku Higienis',
-          description: 'Pembersihan sayuran dan penyiapan bahan baku dengan higienitas teruji.',
-          imageUrl: formatGoogleDriveImageUrl(rawPrep) || '/about-kitchen.jpg',
-          timeEstimate: '04:00 - 05:30 WIB',
-        },
-        {
-          step: 'Pengolahan',
-          title: 'Pemasakan Suhu Terukur (>85°C)',
-          description: 'Pengolahan lauk dan sayur menggunakan kuali stainless steel berstandar BGN.',
-          imageUrl: formatGoogleDriveImageUrl(rawCook) || '/hero-kitchen.jpg',
-          timeEstimate: '05:30 - 07:15 WIB',
-        },
-        {
-          step: 'Pengemasan',
-          title: 'Food Plating & Segel Thermal Box',
-          description: 'Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.',
-          imageUrl: formatGoogleDriveImageUrl(rawPack) || '/gallery-1.jpg',
-          timeEstimate: '07:15 - 08:30 WIB',
-        },
-      ];
+      const rawMenuPhoto = idxFotoMenu !== -1 ? row[idxFotoMenu] : '';
 
       menus.push({
         date: tanggal,
         menuNumber: r,
         title: nama,
+        menuPhotoUrl: formatGoogleDriveImageUrl(rawMenuPhoto) || '/gallery-1.jpg',
         status: 'published',
         publishedAt: `${tanggal} • 08:30 WIB`,
         components: {
@@ -169,7 +142,29 @@ export async function fetchGoogleSheetData(sheetUrl: string): Promise<{
           buah: row[idxBuah] || 'Buah Pilihan Segar',
         },
         nutritionCards: akgMapByDate[tanggal] && akgMapByDate[tanggal].length > 0 ? akgMapByDate[tanggal] : STANDARD_AKG_REFERENCE,
-        photos,
+        photos: [
+          {
+            step: 'Persiapan',
+            title: 'Sortasi Bahan Baku Higienis',
+            description: 'Pembersihan sayuran dan penyiapan bahan baku dengan higienitas teruji.',
+            imageUrl: '/about-kitchen.jpg',
+            timeEstimate: '04:00 - 05:30 WIB',
+          },
+          {
+            step: 'Pengolahan',
+            title: 'Pemasakan Suhu Terukur (>85°C)',
+            description: 'Pengolahan lauk dan sayur menggunakan kuali stainless steel berstandar BGN.',
+            imageUrl: '/hero-kitchen.jpg',
+            timeEstimate: '05:30 - 07:15 WIB',
+          },
+          {
+            step: 'Pengemasan',
+            title: 'Food Plating & Segel Thermal Box',
+            description: 'Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.',
+            imageUrl: '/gallery-1.jpg',
+            timeEstimate: '07:15 - 08:30 WIB',
+          },
+        ],
         overrides: [],
       });
     }

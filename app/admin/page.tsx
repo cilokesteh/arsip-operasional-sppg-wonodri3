@@ -80,7 +80,7 @@ export default function AdminPage() {
     setInputPasscode('');
   };
 
-  // 1. Data Menu Harian (5 Komponen Murni: Karbohidrat, Hewani, Nabati, Sayur, Buah)
+  // 1. Data Menu Harian
   const [menuDate, setMenuDate] = useState('2026-10-01');
   const [namaMenu, setNamaMenu] = useState('');
   const [components, setComponents] = useState({
@@ -91,10 +91,14 @@ export default function AdminPage() {
     buah: '',
   });
 
+  // State Foto Porsi Makanan Utama (Ditampilkan di Menu Publik)
+  const [menuPhotoUrl, setMenuPhotoUrl] = useState<string | null>(null);
+  const [menuPhotoUploading, setMenuPhotoUploading] = useState<boolean>(false);
+
   // 2. Data AKG 5 Kelompok
   const [akgList, setAkgList] = useState<AKGInput[]>(DEFAULT_AKG_PRESETS);
 
-  // 3. State Auto-Upload Foto ke Google Drive
+  // 3. State 3 Foto Dapur
   const [prepPhotoUrl, setPrepPhotoUrl] = useState<string | null>(null);
   const [prepUploading, setPrepUploading] = useState<boolean>(false);
 
@@ -144,6 +148,7 @@ export default function AdminPage() {
       date: menuDate,
       menuNumber: 1,
       title: namaMenu,
+      menuPhotoUrl: menuPhotoUrl || '/gallery-1.jpg',
       status: 'published' as const,
       publishedAt: `${menuDate} • 08:30 WIB`,
       components,
@@ -187,7 +192,7 @@ export default function AdminPage() {
       list = [newRecord, ...list.filter((item: { date: string }) => item.date !== menuDate)];
       localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
     } catch {
-      // localStorage fallback
+      // fallback
     }
 
     setPublishSuccess(true);
@@ -207,7 +212,7 @@ export default function AdminPage() {
 
     if (res.success && res.menus.length > 0) {
       setSyncStatus('success');
-      setSyncMessage(`Sukses! ${res.menus.length} menu harian beserta rincian gizi berhasil disinkronkan dari Google Sheet.`);
+      setSyncMessage(`Sukses! ${res.menus.length} menu harian beserta foto & rincian gizi berhasil disinkronkan.`);
       localStorage.setItem('sppg_sheet_url', sheetUrl);
       localStorage.setItem('sppg_synced_menus', JSON.stringify(res.menus));
     } else {
@@ -222,8 +227,8 @@ export default function AdminPage() {
     setTimeout(() => setCopiedTab(null), 2500);
   };
 
-  // Header Bersih: Tanpa kolom Pelengkap & Tanpa kolom foto
-  const sheet1Header = "tanggal\tnama menu\tkarbohidrat\tlauk hewani\tlauk nabati\tsayur\tbuah\tstatus";
+  // Header Bersih: Termasuk kolom foto menu sajian
+  const sheet1Header = "tanggal\tnama menu\tkarbohidrat\tlauk hewani\tlauk nabati\tsayur\tbuah\tfoto menu\tstatus";
   const sheet2Header = "tanggal\tkelompok\ttarget kategori\tenergi kkal\tprotein g\tlemak g\tkarbo g\tserat g";
 
   // JIKA BELUM LOGIN
@@ -365,14 +370,14 @@ export default function AdminPage() {
             {publishSuccess && (
               <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Menu, foto, dan nilai AKG untuk tanggal {menuDate} berhasil dipublikasikan & tersimpan ke Google Drive!</span>
+                <span>Menu, foto sajian, dan nilai AKG berhasil dipublikasikan & tersimpan ke Google Drive!</span>
               </div>
             )}
 
             {/* Bagian 1: Data Menu Hari Ini */}
-            <div className="sppg-card rounded-2xl p-5 space-y-3">
+            <div className="sppg-card rounded-2xl p-5 space-y-4">
               <h2 className="text-xs font-black uppercase text-[#1759ab] tracking-wider">
-                1. Data Menu Hari Ini
+                1. Data Menu & Foto Sajian Makanan
               </h2>
 
               <div>
@@ -398,7 +403,67 @@ export default function AdminPage() {
                 />
               </div>
 
-              {/* Rincian Komponen 5 Kotak Bersih (Tanpa Pelengkap) */}
+              {/* UPLOAD FOTO SAJIAN MAKANAN UTAMA */}
+              <div className="p-3.5 rounded-xl bg-[#f4f9ff] border border-[#cfe4fc] space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-extrabold text-[#0b1e3a] block">
+                      Foto Sajian Menu Hari Ini (Tampil di Web Publik)
+                    </label>
+                    <span className="text-[10px] text-slate-500">
+                      Jepret foto porsi makanan matang yang siap disajikan ke anak-anak.
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-700 flex items-center gap-1">
+                    <CloudUpload className="w-3.5 h-3.5" /> Auto-Save GDrive
+                  </span>
+                </div>
+
+                <div className="relative h-36 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
+                  {menuPhotoUploading ? (
+                    <div className="flex flex-col items-center gap-1 text-blue-600">
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <span className="text-xs font-bold">Mengupload ke Google Drive...</span>
+                    </div>
+                  ) : menuPhotoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={menuPhotoUrl} alt="Foto Menu" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-slate-400 flex flex-col items-center gap-1">
+                      <Camera className="w-6 h-6 text-blue-600" />
+                      <span className="text-xs font-bold text-slate-700">Ambil / Pilih Foto Makanan</span>
+                      <span className="text-[10px] text-slate-400">Jepret langsung via kamera HP</span>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={menuPhotoUploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleAutoDriveUpload(file, setMenuPhotoUrl, setMenuPhotoUploading, 'Makanan');
+                    }}
+                    className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                  />
+                </div>
+
+                {menuPhotoUrl && (
+                  <div className="flex items-center justify-between text-[11px] pt-1">
+                    <span className="text-emerald-700 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Foto Menu Tersimpan di GDrive
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setMenuPhotoUrl(null)}
+                      className="text-rose-600 hover:underline inline-flex items-center gap-0.5 cursor-pointer text-[10px]"
+                    >
+                      <Trash2 className="w-3 h-3" /> Ganti Foto
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Rincian Komponen 5 Kotak */}
               <div className="pt-1">
                 <span className="text-[11px] font-bold text-slate-500 block mb-1.5">
                   Rincian 5 Komponen Makanan Pokok:
@@ -461,7 +526,6 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* 5 Kelompok Input Cards */}
               <div className="space-y-3">
                 {akgList.map((item, idx) => (
                   <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
@@ -550,12 +614,12 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Bagian 3: FOTO DAPUR (UPLOAD LANGSUNG DARI HP -> AUTO SAVE KE GOOGLE DRIVE) */}
+            {/* Bagian 3: 3 FOTO DOKUMENTASI DAPUR */}
             <div className="sppg-card rounded-2xl p-5 space-y-3">
               <div className="flex items-center justify-between border-b border-[#cfe4fc] pb-2">
                 <div>
                   <h2 className="text-xs font-black uppercase text-[#1759ab] tracking-wider">
-                    3. Foto Dokumentasi Dapur (Kamera HP / Galeri)
+                    3. Foto Dokumentasi Dapur 3 Tahap
                   </h2>
                   <span className="text-[10px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
                     <CloudUpload className="w-3.5 h-3.5" />
@@ -709,7 +773,7 @@ export default function AdminPage() {
             <div className="flex justify-end pt-2">
               <button
                 type="submit"
-                disabled={prepUploading || cookUploading || packUploading}
+                disabled={menuPhotoUploading || prepUploading || cookUploading || packUploading}
                 className="w-full sm:w-auto px-8 py-3 rounded-xl text-xs font-black text-white bg-[#1759ab] hover:bg-[#1d6fd0] transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
@@ -727,7 +791,7 @@ export default function AdminPage() {
                 Hubungkan dengan Google Spreadsheet
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Google Sheet khusus untuk data Menu & Angka Gizi (AKG). Foto dapur di-upload langsung dari kamera HP di tab sebelah.
+                Google Sheet khusus untuk data Menu & Angka Gizi (AKG). Termasuk kolom foto menu sajian.
               </p>
             </div>
 
@@ -770,10 +834,10 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Format Ringkas 2 Tab Wajib dengan SPASI (Tanpa Pelengkap & Tanpa Link Foto) */}
+            {/* Format Ringkas 2 Tab Wajib dengan SPASI (Termasuk Foto Menu) */}
             <div className="space-y-3 pt-2">
               <h3 className="text-xs font-black text-[#0b1e3a] uppercase tracking-wider">
-                Struktur 2 Tab Google Sheet (Bersih & Sederhana):
+                Struktur 2 Tab Google Sheet:
               </h3>
 
               {/* Tab 1: Menu */}
@@ -781,7 +845,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-slate-900 block">Tab 1: Menu Harian</span>
-                    <span className="text-[10px] text-slate-500">5 Komponen pokok makanan (Karbo, Hewani, Nabati, Sayur, Buah)</span>
+                    <span className="text-[10px] text-slate-500">Termasuk kolom link foto menu sajian makanan</span>
                   </div>
                   <button
                     type="button"
@@ -793,7 +857,7 @@ export default function AdminPage() {
                   </button>
                 </div>
                 <p className="font-mono text-[10px] text-slate-600 bg-white p-2 rounded border border-slate-200 overflow-x-auto">
-                  tanggal | nama menu | karbohidrat | lauk hewani | lauk nabati | sayur | buah | status
+                  tanggal | nama menu | karbohidrat | lauk hewani | lauk nabati | sayur | buah | foto menu | status
                 </p>
               </div>
 

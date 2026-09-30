@@ -204,7 +204,7 @@ export default function HomePage() {
                 Menu & Angka Kandungan Gizi (AKG)
               </h1>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Dokumentasi menu harian, verifikasi takaran gizi makro-mikro, dokumentasi proses dapur,
+                Dokumentasi menu harian, foto porsi makanan, verifikasi takaran gizi, dokumentasi dapur,
                 dan jangkauan penerima manfaat unit SPPG Wonodri 3 Kota Semarang.
               </p>
             </div>
@@ -271,8 +271,8 @@ export default function HomePage() {
       <div className="bg-white border-b border-slate-200 sticky top-16 z-30 shadow-2xs">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 flex overflow-x-auto scrollbar-none">
           {[
+            { id: 'menu' as const, label: 'Menu & Foto Makanan', icon: Utensils },
             { id: 'akg' as const, label: 'Kandungan Gizi (AKG)', icon: Flame },
-            { id: 'menu' as const, label: 'Rincian Menu', icon: Utensils },
             { id: 'dokumentasi' as const, label: 'Dokumentasi Dapur', icon: Camera },
             { id: 'penerima' as const, label: 'Penerima Manfaat (1.555)', icon: Users },
           ].map((tab) => {
@@ -298,7 +298,91 @@ export default function HomePage() {
 
       {/* 4. Tab Content Area */}
       <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 space-y-6">
-        {/* TAB 1: KANDUNGAN GIZI (AKG) */}
+        {/* ===================== TAB 1: MENU & FOTO MAKANAN (KOMPONEN PALING PENTING) ===================== */}
+        {activeTab === 'menu' && (
+          <div className="space-y-6">
+            {/* Foto Banner Makanan Utama yang Sangat Jelas */}
+            <div className="app-card rounded-3xl overflow-hidden p-5 sm:p-7 space-y-6 border border-slate-200">
+              <div className="flex flex-col lg:flex-row gap-6 lg:items-center">
+                {/* Visual Foto Sajian Makanan */}
+                <div className="lg:w-1/2 relative h-64 sm:h-80 w-full rounded-2xl overflow-hidden shadow-md bg-slate-100 shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={currentMenu.menuPhotoUrl || '/gallery-1.jpg'}
+                    alt={currentMenu.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-3 left-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-slate-900/80 text-white backdrop-blur-md shadow-sm">
+                      Sajian MBG Hari Ini
+                    </span>
+                  </div>
+                  <div className="absolute bottom-3 right-3">
+                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-xs">
+                      {currentMenu.date}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Deskripsi & Ringkasan Menu */}
+                <div className="lg:w-1/2 space-y-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded text-[11px] font-black uppercase bg-blue-100 text-blue-900">
+                        Menu Harian Terverifikasi
+                      </span>
+                      <span className="text-xs font-bold text-slate-500">Standar BGN</span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
+                      {currentMenu.title}
+                    </h2>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    Setiap porsi makanan disiapkan hangat dengan 5 pilar nutrisi seimbang (Karbohidrat, Protein Hewani & Nabati, Sayuran kaya serat, serta Buah segar).
+                  </p>
+
+                  <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-100 flex items-center justify-between text-xs text-blue-900 font-bold">
+                    <span>Lihat Angka Gizi Lengkap di Tab AKG</span>
+                    <button
+                      onClick={() => setActiveTab('akg')}
+                      className="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-extrabold hover:bg-blue-700 transition-colors cursor-pointer"
+                    >
+                      Buka AKG →
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5 Komponen Pokok Makanan Bersih */}
+              <div className="pt-4 border-t border-slate-100">
+                <span className="text-xs font-black text-slate-900 uppercase tracking-wider block mb-3">
+                  5 Komponen Porsi Menu Hari Ini:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                  {[
+                    { label: '1. Karbohidrat', val: currentMenu.components.karbohidrat, color: 'blue' },
+                    { label: '2. Lauk Hewani', val: currentMenu.components.laukHewani, color: 'emerald' },
+                    { label: '3. Lauk Nabati', val: currentMenu.components.laukNabati, color: 'amber' },
+                    { label: '4. Sayuran', val: currentMenu.components.sayur, color: 'teal' },
+                    { label: '5. Buah Segar', val: currentMenu.components.buah, color: 'rose' },
+                  ].map((item, i) => (
+                    <div key={i} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
+                      <span className="text-[10px] font-extrabold uppercase text-slate-500 block mb-1">
+                        {item.label}
+                      </span>
+                      <p className="font-extrabold text-xs sm:text-sm text-slate-900 leading-snug">
+                        {item.val}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===================== TAB 2: KANDUNGAN GIZI (AKG) ===================== */}
         {activeTab === 'akg' && (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-medium">
@@ -450,48 +534,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* TAB 2: MENU COMPOSITION */}
-        {activeTab === 'menu' && (
-          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
-            <div className="border-b border-slate-200 pb-4">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-100 text-blue-900">
-                  Menu Harian
-                </span>
-                <span className="text-xs font-bold text-slate-500">Tanggal: {currentMenu.date}</span>
-              </div>
-              <h2 className="text-lg sm:text-2xl font-black text-slate-900 leading-snug">
-                {currentMenu.title}
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
-              {[
-                { label: 'Karbohidrat Pokok', val: currentMenu.components.karbohidrat, tag: 'Beras Pulen Berkualitas' },
-                { label: 'Lauk Hewani', val: currentMenu.components.laukHewani, tag: 'Protein Daging / Ayam Segar' },
-                { label: 'Lauk Nabati', val: currentMenu.components.laukNabati, tag: 'Tahu / Tempe Tradisional' },
-                { label: 'Sayuran & Serat', val: currentMenu.components.sayur, tag: 'Sayur Segar Kaya Vitamin' },
-                { label: 'Buah Segar', val: currentMenu.components.buah, tag: 'Buah Pilihan Segar' },
-              ].map((item, i) => (
-                <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                      {item.label}
-                    </span>
-                    <p className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
-                      {item.val}
-                    </p>
-                  </div>
-                  <span className="text-[11px] font-bold text-blue-700 mt-3 block">
-                    ✦ {item.tag}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: DOKUMENTASI DAPUR (DENGAN SUPORT LINK GOOGLE DRIVE LANGSUNG) */}
+        {/* ===================== TAB 3: DOKUMENTASI DAPUR ===================== */}
         {activeTab === 'dokumentasi' && (
           <div className="space-y-4">
             <div className="text-xs text-slate-500 font-medium">
@@ -545,7 +588,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* TAB 4: PENERIMA MANFAAT */}
+        {/* ===================== TAB 4: PENERIMA MANFAAT ===================== */}
         {activeTab === 'penerima' && (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">

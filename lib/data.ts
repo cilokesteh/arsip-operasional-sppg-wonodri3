@@ -37,6 +37,7 @@ export interface DailyMenuRecord {
   date: string; // YYYY-MM-DD
   menuNumber: number;
   title: string;
+  menuPhotoUrl?: string; // FOTO SAJIAN MAKANAN UTAMA HARIAN
   status: 'draft' | 'review' | 'published';
   publishedAt?: string;
   components: {
@@ -147,12 +148,13 @@ export const STANDARD_AKG_REFERENCE: NutritionItem[] = [
   },
 ];
 
-// Riwayat Menu Mulai 01 Oktober 2026 (Komponen 5 item: Karbohidrat, Lauk Hewani, Lauk Nabati, Sayur, Buah)
+// Riwayat Menu Mulai 01 Oktober 2026
 export const INITIAL_MENU_HISTORY: DailyMenuRecord[] = [
   {
     date: '2026-10-01',
     menuNumber: 1,
     title: 'Nasi Pandan Wangi, Semur Ayam Suwir, Tahu Bacem Tradisional, Sayur Bening Jagung Manis, & Pisang Cavendish',
+    menuPhotoUrl: '/gallery-1.jpg', // Foto porsi sajian makanan utama
     status: 'published',
     publishedAt: '01 Okt 2026 • 08:30 WIB',
     components: {
