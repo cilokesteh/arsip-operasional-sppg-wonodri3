@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -31,15 +31,11 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Clock,
   Sparkles,
-  School,
-  Building,
-  Check,
 } from 'lucide-react';
 
 export default function HomePage() {
-  const [menuHistory] = useState<DailyMenuRecord[]>(INITIAL_MENU_HISTORY);
+  const [menuHistory, setMenuHistory] = useState<DailyMenuRecord[]>(INITIAL_MENU_HISTORY);
   const [selectedDate, setSelectedDate] = useState<string>('2026-10-01');
   const [activeTab, setActiveTab] = useState<'akg' | 'menu' | 'dokumentasi' | 'penerima'>('akg');
   const [searchSite, setSearchSite] = useState<string>('');
@@ -48,6 +44,22 @@ export default function HomePage() {
   // Month navigation in calendar popup: Default Oktober 2026 (index 9)
   const [calendarMonth, setCalendarMonth] = useState<number>(9);
   const [calendarYear, setCalendarYear] = useState<number>(2026);
+
+  // Cek apakah ada data menu hasil sinkronisasi dari Google Sheet yang tersimpan di localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('sppg_synced_menus');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMenuHistory(parsed);
+          setSelectedDate(parsed[0].date);
+        }
+      }
+    } catch {
+      // Abaikan jika parsing gagal
+    }
+  }, []);
 
   const currentMenu = menuHistory.find((m) => m.date === selectedDate) || menuHistory[0];
 
@@ -123,10 +135,9 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] flex flex-col w-full overflow-x-hidden">
-      {/* 1. Modern Clean Header (CilokTech Fresh Sky & White) */}
+      {/* 1. Header */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-          {/* Logo & Brand Identity */}
           <Link href="/" className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-sky-500 p-1 flex items-center justify-center shadow-xs shrink-0">
               <Image
@@ -153,7 +164,6 @@ export default function HomePage() {
             </div>
           </Link>
 
-          {/* Action Header */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setShowCalendarModal(true)}
@@ -181,7 +191,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 2. Fresh Hero Card: Bersih, Terang, Modern */}
+      {/* 2. Hero Section */}
       <section className="bg-white border-b border-slate-200/80">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-5">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -199,7 +209,6 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Quick Metrics (Clean & Compact) */}
             <div className="grid grid-cols-2 gap-3 shrink-0">
               <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between min-w-[130px]">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
@@ -225,13 +234,12 @@ export default function HomePage() {
                   <span className="text-xs sm:text-sm font-black text-slate-900">100% Siap</span>
                 </div>
                 <span className="text-[10px] text-emerald-700 font-bold block mt-1">
-                  Menu Tanggal: {currentMenu.date}
+                  Menu: {currentMenu.date}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Quick Date Switcher Strip */}
           <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
               <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap mr-1">
@@ -259,7 +267,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. Segment Tab Bar (Mobile App Style) */}
+      {/* 3. Segment Tab Bar */}
       <div className="bg-white border-b border-slate-200 sticky top-16 z-30 shadow-2xs">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 flex overflow-x-auto scrollbar-none">
           {[
@@ -290,7 +298,7 @@ export default function HomePage() {
 
       {/* 4. Tab Content Area */}
       <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 space-y-6">
-        {/* ===================== TAB 1: KANDUNGAN GIZI (AKG) ===================== */}
+        {/* TAB 1: KANDUNGAN GIZI (AKG) */}
         {activeTab === 'akg' && (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-medium">
@@ -309,7 +317,6 @@ export default function HomePage() {
                     className="app-card rounded-2xl overflow-hidden flex flex-col justify-between border border-slate-200/90"
                   >
                     <div>
-                      {/* Card Header dengan Warna Khas per Kelompok */}
                       <div
                         className="p-4 border-b flex items-center justify-between"
                         style={{ backgroundColor: card.bgLight, borderColor: `${card.color}30` }}
@@ -339,7 +346,6 @@ export default function HomePage() {
                         </span>
                       </div>
 
-                      {/* Target Category & Nutrition Matrix */}
                       <div className="p-4 sm:p-5 space-y-4">
                         <div>
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
@@ -350,7 +356,6 @@ export default function HomePage() {
                           </h3>
                         </div>
 
-                        {/* Energi Total Banner */}
                         <div className="p-3.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-200/80 flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shadow-xs">
@@ -371,9 +376,7 @@ export default function HomePage() {
                           </div>
                         </div>
 
-                        {/* 4 Komponen Makronutrien dengan Progress Visual */}
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          {/* Protein */}
                           <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
                             <div className="flex items-center justify-between text-slate-500 mb-1">
                               <span className="text-[10px] font-bold uppercase">Protein</span>
@@ -389,7 +392,6 @@ export default function HomePage() {
                             </div>
                           </div>
 
-                          {/* Lemak */}
                           <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
                             <div className="flex items-center justify-between text-slate-500 mb-1">
                               <span className="text-[10px] font-bold uppercase">Lemak</span>
@@ -405,7 +407,6 @@ export default function HomePage() {
                             </div>
                           </div>
 
-                          {/* Karbohidrat */}
                           <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
                             <div className="flex items-center justify-between text-slate-500 mb-1">
                               <span className="text-[10px] font-bold uppercase">Karbohidrat</span>
@@ -421,7 +422,6 @@ export default function HomePage() {
                             </div>
                           </div>
 
-                          {/* Serat */}
                           <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
                             <div className="flex items-center justify-between text-slate-500 mb-1">
                               <span className="text-[10px] font-bold uppercase">Serat Pangan</span>
@@ -450,7 +450,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ===================== TAB 2: MENU COMPOSITION ===================== */}
+        {/* TAB 2: MENU COMPOSITION */}
         {activeTab === 'menu' && (
           <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
             <div className="border-b border-slate-200 pb-4">
@@ -467,12 +467,12 @@ export default function HomePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
               {[
-                { label: 'Karbohidrat Pokok', val: currentMenu.components.karbohidrat, tag: 'Beras Pulen Berkualitas', color: 'blue' },
-                { label: 'Lauk Hewani', val: currentMenu.components.laukHewani, tag: 'Protein Daging / Ayam Segar', color: 'emerald' },
-                { label: 'Lauk Nabati', val: currentMenu.components.laukNabati, tag: 'Tahu / Tempe Tradisional', color: 'amber' },
-                { label: 'Sayuran & Serat', val: currentMenu.components.sayur, tag: 'Sayur Segar Kaya Vitamin', color: 'teal' },
-                { label: 'Buah Segar', val: currentMenu.components.buah, tag: 'Buah Pilihan Segar', color: 'rose' },
-                { label: 'Pelengkap Susu', val: currentMenu.components.pelengkap || 'Susu Pasteurisasi BGN', tag: 'Kalsium & Nutrisi Mikro', color: 'indigo' },
+                { label: 'Karbohidrat Pokok', val: currentMenu.components.karbohidrat, tag: 'Beras Pulen Berkualitas' },
+                { label: 'Lauk Hewani', val: currentMenu.components.laukHewani, tag: 'Protein Daging / Ayam Segar' },
+                { label: 'Lauk Nabati', val: currentMenu.components.laukNabati, tag: 'Tahu / Tempe Tradisional' },
+                { label: 'Sayuran & Serat', val: currentMenu.components.sayur, tag: 'Sayur Segar Kaya Vitamin' },
+                { label: 'Buah Segar', val: currentMenu.components.buah, tag: 'Buah Pilihan Segar' },
+                { label: 'Pelengkap Susu', val: currentMenu.components.pelengkap || 'Susu Pasteurisasi BGN', tag: 'Kalsium & Nutrisi Mikro' },
               ].map((item, i) => (
                 <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
                   <div>
@@ -492,7 +492,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ===================== TAB 3: DOKUMENTASI DAPUR ===================== */}
+        {/* TAB 3: DOKUMENTASI DAPUR (DENGAN SUPORT LINK GOOGLE DRIVE LANGSUNG) */}
         {activeTab === 'dokumentasi' && (
           <div className="space-y-4">
             <div className="text-xs text-slate-500 font-medium">
@@ -504,11 +504,11 @@ export default function HomePage() {
                 <div key={idx} className="app-card rounded-2xl overflow-hidden flex flex-col justify-between">
                   <div>
                     <div className="relative h-44 sm:h-48 w-full bg-slate-100">
-                      <Image
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
                         src={p.imageUrl}
                         alt={p.title}
-                        fill
-                        className="object-cover"
+                        className="w-full h-full object-cover"
                       />
                       <div className="absolute top-2.5 left-2.5">
                         <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-lg bg-slate-900/80 text-white backdrop-blur-xs shadow-xs">
@@ -546,7 +546,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ===================== TAB 4: PENERIMA MANFAAT ===================== */}
+        {/* TAB 4: PENERIMA MANFAAT */}
         {activeTab === 'penerima' && (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -565,7 +565,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Mobile Card View (HP < 640px) */}
             <div className="grid grid-cols-1 gap-2.5 sm:hidden">
               {filteredSites.map((site, index) => (
                 <div key={site.id} className="app-card rounded-xl p-3.5 flex items-center justify-between gap-3">
@@ -597,7 +596,6 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Desktop Table View (sm ke atas) */}
             <div className="app-card rounded-2xl overflow-hidden hidden sm:block">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs sm:text-sm">
@@ -641,7 +639,7 @@ export default function HomePage() {
                   </tbody>
                   <tfoot className="bg-slate-50 border-t-2 border-slate-200 font-black text-slate-900 text-xs sm:text-sm">
                     <tr>
-                      <td colSpan={3} className="py-4 px-4 sm:px-6">
+                      <td colSpan={3} className="py-3.5 px-4 sm:px-6">
                         TOTAL PENERIMA MANFAAT
                       </td>
                       <td className="py-4 px-4 sm:px-6 text-right text-slate-600">

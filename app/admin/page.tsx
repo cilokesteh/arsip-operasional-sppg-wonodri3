@@ -8,25 +8,24 @@ import {
   ArrowLeft,
   CheckCircle2,
   RefreshCw,
-  Camera,
   Save,
   Check,
   Sparkles,
   Flame,
-  Trash2,
   Copy,
   Lock,
   LogOut,
   KeyRound,
   ShieldAlert,
   Link as LinkIcon,
-  HelpCircle,
+  AlertCircle,
 } from 'lucide-react';
 import { formatGoogleDriveImageUrl } from '@/lib/drive';
+import { fetchGoogleSheetData } from '@/lib/sheetSync';
 
 interface AKGInput {
-  groupName: string; // Besar, Kecil, Balita, Busui, Bumil
-  targetCategory: string; // SD 4-6 / SMP / SMK / GURU, PAUD / TK / SD 1-3, dll
+  groupName: string;
+  targetCategory: string;
   energyKcal: number;
   proteinG: number;
   fatG: number;
@@ -49,13 +48,17 @@ export default function AdminPage() {
   const [inputPasscode, setInputPasscode] = useState<string>('');
   const [loginError, setLoginError] = useState<string>('');
 
-  const [mode, setMode] = useState<'form' | 'sheet'>('form');
+  const [mode, setMode] = useState<'form' | 'sheet'>('sheet'); // Default diarahkan ke Google Sheet
 
   // Check login session di browser
   useEffect(() => {
     const authStatus = sessionStorage.getItem('sppg_admin_auth');
     if (authStatus === 'true') {
       setIsAuthenticated(true);
+    }
+    const savedSheetUrl = localStorage.getItem('sppg_sheet_url');
+    if (savedSheetUrl) {
+      setSheetUrl(savedSheetUrl);
     }
   }, []);
 
@@ -96,9 +99,10 @@ export default function AdminPage() {
   const [driveCookUrl, setDriveCookUrl] = useState<string>('');
   const [drivePackUrl, setDrivePackUrl] = useState<string>('');
 
-  // 4. State Sync Sheet
+  // 4. State Sync Sheet Otomatis
   const [sheetUrl, setSheetUrl] = useState('');
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success'>('idle');
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const [syncMessage, setSyncMessage] = useState('');
   const [publishSuccess, setPublishSuccess] = useState(false);
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
 
@@ -118,16 +122,27 @@ export default function AdminPage() {
     setTimeout(() => setPublishSuccess(false), 5000);
   };
 
-  const handleSyncSheet = () => {
+  // FUNGSI SINKRONISASI ASLI KE GOOGLE SPREADSHEET (Termasuk Foto)
+  const handleSyncSheet = async () => {
     if (!sheetUrl.trim()) {
       alert('Masukkan link Google Sheet Anda terlebih dahulu.');
       return;
     }
+
     setSyncStatus('syncing');
-    setTimeout(() => {
+    setSyncMessage('Menghubungkan dan menarik data menu, AKG, serta foto dari Google Sheet...');
+
+    const res = await fetchGoogleSheetData(sheetUrl);
+
+    if (res.success && res.menus.length > 0) {
       setSyncStatus('success');
-      setTimeout(() => setSyncStatus('idle'), 4000);
-    }, 1200);
+      setSyncMessage(`Sukses! ${res.menus.length} menu harian beserta rincian gizi & foto dapur berhasil disinkronkan ke web.`);
+      localStorage.setItem('sppg_sheet_url', sheetUrl);
+      localStorage.setItem('sppg_synced_menus', JSON.stringify(res.menus));
+    } else {
+      setSyncStatus('error');
+      setSyncMessage(res.error || 'Gagal membaca data spreadsheet.');
+    }
   };
 
   const copyToClipboard = (text: string, tabName: string) => {
@@ -246,8 +261,20 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 pt-6 space-y-5">
-        {/* Toggle Mode: Input Langsung vs Google Sheet */}
+        {/* Toggle Mode: Google Sheet (Utama) vs Form Manual */}
         <div className="flex bg-slate-200/70 p-1 rounded-xl max-w-sm mx-auto text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => setMode('sheet')}
+            className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              mode === 'sheet'
+                ? 'bg-white text-[#1759ab] shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Sinkron Google Sheet</span>
+          </button>
           <button
             type="button"
             onClick={() => setMode('form')}
@@ -258,23 +285,116 @@ export default function AdminPage() {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-[#c9a227]" />
-            <span>Input Form (HP/Web)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('sheet')}
-            className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              mode === 'sheet'
-                ? 'bg-white text-[#1759ab] shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>Pakai Google Sheet</span>
+            <span>Form Manual Web</span>
           </button>
         </div>
 
-        {/* ===================== MODE 1: FORM INPUT CEPAT ===================== */}
+        {/* ===================== MODE 1: SINKRONISASI GOOGLE SHEET (UTAMA) ===================== */}
+        {mode === 'sheet' && (
+          <div className="sppg-card rounded-2xl p-5 sm:p-7 space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-base sm:text-lg font-black text-[#0b1e3a]">
+                Sinkronisasi Menu, AKG, & Foto Dapur dari Google Sheet
+              </h2>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Cukup isi data dan link foto Google Drive di spreadsheet Anda. Sekali klik tombol sinkronisasi, seluruh data menu beserta foto langsung tayang di web.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 block">Link Google Spreadsheet:</label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="url"
+                  placeholder="https://docs.google.com/spreadsheets/d/.../edit"
+                  value={sheetUrl}
+                  onChange={(e) => setSheetUrl(e.target.value)}
+                  className="flex-1 px-3.5 py-2 text-xs border border-slate-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1759ab] font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={handleSyncSheet}
+                  disabled={syncStatus === 'syncing'}
+                  className="px-5 py-2.5 rounded-xl text-xs font-extrabold text-white bg-[#1759ab] hover:bg-[#1d6fd0] transition-colors flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
+                  <span>{syncStatus === 'syncing' ? 'Menyinkronkan...' : 'Sinkronkan Sekarang'}</span>
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                *Pastikan akses link di Google Sheet di-set ke: <strong>&quot;Siapa saja yang memiliki link (Viewer)&quot;</strong>.
+              </p>
+            </div>
+
+            {/* Status Notifikasi Sinkronisasi */}
+            {syncStatus === 'success' && (
+              <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-bold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{syncMessage}</span>
+              </div>
+            )}
+
+            {syncStatus === 'error' && (
+              <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-900 font-bold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{syncMessage}</span>
+              </div>
+            )}
+
+            {/* Format Ringkas 2 Tab Wajib dengan SPASI (No Underscore) */}
+            <div className="space-y-3 pt-2">
+              <h3 className="text-xs font-black text-[#0b1e3a] uppercase tracking-wider">
+                Struktur 2 Tab Google Sheet (Tinggal Salin Header Baris 1):
+              </h3>
+
+              {/* Tab 1: Menu */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-extrabold text-slate-900 block">Tab 1: Menu Harian</span>
+                    <span className="text-[10px] text-slate-500">
+                      Termasuk 3 kolom link foto: persiapan, pengolahan, dan pengemasan
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(sheet1Header, 'tab1')}
+                    className="px-2.5 py-1 rounded bg-white border border-slate-300 text-[10px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer hover:bg-slate-100"
+                  >
+                    <Copy className="w-3 h-3" />
+                    <span>{copiedTab === 'tab1' ? 'Tersalin!' : 'Salin Header Tab 1'}</span>
+                  </button>
+                </div>
+                <div className="font-mono text-[10px] text-slate-700 bg-white p-2.5 rounded-lg border border-slate-200 overflow-x-auto">
+                  <code>tanggal | nama menu | karbohidrat | lauk hewani | lauk nabati | sayur | buah | pelengkap | link foto persiapan | link foto pengolahan | link foto pengemasan | status</code>
+                </div>
+              </div>
+
+              {/* Tab 2: AKG */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-extrabold text-slate-900 block">Tab 2: AKG</span>
+                    <span className="text-[10px] text-slate-500">Untuk rincian nilai gizi 5 kelompok sasaran</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(sheet2Header, 'tab2')}
+                    className="px-2.5 py-1 rounded bg-white border border-slate-300 text-[10px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer hover:bg-slate-100"
+                  >
+                    <Copy className="w-3 h-3" />
+                    <span>{copiedTab === 'tab2' ? 'Tersalin!' : 'Salin Header Tab 2'}</span>
+                  </button>
+                </div>
+                <div className="font-mono text-[10px] text-slate-700 bg-white p-2.5 rounded-lg border border-slate-200 overflow-x-auto">
+                  <code>tanggal | kelompok | target kategori | energi kkal | protein g | lemak g | karbo g | serat g</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===================== MODE 2: FORM INPUT MANUAL WEB ===================== */}
         {mode === 'form' && (
           <form onSubmit={handlePublish} className="space-y-5">
             {publishSuccess && (
@@ -479,10 +599,10 @@ export default function AdminPage() {
                   </div>
                   <div>
                     <h2 className="text-xs font-black uppercase text-[#0b1e3a] tracking-wider">
-                      3. Link Google Drive Foto Dapur (Tersimpan Permanen)
+                      3. Link Foto Google Drive
                     </h2>
                     <span className="text-[10px] text-slate-500">
-                      Upload foto ke Google Drive, lalu tempel link &quot;Anyone with the link&quot; di sini.
+                      Tempel link Google Drive foto dapur di sini.
                     </span>
                   </div>
                 </div>
@@ -492,7 +612,7 @@ export default function AdminPage() {
                 {/* 1. Persiapan */}
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                   <label className="font-bold text-slate-800 block">
-                    1. Link Foto Persiapan Bahan (Google Drive)
+                    1. Link Foto Persiapan Bahan
                   </label>
                   <input
                     type="url"
@@ -501,18 +621,12 @@ export default function AdminPage() {
                     onChange={(e) => setDrivePrepUrl(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white font-mono text-[11px] focus:ring-2 focus:ring-[#1759ab]"
                   />
-                  {drivePrepUrl && (
-                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 font-bold mt-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      <span>Link Google Drive terpasang (Otomatis dikonversi ke gambar langsung)</span>
-                    </div>
-                  )}
                 </div>
 
                 {/* 2. Pengolahan */}
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                   <label className="font-bold text-slate-800 block">
-                    2. Link Foto Pengolahan / Memasak (Google Drive)
+                    2. Link Foto Pengolahan / Memasak
                   </label>
                   <input
                     type="url"
@@ -521,18 +635,12 @@ export default function AdminPage() {
                     onChange={(e) => setDriveCookUrl(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white font-mono text-[11px] focus:ring-2 focus:ring-[#1759ab]"
                   />
-                  {driveCookUrl && (
-                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 font-bold mt-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      <span>Link Google Drive terpasang</span>
-                    </div>
-                  )}
                 </div>
 
                 {/* 3. Pengemasan */}
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                   <label className="font-bold text-slate-800 block">
-                    3. Link Foto Pengemasan / Box Thermal (Google Drive)
+                    3. Link Foto Pengemasan / Box
                   </label>
                   <input
                     type="url"
@@ -541,12 +649,6 @@ export default function AdminPage() {
                     onChange={(e) => setDrivePackUrl(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white font-mono text-[11px] focus:ring-2 focus:ring-[#1759ab]"
                   />
-                  {drivePackUrl && (
-                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 font-bold mt-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      <span>Link Google Drive terpasang</span>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -562,101 +664,6 @@ export default function AdminPage() {
               </button>
             </div>
           </form>
-        )}
-
-        {/* ===================== MODE 2: SINKRONISASI GOOGLE SHEET ===================== */}
-        {mode === 'sheet' && (
-          <div className="sppg-card rounded-2xl p-5 sm:p-7 space-y-6">
-            <div>
-              <h2 className="text-base font-extrabold text-[#0b1e3a]">
-                Hubungkan dengan Google Spreadsheet
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Semua foto disimpan di Google Drive, dan linknya ditaruh langsung di Google Sheet.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-700 block">Link Google Spreadsheet</label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="url"
-                  placeholder="https://docs.google.com/spreadsheets/d/.../edit"
-                  value={sheetUrl}
-                  onChange={(e) => setSheetUrl(e.target.value)}
-                  className="flex-1 px-3.5 py-2 text-xs border border-slate-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1759ab]"
-                />
-                <button
-                  type="button"
-                  onClick={handleSyncSheet}
-                  disabled={syncStatus === 'syncing'}
-                  className="px-5 py-2 rounded-xl text-xs font-extrabold text-white bg-[#1759ab] hover:bg-[#1d6fd0] transition-colors flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 cursor-pointer"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
-                  <span>{syncStatus === 'syncing' ? 'Menyinkronkan...' : 'Sinkronkan Sekarang'}</span>
-                </button>
-              </div>
-              <p className="text-[11px] text-slate-400">
-                *Pastikan akses link di Google Sheet di-set ke: <strong>&quot;Siapa saja yang memiliki link (Viewer)&quot;</strong>.
-              </p>
-            </div>
-
-            {syncStatus === 'success' && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-bold flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Google Sheet berhasil tersambung! Data Menu dan AKG siap disinkronkan.</span>
-              </div>
-            )}
-
-            {/* Format Ringkas 2 Tab Wajib dengan SPASI (No Underscore) */}
-            <div className="space-y-3 pt-2">
-              <h3 className="text-xs font-black text-[#0b1e3a] uppercase tracking-wider">
-                Struktur 2 Tab Google Sheet (Termasuk Kolom Link Google Drive):
-              </h3>
-
-              {/* Tab 1: Menu */}
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="font-extrabold text-slate-900 block">Tab 1: Menu Harian</span>
-                    <span className="text-[10px] text-slate-500">Termasuk kolom link foto persiapan, pengolahan, dan pengemasan</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(sheet1Header, 'tab1')}
-                    className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
-                  >
-                    <Copy className="w-3 h-3" />
-                    <span>{copiedTab === 'tab1' ? 'Tersalin!' : 'Salin Header'}</span>
-                  </button>
-                </div>
-                <p className="font-mono text-[10px] text-slate-600 bg-white p-2 rounded border border-slate-200 overflow-x-auto">
-                  tanggal | nama menu | karbohidrat | lauk hewani | lauk nabati | sayur | buah | pelengkap | link foto persiapan | link foto pengolahan | link foto pengemasan | status
-                </p>
-              </div>
-
-              {/* Tab 2: AKG */}
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="font-extrabold text-slate-900 block">Tab 2: AKG</span>
-                    <span className="text-[10px] text-slate-500">Termasuk kolom target kategori & 5 nilai gizi</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(sheet2Header, 'tab2')}
-                    className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
-                  >
-                    <Copy className="w-3 h-3" />
-                    <span>{copiedTab === 'tab2' ? 'Tersalin!' : 'Salin Header'}</span>
-                  </button>
-                </div>
-                <p className="font-mono text-[10px] text-slate-600 bg-white p-2 rounded border border-slate-200 overflow-x-auto">
-                  tanggal | kelompok | target kategori | energi kkal | protein g | lemak g | karbo g | serat g
-                </p>
-              </div>
-            </div>
-          </div>
         )}
       </main>
     </div>
