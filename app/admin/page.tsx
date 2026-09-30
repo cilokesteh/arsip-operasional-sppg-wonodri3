@@ -19,7 +19,10 @@ import {
   LogOut,
   KeyRound,
   ShieldAlert,
+  Link as LinkIcon,
+  HelpCircle,
 } from 'lucide-react';
+import { formatGoogleDriveImageUrl } from '@/lib/drive';
 
 interface AKGInput {
   groupName: string; // Besar, Kecil, Balita, Busui, Bumil
@@ -39,7 +42,6 @@ const DEFAULT_AKG_PRESETS: AKGInput[] = [
   { groupName: 'Bumil', targetCategory: 'Ibu Hamil', energyKcal: 572.4, proteinG: 15.5, fatG: 14.5, carbsG: 83.9, fiberG: 2.4 },
 ];
 
-// PIN Rahasia Default untuk Tim Teknis SPPG Wonodri 3
 const DEFAULT_PASSCODE = '91206';
 
 export default function AdminPage() {
@@ -89,10 +91,10 @@ export default function AdminPage() {
   // 2. Data AKG 5 Kelompok
   const [akgList, setAkgList] = useState<AKGInput[]>(DEFAULT_AKG_PRESETS);
 
-  // 3. State 3 Foto
-  const [prepPhoto, setPrepPhoto] = useState<string | null>(null);
-  const [cookPhoto, setCookPhoto] = useState<string | null>(null);
-  const [packPhoto, setPackPhoto] = useState<string | null>(null);
+  // 3. State 3 Link Google Drive Foto
+  const [drivePrepUrl, setDrivePrepUrl] = useState<string>('');
+  const [driveCookUrl, setDriveCookUrl] = useState<string>('');
+  const [drivePackUrl, setDrivePackUrl] = useState<string>('');
 
   // 4. State Sync Sheet
   const [sheetUrl, setSheetUrl] = useState('');
@@ -104,16 +106,6 @@ export default function AdminPage() {
     const updated = [...akgList];
     updated[index] = { ...updated[index], [field]: value };
     setAkgList(updated);
-  };
-
-  const handlePhotoUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    setter: React.Dispatch<React.SetStateAction<string | null>>
-  ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setter(URL.createObjectURL(file));
-    }
   };
 
   const handlePublish = (e: React.FormEvent) => {
@@ -144,11 +136,11 @@ export default function AdminPage() {
     setTimeout(() => setCopiedTab(null), 2500);
   };
 
-  // Header alami dengan SPASI (tanpa underscore)
-  const sheet1Header = "tanggal\tnama menu\tkarbohidrat\tlauk hewani\tlauk nabati\tsayur\tbuah\tpelengkap\tstatus";
+  // Header alami dengan SPASI (tanpa underscore) termasuk kolom Google Drive foto
+  const sheet1Header = "tanggal\tnama menu\tkarbohidrat\tlauk hewani\tlauk nabati\tsayur\tbuah\tpelengkap\tlink foto persiapan\tlink foto pengolahan\tlink foto pengemasan\tstatus";
   const sheet2Header = "tanggal\tkelompok\ttarget kategori\tenergi kkal\tprotein g\tlemak g\tkarbo g\tserat g";
 
-  // JIKA BELUM LOGIN: TAMPILKAN LAYAR GATE LOGIN KODE
+  // JIKA BELUM LOGIN: LAYAR KUNCI PIN
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#0b1e3a] text-white flex flex-col items-center justify-center p-4">
@@ -212,7 +204,7 @@ export default function AdminPage() {
     );
   }
 
-  // JIKA SUDAH LOGIN: TAMPILKAN PANEL ADMIN LENGKAP
+  // JIKA SUDAH LOGIN
   return (
     <div className="min-h-screen bg-[#f4f9ff] text-[#0d1b2e] pb-16">
       {/* Header */}
@@ -266,7 +258,7 @@ export default function AdminPage() {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-[#c9a227]" />
-            <span>Input Langsung (HP/Web)</span>
+            <span>Input Form (HP/Web)</span>
           </button>
           <button
             type="button"
@@ -371,7 +363,7 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Bagian 2: INPUT ANGKA KANDUNGAN GIZI (AKG) LENGKAP DENGAN TARGET KATEGORI */}
+            {/* Bagian 2: INPUT ANGKA KANDUNGAN GIZI (AKG) */}
             <div className="sppg-card rounded-2xl p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-[#cfe4fc] pb-2.5">
                 <div className="flex items-center gap-2">
@@ -411,7 +403,6 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    {/* 5 Field Gizi: Energi, Protein, Lemak, Karbo, Serat */}
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                       <div>
                         <label className="text-[9px] font-bold text-orange-900 block mb-0.5">
@@ -479,103 +470,82 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Bagian 3: Upload 3 Foto Langsung */}
-            <div className="sppg-card rounded-2xl p-5 space-y-3">
-              <h2 className="text-xs font-black uppercase text-[#1759ab] tracking-wider">
-                3. Foto Dokumentasi Dapur (Langsung dari HP / Galeri)
-              </h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {/* 1. Persiapan */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                  <span className="text-[11px] font-bold text-slate-700 block">1. Persiapan Bahan</span>
-                  <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
-                    {prepPhoto ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={prepPhoto} alt="Persiapan" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="text-slate-400 flex flex-col items-center gap-1">
-                        <Camera className="w-5 h-5" />
-                        <span className="text-[10px] font-semibold text-slate-500">Ambil / Pilih Foto</span>
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handlePhotoUpload(e, setPrepPhoto)}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
+            {/* Bagian 3: LINK GOOGLE DRIVE FOTO DOKUMENTASI (PERMANEN CLOUD) */}
+            <div className="sppg-card rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-[#cfe4fc] pb-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-md bg-blue-100 flex items-center justify-center text-[#1759ab]">
+                    <LinkIcon className="w-3.5 h-3.5" />
                   </div>
-                  {prepPhoto && (
-                    <button
-                      type="button"
-                      onClick={() => setPrepPhoto(null)}
-                      className="text-[10px] text-rose-600 hover:underline inline-flex items-center gap-0.5"
-                    >
-                      <Trash2 className="w-3 h-3" /> Hapus
-                    </button>
+                  <div>
+                    <h2 className="text-xs font-black uppercase text-[#0b1e3a] tracking-wider">
+                      3. Link Google Drive Foto Dapur (Tersimpan Permanen)
+                    </h2>
+                    <span className="text-[10px] text-slate-500">
+                      Upload foto ke Google Drive, lalu tempel link &quot;Anyone with the link&quot; di sini.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                {/* 1. Persiapan */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                  <label className="font-bold text-slate-800 block">
+                    1. Link Foto Persiapan Bahan (Google Drive)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
+                    value={drivePrepUrl}
+                    onChange={(e) => setDrivePrepUrl(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white font-mono text-[11px] focus:ring-2 focus:ring-[#1759ab]"
+                  />
+                  {drivePrepUrl && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 font-bold mt-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>Link Google Drive terpasang (Otomatis dikonversi ke gambar langsung)</span>
+                    </div>
                   )}
                 </div>
 
                 {/* 2. Pengolahan */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                  <span className="text-[11px] font-bold text-slate-700 block">2. Pengolahan Masak</span>
-                  <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
-                    {cookPhoto ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={cookPhoto} alt="Pengolahan" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="text-slate-400 flex flex-col items-center gap-1">
-                        <Camera className="w-5 h-5" />
-                        <span className="text-[10px] font-semibold text-slate-500">Ambil / Pilih Foto</span>
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handlePhotoUpload(e, setCookPhoto)}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                  </div>
-                  {cookPhoto && (
-                    <button
-                      type="button"
-                      onClick={() => setCookPhoto(null)}
-                      className="text-[10px] text-rose-600 hover:underline inline-flex items-center gap-0.5"
-                    >
-                      <Trash2 className="w-3 h-3" /> Hapus
-                    </button>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                  <label className="font-bold text-slate-800 block">
+                    2. Link Foto Pengolahan / Memasak (Google Drive)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
+                    value={driveCookUrl}
+                    onChange={(e) => setDriveCookUrl(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white font-mono text-[11px] focus:ring-2 focus:ring-[#1759ab]"
+                  />
+                  {driveCookUrl && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 font-bold mt-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>Link Google Drive terpasang</span>
+                    </div>
                   )}
                 </div>
 
                 {/* 3. Pengemasan */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                  <span className="text-[11px] font-bold text-slate-700 block">3. Pengemasan Box</span>
-                  <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
-                    {packPhoto ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={packPhoto} alt="Pengemasan" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="text-slate-400 flex flex-col items-center gap-1">
-                        <Camera className="w-5 h-5" />
-                        <span className="text-[10px] font-semibold text-slate-500">Ambil / Pilih Foto</span>
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handlePhotoUpload(e, setPackPhoto)}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                  </div>
-                  {packPhoto && (
-                    <button
-                      type="button"
-                      onClick={() => setPackPhoto(null)}
-                      className="text-[10px] text-rose-600 hover:underline inline-flex items-center gap-0.5"
-                    >
-                      <Trash2 className="w-3 h-3" /> Hapus
-                    </button>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                  <label className="font-bold text-slate-800 block">
+                    3. Link Foto Pengemasan / Box Thermal (Google Drive)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
+                    value={drivePackUrl}
+                    onChange={(e) => setDrivePackUrl(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white font-mono text-[11px] focus:ring-2 focus:ring-[#1759ab]"
+                  />
+                  {drivePackUrl && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 font-bold mt-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>Link Google Drive terpasang</span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -602,7 +572,7 @@ export default function AdminPage() {
                 Hubungkan dengan Google Spreadsheet
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Format penulisan kolom menggunakan <strong>SPASI biasa</strong> (tanpa underscore) agar nyaman dibaca dan diketik di Excel/Google Sheet.
+                Semua foto disimpan di Google Drive, dan linknya ditaruh langsung di Google Sheet.
               </p>
             </div>
 
@@ -641,7 +611,7 @@ export default function AdminPage() {
             {/* Format Ringkas 2 Tab Wajib dengan SPASI (No Underscore) */}
             <div className="space-y-3 pt-2">
               <h3 className="text-xs font-black text-[#0b1e3a] uppercase tracking-wider">
-                Struktur 2 Tab Google Sheet (Header Menggunakan Spasi Biasa):
+                Struktur 2 Tab Google Sheet (Termasuk Kolom Link Google Drive):
               </h3>
 
               {/* Tab 1: Menu */}
@@ -649,7 +619,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-slate-900 block">Tab 1: Menu Harian</span>
-                    <span className="text-[10px] text-slate-500">Header kolom menggunakan spasi biasa</span>
+                    <span className="text-[10px] text-slate-500">Termasuk kolom link foto persiapan, pengolahan, dan pengemasan</span>
                   </div>
                   <button
                     type="button"
@@ -661,7 +631,7 @@ export default function AdminPage() {
                   </button>
                 </div>
                 <p className="font-mono text-[10px] text-slate-600 bg-white p-2 rounded border border-slate-200 overflow-x-auto">
-                  tanggal | nama menu | karbohidrat | lauk hewani | lauk nabati | sayur | buah | pelengkap | status
+                  tanggal | nama menu | karbohidrat | lauk hewani | lauk nabati | sayur | buah | pelengkap | link foto persiapan | link foto pengolahan | link foto pengemasan | status
                 </p>
               </div>
 
@@ -670,7 +640,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-slate-900 block">Tab 2: AKG</span>
-                    <span className="text-[10px] text-slate-500">Termasuk kolom target kategori & 5 nilai gizi (spasi biasa)</span>
+                    <span className="text-[10px] text-slate-500">Termasuk kolom target kategori & 5 nilai gizi</span>
                   </div>
                   <button
                     type="button"
