@@ -94,9 +94,27 @@ export default function AdminPage() {
   // 4. Data Alokasi Penerima Manfaat
   const [beneficiaryOverrides, setBeneficiaryOverrides] = useState<Record<string, { condition: 'aktif' | 'libur'; effectiveCount: number; reason: string }>>({});
 
-  // 5. Uraian Kegiatan Operasional Dapur
+  // 5. Uraian Kegiatan Operasional Dapur Baku Resmi SPPG Wonodri 3
   const [uraianKegiatan, setUraianKegiatan] = useState(
-    '1. Sterilisasi dapur & higienitas operasional (04:00 WIB)\n2. Sortasi bahan baku segar (sayur, lauk hewani, lauk nabati)\n3. Pengolahan masakan hangat dengan suhu terukur di atas 85°C\n4. Food plating sesuai gramasi standar gizi BGN\n5. Penyegelan wadah thermal box dan serah terima ke armada distribusi (08:30 WIB)'
+    `Uraian Kegiatan
+
+1. Sterilisasi Area Dapur dan Penerapan Higienitas Operasional
+   Melaksanakan sterilisasi area dapur serta memastikan penerapan standar kebersihan dan higienitas selama proses operasional berlangsung.
+
+2. Sortasi dan Pemeriksaan Bahan Baku Segar
+   Melakukan sortasi dan pemeriksaan kualitas bahan baku segar, meliputi sayuran, lauk hewani, dan lauk nabati sebelum proses pengolahan.
+
+3. Proses Pengolahan Masakan
+   Melaksanakan proses pengolahan makanan dengan memastikan suhu masakan terukur dan mencapai suhu di atas 85°C.
+
+4. Food Plating Sesuai Standar Gramasi
+   Melakukan penataan dan pembagian makanan (food plating) sesuai dengan standar gramasi dan ketentuan gizi yang telah ditetapkan oleh BGN.
+
+5. Penyegelan dan Serah Terima Distribusi
+   Melakukan penyegelan wadah/box serta proses serah terima makanan kepada armada distribusi untuk selanjutnya didistribusikan ke penerima manfaat.
+
+Kesimpulan:
+Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar dan sesuai dengan tahapan operasional yang telah ditetapkan.`
   );
 
   const [publishSuccess, setPublishSuccess] = useState(false);
