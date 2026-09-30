@@ -6,6 +6,7 @@ import Image from 'next/image';
 import {
   INITIAL_BENEFICIARIES,
   INITIAL_MENU_HISTORY,
+  STANDARD_AKG_REFERENCE,
   DailyMenuRecord,
 } from '@/lib/data';
 import {
@@ -26,14 +27,15 @@ import {
   HeartHandshake,
   Heart,
   Search,
-  ShieldCheck,
   Award,
   ChevronLeft,
   ChevronRight,
   X,
   Clock,
   Sparkles,
-  AlertCircle,
+  School,
+  Building,
+  Check,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -47,7 +49,7 @@ export default function HomePage() {
   const [calendarMonth, setCalendarMonth] = useState<number>(9);
   const [calendarYear, setCalendarYear] = useState<number>(2026);
 
-  const currentMenu = menuHistory.find((m) => m.date === selectedDate);
+  const currentMenu = menuHistory.find((m) => m.date === selectedDate) || menuHistory[0];
 
   const totalMaster = INITIAL_BENEFICIARIES.reduce((acc, site) => acc + site.masterCount, 0);
 
@@ -88,7 +90,7 @@ export default function HomePage() {
       case 'busui':
         return HeartHandshake;
       default:
-        return ShieldCheck;
+        return Award;
     }
   };
 
@@ -120,12 +122,13 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f9ff] text-[#0d1b2e] flex flex-col w-full overflow-x-hidden">
-      {/* 1. Header */}
-      <header className="sticky top-0 z-50 bg-[#0b1e3a] text-white border-b border-[#174a8a]/40 shadow-sm">
-        <div className="max-w-6xl mx-auto px-3.5 sm:px-6 py-2.5 flex items-center justify-between gap-2">
-          <Link href="/" className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white p-1 flex items-center justify-center shrink-0 border border-white/20">
+    <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] flex flex-col w-full overflow-x-hidden">
+      {/* 1. Modern Clean Header (CilokTech Fresh Sky & White) */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+          {/* Logo & Brand Identity */}
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-sky-500 p-1 flex items-center justify-center shadow-xs shrink-0">
               <Image
                 src="/logo.png"
                 alt="Logo BGN SPPG Wonodri 3"
@@ -137,131 +140,133 @@ export default function HomePage() {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-white text-sm sm:text-base tracking-tight truncate">
+                <span className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight truncate">
                   SPPG Wonodri 3
                 </span>
-                <span className="px-1.5 py-0.2 text-[9px] font-black uppercase rounded bg-[#c9a227] text-[#0b1e3a] shrink-0">
+                <span className="px-1.5 py-0.2 text-[9px] font-black uppercase rounded bg-amber-100 text-amber-900 border border-amber-200 shrink-0">
                   BGN
                 </span>
               </div>
-              <p className="text-[10px] sm:text-[11px] text-[#a5cdf9] truncate">
+              <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
                 Dapur MBG Semarang Selatan
               </p>
             </div>
           </Link>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          {/* Action Header */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setShowCalendarModal(true)}
-              className="p-2 sm:px-3 sm:py-1.5 rounded-lg text-xs font-bold text-white bg-[#1759ab] hover:bg-[#1d6fd0] border border-[#5fa8f0]/30 transition-colors flex items-center gap-1.5"
+              className="px-2.5 py-1.5 sm:px-3 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer"
             >
-              <CalendarIcon className="w-3.5 h-3.5 text-[#c9a227]" />
-              <span className="text-[11px] sm:inline">Kalender</span>
+              <CalendarIcon className="w-3.5 h-3.5 text-blue-600" />
+              <span className="text-[11px] sm:text-xs">Kalender</span>
             </button>
             <button
               onClick={() => window.print()}
               title="Cetak Dokumen"
-              className="p-2 sm:px-3 sm:py-1.5 rounded-lg text-xs font-bold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-colors"
+              className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer"
             >
-              <Printer className="w-3.5 h-3.5 text-[#a8d8f0]" />
-              <span className="hidden sm:inline ml-1.5">Cetak</span>
+              <Printer className="w-3.5 h-3.5 text-slate-600" />
+              <span className="hidden sm:inline">Cetak</span>
             </button>
             <Link
               href="/admin"
-              className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-[#0b1e3a] bg-white hover:bg-slate-100 transition-colors flex items-center gap-1"
+              className="px-2.5 py-1.5 sm:px-3 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-2xs"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-[#1759ab]" />
-              <span className="text-[11px]">Teknis</span>
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Admin</span>
             </Link>
           </div>
         </div>
       </header>
 
-      {/* 2. Compact Hero Section */}
-      <section className="sppg-gradient text-white py-5 sm:py-7 px-3.5 sm:px-6 border-b border-[#cfe4fc]/30">
-        <div className="max-w-6xl mx-auto space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1.5">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-[#a8d8f0] text-[10px] sm:text-xs font-bold">
-                <Award className="w-3 h-3 text-[#c9a227]" />
-                <span>Portal Resmi Transparansi MBG Nasional</span>
+      {/* 2. Fresh Hero Card: Bersih, Terang, Modern */}
+      <section className="bg-white border-b border-slate-200/80">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                <span>Portal Transparansi Menu & Kandungan Gizi MBG</span>
               </div>
-              <h1 className="text-lg sm:text-2xl md:text-3xl font-black text-white leading-tight">
-                Arsip Operasional MBG Harian
+              <h1 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                Menu & Angka Kandungan Gizi (AKG)
               </h1>
-              <p className="text-[11px] sm:text-xs text-[#cfe4fc] leading-normal max-w-2xl">
-                Dokumentasi menu harian, kandungan gizi (AKG), foto dapur 3 tahap, serta jangkauan
-                1.555 penerima manfaat SPPG Wonodri 3. Mulai aktif beroperasi tanggal 01 Oktober 2026.
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Dokumentasi menu harian, verifikasi takaran gizi makro-mikro, dokumentasi proses dapur,
+                dan jangkauan penerima manfaat unit SPPG Wonodri 3 Kota Semarang.
               </p>
             </div>
 
-            {/* Quick Metrics */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-4 shrink-0">
-              <div className="p-3 rounded-xl bg-[#0b1e3a]/90 border border-[#5fa8f0]/40">
-                <span className="text-[10px] font-bold text-[#a5cdf9] uppercase tracking-wider block">
-                  Data Master Penerima
+            {/* Quick Metrics (Clean & Compact) */}
+            <div className="grid grid-cols-2 gap-3 shrink-0">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between min-w-[130px]">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Penerima Manfaat
                 </span>
-                <div className="flex items-baseline gap-1 mt-0.5">
-                  <span className="text-xl sm:text-2xl font-black text-white tabular-nums">
-                    {totalMaster.toLocaleString('id-ID')}
+                <div className="flex items-baseline gap-1 mt-1">
+                  <span className="text-xl sm:text-2xl font-black text-slate-900 tabular-nums">
+                    {totalEffective.toLocaleString('id-ID')}
                   </span>
-                  <span className="text-[10px] font-bold text-[#c9a227]">Porsi</span>
+                  <span className="text-xs font-bold text-blue-600">Porsi</span>
                 </div>
-                <span className="text-[9px] sm:text-[10px] text-slate-300 block mt-0.5">
+                <span className="text-[10px] text-slate-500 block mt-1">
                   12 Sekolah + 1 Posyandu
                 </span>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#0b1e3a]/90 border border-[#5fa8f0]/40">
-                <span className="text-[10px] font-bold text-[#a5cdf9] uppercase tracking-wider block">
-                  Status Operasional
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between min-w-[130px]">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Distribusi Hari Ini
                 </span>
                 <div className="flex items-center gap-1.5 mt-1">
-                  <Clock className="w-3.5 h-3.5 text-[#c9a227] shrink-0" />
-                  <span className="text-xs sm:text-sm font-bold text-white">Mulai 01 Okt 2026</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span className="text-xs sm:text-sm font-black text-slate-900">100% Siap</span>
                 </div>
-                <span className="text-[9px] sm:text-[10px] text-slate-300 font-medium block mt-0.5">
-                  Menunggu input menu perdana
+                <span className="text-[10px] text-emerald-700 font-bold block mt-1">
+                  Menu Tanggal: {currentMenu.date}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Date Selector Navigation Bar */}
-          <div className="pt-2 border-t border-white/15 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none flex-1">
-              <span className="text-[10px] font-extrabold text-[#a8d8f0] uppercase tracking-wider whitespace-nowrap">
-                Tanggal Terpilih:
+          {/* Quick Date Switcher Strip */}
+          <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap mr-1">
+                Pilih Tanggal:
               </span>
-              <span className="px-3 py-1 rounded-lg text-xs font-bold bg-[#c9a227] text-[#0b1e3a]">
-                {selectedDate}
-              </span>
-              {menuHistory.length === 0 && (
-                <span className="text-[11px] text-slate-300 italic hidden sm:inline">
-                  (Belum ada arsip menu yang di-publish)
-                </span>
-              )}
+              {menuHistory.map((m) => (
+                <button
+                  key={m.date}
+                  onClick={() => setSelectedDate(m.date)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border cursor-pointer ${
+                    selectedDate === m.date
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {m.date}
+                </button>
+              ))}
             </div>
 
-            <button
-              onClick={() => setShowCalendarModal(true)}
-              className="px-3 py-1 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors shrink-0 flex items-center gap-1 shadow-xs"
-            >
-              <CalendarIcon className="w-3.5 h-3.5 text-[#c9a227]" />
-              <span>Buka Kalender</span>
-            </button>
+            <div className="text-xs text-slate-500 font-medium">
+              Dipublikasikan: <span className="font-bold text-slate-800">{currentMenu.publishedAt}</span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 3. Segment Tab Bar */}
-      <div className="bg-white border-b border-[#cfe4fc] sticky top-13 z-30 shadow-2xs">
-        <div className="max-w-6xl mx-auto px-2 sm:px-6 flex overflow-x-auto scrollbar-none">
+      {/* 3. Segment Tab Bar (Mobile App Style) */}
+      <div className="bg-white border-b border-slate-200 sticky top-16 z-30 shadow-2xs">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 flex overflow-x-auto scrollbar-none">
           {[
-            { id: 'akg' as const, label: 'Kandungan Gizi', icon: Flame },
-            { id: 'menu' as const, label: 'Menu Makanan', icon: Utensils },
-            { id: 'dokumentasi' as const, label: 'Foto Dapur', icon: Camera },
-            { id: 'penerima' as const, label: 'Penerima (1.555)', icon: Users },
+            { id: 'akg' as const, label: 'Kandungan Gizi (AKG)', icon: Flame },
+            { id: 'menu' as const, label: 'Rincian Menu', icon: Utensils },
+            { id: 'dokumentasi' as const, label: 'Dokumentasi Dapur', icon: Camera },
+            { id: 'penerima' as const, label: 'Penerima Manfaat (1.555)', icon: Users },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -269,13 +274,13 @@ export default function HomePage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 py-3 px-3 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                className={`flex items-center gap-2 py-3.5 px-3.5 text-xs sm:text-sm font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                   isActive
-                    ? 'border-[#1759ab] text-[#1759ab] bg-blue-50/50'
-                    : 'border-transparent text-slate-500 hover:text-[#0b1e3a]'
+                    ? 'border-blue-600 text-blue-700'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#1759ab]' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
                 <span>{tab.label}</span>
               </button>
             );
@@ -284,142 +289,159 @@ export default function HomePage() {
       </div>
 
       {/* 4. Tab Content Area */}
-      <main className="max-w-6xl mx-auto w-full px-3.5 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6">
-        {/* JIKA BELUM ADA DATA MENU PADA TANGGAL INI */}
-        {!currentMenu && activeTab !== 'penerima' && (
-          <div className="sppg-card rounded-2xl p-8 sm:p-12 text-center space-y-4 border-2 border-dashed border-[#cfe4fc]">
-            <div className="w-14 h-14 rounded-2xl bg-[#e8f2fe] text-[#1759ab] flex items-center justify-center mx-auto shadow-xs">
-              <Clock className="w-7 h-7 text-[#1759ab]" />
-            </div>
-            <div className="max-w-md mx-auto space-y-1.5">
-              <h3 className="font-extrabold text-base sm:text-lg text-[#0b1e3a]">
-                Belum Ada Menu untuk Tanggal {selectedDate}
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                Operasional resmi SPPG Wonodri 3 dimulai pada <strong>01 Oktober 2026</strong>.
-                Data menu, gramasi AKG, dan foto dapur akan dipublikasikan oleh tim teknis setelah proses pengemasan selesai.
-              </p>
-            </div>
-
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#0b1e3a] hover:bg-[#1759ab] transition-colors shadow-xs"
-              >
-                <FileSpreadsheet className="w-4 h-4 text-[#c9a227]" />
-                <span>Input / Rilis Menu di Panel Teknis</span>
-              </Link>
-              <button
-                onClick={() => setActiveTab('penerima')}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-[#1759ab] bg-[#e8f2fe] hover:bg-[#cfe4fc] transition-colors"
-              >
-                <Users className="w-4 h-4" />
-                <span>Lihat Data Master 1.555 Penerima</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* JIKA SUDAH ADA MENU DI TANGGAL INI */}
-        {currentMenu && activeTab === 'akg' && (
+      <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 space-y-6">
+        {/* ===================== TAB 1: KANDUNGAN GIZI (AKG) ===================== */}
+        {activeTab === 'akg' && (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
-              {currentMenu.nutritionCards.map((card, idx) => {
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-medium">
+              <span>Standar gramasi nutrisi harian untuk 5 kelompok sasaran porsi MBG.</span>
+              <span className="text-[11px] text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200 w-fit">
+                ✦ Pedoman Gizi Seimbang BGN
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              {(currentMenu.nutritionCards || STANDARD_AKG_REFERENCE).map((card, idx) => {
                 const Icon = getGroupIcon(card.groupName);
                 return (
                   <div
                     key={idx}
-                    className="sppg-card rounded-xl sm:rounded-2xl overflow-hidden flex flex-col justify-between"
+                    className="app-card rounded-2xl overflow-hidden flex flex-col justify-between border border-slate-200/90"
                   >
                     <div>
-                      <div className="p-3 sm:p-4 bg-gradient-to-r from-[#e8f2fe] to-[#f4f9ff] border-b border-[#cfe4fc] flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-lg bg-[#1759ab] text-white flex items-center justify-center shrink-0">
-                            <Icon className="w-3.5 h-3.5" />
+                      {/* Card Header dengan Warna Khas per Kelompok */}
+                      <div
+                        className="p-4 border-b flex items-center justify-between"
+                        style={{ backgroundColor: card.bgLight, borderColor: `${card.color}30` }}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-xs"
+                            style={{ backgroundColor: card.color }}
+                          >
+                            <Icon className="w-4 h-4" />
                           </div>
                           <div>
-                            <span className="text-xs font-black text-[#1759ab] uppercase tracking-wide block">
+                            <span
+                              className="text-xs font-black uppercase tracking-wider block"
+                              style={{ color: card.color }}
+                            >
                               Porsi {card.groupName}
                             </span>
-                            <span className="text-[10px] text-slate-500 font-bold block">
+                            <span className="text-[10px] text-slate-500 font-semibold block">
                               {card.portionBadge}
                             </span>
                           </div>
                         </div>
+
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-white/80 border border-slate-200 text-slate-700 shadow-2xs">
+                          {card.groupName}
+                        </span>
                       </div>
 
-                      <div className="p-3.5 sm:p-4 space-y-3">
-                        <h3 className="font-extrabold text-xs sm:text-sm text-[#0b1e3a] leading-snug">
-                          {card.targetCategory}
-                        </h3>
+                      {/* Target Category & Nutrition Matrix */}
+                      <div className="p-4 sm:p-5 space-y-4">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                            Kelompok Sasaran:
+                          </span>
+                          <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug mt-0.5">
+                            {card.targetCategory}
+                          </h3>
+                        </div>
 
-                        <div className="p-2.5 sm:p-3 rounded-lg bg-[#0b1e3a] text-white flex items-center justify-between">
+                        {/* Energi Total Banner */}
+                        <div className="p-3.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-200/80 flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded bg-white/10 flex items-center justify-center text-[#c9a227]">
-                              <Flame className="w-3.5 h-3.5" />
+                            <div className="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                              <Flame className="w-4 h-4" />
                             </div>
-                            <span className="text-[10px] text-[#a5cdf9] font-bold uppercase tracking-wider">
-                              Energi Total
-                            </span>
+                            <div>
+                              <span className="text-[10px] font-black text-amber-900 uppercase tracking-wider block leading-none">
+                                Energi Total
+                              </span>
+                              <span className="text-[9px] text-amber-700 font-medium">Kalori Porsi</span>
+                            </div>
                           </div>
-                          <div>
-                            <span className="text-base sm:text-lg font-black text-white tabular-nums">
+                          <div className="text-right">
+                            <span className="text-xl sm:text-2xl font-black text-amber-950 tabular-nums">
                               {card.energyKcal.toFixed(1)}
                             </span>
-                            <span className="text-[10px] font-bold text-[#c9a227] ml-1">Kkal</span>
+                            <span className="text-[11px] font-bold text-amber-700 ml-1">Kkal</span>
                           </div>
                         </div>
 
+                        {/* 4 Komponen Makronutrien dengan Progress Visual */}
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
-                            <div className="flex items-center justify-between text-slate-500 mb-0.5">
-                              <span className="text-[9px] font-bold uppercase">Protein</span>
-                              <Dna className="w-2.5 h-2.5 text-emerald-600" />
+                          {/* Protein */}
+                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
+                            <div className="flex items-center justify-between text-slate-500 mb-1">
+                              <span className="text-[10px] font-bold uppercase">Protein</span>
+                              <Dna className="w-3 h-3 text-emerald-600" />
                             </div>
-                            <span className="text-xs sm:text-sm font-black text-[#0d1b2e] block tabular-nums">
-                              {card.proteinG.toFixed(1)} <span className="text-[9px] font-normal text-slate-500">g</span>
-                            </span>
-                            <span className="text-[8px] text-slate-400">Hewani & Nabati</span>
+                            <div>
+                              <span className="text-sm font-black text-slate-900 block tabular-nums">
+                                {card.proteinG.toFixed(1)} <span className="text-[10px] font-normal text-slate-500">g</span>
+                              </span>
+                              <div className="w-full bg-slate-200 h-1 rounded-full mt-1.5 overflow-hidden">
+                                <div className="bg-emerald-500 h-full rounded-full w-[65%]" />
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
-                            <div className="flex items-center justify-between text-slate-500 mb-0.5">
-                              <span className="text-[9px] font-bold uppercase">Lemak</span>
-                              <Beef className="w-2.5 h-2.5 text-rose-600" />
+                          {/* Lemak */}
+                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
+                            <div className="flex items-center justify-between text-slate-500 mb-1">
+                              <span className="text-[10px] font-bold uppercase">Lemak</span>
+                              <Beef className="w-3 h-3 text-rose-600" />
                             </div>
-                            <span className="text-xs sm:text-sm font-black text-[#0d1b2e] block tabular-nums">
-                              {card.fatG.toFixed(1)} <span className="text-[9px] font-normal text-slate-500">g</span>
-                            </span>
-                            <span className="text-[8px] text-slate-400">Lemak Total</span>
+                            <div>
+                              <span className="text-sm font-black text-slate-900 block tabular-nums">
+                                {card.fatG.toFixed(1)} <span className="text-[10px] font-normal text-slate-500">g</span>
+                              </span>
+                              <div className="w-full bg-slate-200 h-1 rounded-full mt-1.5 overflow-hidden">
+                                <div className="bg-rose-500 h-full rounded-full w-[45%]" />
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
-                            <div className="flex items-center justify-between text-slate-500 mb-0.5">
-                              <span className="text-[9px] font-bold uppercase">Karbo</span>
-                              <Compass className="w-2.5 h-2.5 text-blue-600" />
+                          {/* Karbohidrat */}
+                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
+                            <div className="flex items-center justify-between text-slate-500 mb-1">
+                              <span className="text-[10px] font-bold uppercase">Karbohidrat</span>
+                              <Compass className="w-3 h-3 text-blue-600" />
                             </div>
-                            <span className="text-xs sm:text-sm font-black text-[#0d1b2e] block tabular-nums">
-                              {card.carbsG.toFixed(1)} <span className="text-[9px] font-normal text-slate-500">g</span>
-                            </span>
-                            <span className="text-[8px] text-slate-400">Energi Pokok</span>
+                            <div>
+                              <span className="text-sm font-black text-slate-900 block tabular-nums">
+                                {card.carbsG.toFixed(1)} <span className="text-[10px] font-normal text-slate-500">g</span>
+                              </span>
+                              <div className="w-full bg-slate-200 h-1 rounded-full mt-1.5 overflow-hidden">
+                                <div className="bg-blue-500 h-full rounded-full w-[80%]" />
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
-                            <div className="flex items-center justify-between text-slate-500 mb-0.5">
-                              <span className="text-[9px] font-bold uppercase">Serat</span>
-                              <Leaf className="w-2.5 h-2.5 text-teal-600" />
+                          {/* Serat */}
+                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
+                            <div className="flex items-center justify-between text-slate-500 mb-1">
+                              <span className="text-[10px] font-bold uppercase">Serat Pangan</span>
+                              <Leaf className="w-3 h-3 text-teal-600" />
                             </div>
-                            <span className="text-xs sm:text-sm font-black text-[#0d1b2e] block tabular-nums">
-                              {card.fiberG.toFixed(1)} <span className="text-[9px] font-normal text-slate-500">g</span>
-                            </span>
-                            <span className="text-[8px] text-slate-400">Sayur & Buah</span>
+                            <div>
+                              <span className="text-sm font-black text-slate-900 block tabular-nums">
+                                {card.fiberG.toFixed(1)} <span className="text-[10px] font-normal text-slate-500">g</span>
+                              </span>
+                              <div className="w-full bg-slate-200 h-1 rounded-full mt-1.5 overflow-hidden">
+                                <div className="bg-teal-500 h-full rounded-full w-[50%]" />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-2.5 bg-slate-50 border-t border-[#cfe4fc] text-center text-[9px] font-bold text-[#1759ab] tracking-wider uppercase">
-                      ✦ SPPG WONODRI 3 ✦
+                    <div className="p-3 bg-slate-50 border-t border-slate-200/80 text-center text-[10px] font-bold text-slate-500 tracking-wider uppercase">
+                      ✦ STANDAR PEMENUHAN GIZI BGN ✦
                     </div>
                   </div>
                 );
@@ -428,40 +450,40 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* TAB 2: MENU COMPOSITION */}
-        {currentMenu && activeTab === 'menu' && (
-          <div className="sppg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-4">
-            <div className="border-b border-[#cfe4fc] pb-3">
-              <span className="text-[10px] font-extrabold uppercase text-[#1759ab] tracking-wider">
-                Menu Terverifikasi • Nomor Urut #{currentMenu.menuNumber}
-              </span>
-              <h2 className="text-base sm:text-xl font-black text-[#0b1e3a] mt-0.5 leading-snug">
+        {/* ===================== TAB 2: MENU COMPOSITION ===================== */}
+        {activeTab === 'menu' && (
+          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
+            <div className="border-b border-slate-200 pb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-100 text-blue-900">
+                  Menu Harian
+                </span>
+                <span className="text-xs font-bold text-slate-500">Tanggal: {currentMenu.date}</span>
+              </div>
+              <h2 className="text-lg sm:text-2xl font-black text-slate-900 leading-snug">
                 {currentMenu.title}
               </h2>
-              <p className="text-[10px] sm:text-xs text-slate-500 mt-1">
-                Tanggal: <strong>{currentMenu.date}</strong> | Dapur: <strong>Jl. Erlangga Raya No 38</strong>
-              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
               {[
-                { label: 'Karbohidrat Pokok', val: currentMenu.components.karbohidrat, tag: 'Beras Pulen Berkualitas' },
-                { label: 'Lauk Hewani', val: currentMenu.components.laukHewani, tag: 'Protein Segar' },
-                { label: 'Lauk Nabati', val: currentMenu.components.laukNabati, tag: 'Olahan Kedelai Higienis' },
-                { label: 'Sayuran & Serat', val: currentMenu.components.sayur, tag: 'Sayur Segar Kaya Vitamin' },
-                { label: 'Buah Segar', val: currentMenu.components.buah, tag: 'Buah Pilihan Segar' },
-                { label: 'Pelengkap Susu', val: currentMenu.components.pelengkap || 'Susu Pasteurisasi', tag: 'Kalsium & Vitamin D' },
+                { label: 'Karbohidrat Pokok', val: currentMenu.components.karbohidrat, tag: 'Beras Pulen Berkualitas', color: 'blue' },
+                { label: 'Lauk Hewani', val: currentMenu.components.laukHewani, tag: 'Protein Daging / Ayam Segar', color: 'emerald' },
+                { label: 'Lauk Nabati', val: currentMenu.components.laukNabati, tag: 'Tahu / Tempe Tradisional', color: 'amber' },
+                { label: 'Sayuran & Serat', val: currentMenu.components.sayur, tag: 'Sayur Segar Kaya Vitamin', color: 'teal' },
+                { label: 'Buah Segar', val: currentMenu.components.buah, tag: 'Buah Pilihan Segar', color: 'rose' },
+                { label: 'Pelengkap Susu', val: currentMenu.components.pelengkap || 'Susu Pasteurisasi BGN', tag: 'Kalsium & Nutrisi Mikro', color: 'indigo' },
               ].map((item, i) => (
-                <div key={i} className="p-3 rounded-lg bg-[#f4f9ff] border border-[#cfe4fc] flex flex-col justify-between">
+                <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
                   <div>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
                       {item.label}
                     </span>
-                    <p className="font-extrabold text-xs sm:text-sm text-[#0b1e3a] leading-snug">
+                    <p className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
                       {item.val}
                     </p>
                   </div>
-                  <span className="text-[10px] font-bold text-[#1759ab] mt-2 block">
+                  <span className="text-[11px] font-bold text-blue-700 mt-3 block">
                     ✦ {item.tag}
                   </span>
                 </div>
@@ -470,18 +492,18 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* TAB 3: DOKUMENTASI DAPUR */}
-        {currentMenu && activeTab === 'dokumentasi' && (
+        {/* ===================== TAB 3: DOKUMENTASI DAPUR ===================== */}
+        {activeTab === 'dokumentasi' && (
           <div className="space-y-4">
             <div className="text-xs text-slate-500 font-medium">
               Dokumentasi dapur 3 tahap wajib memastikan higienitas pengolahan makanan bergizi untuk tanggal {currentMenu.date}.
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
               {currentMenu.photos.map((p, idx) => (
-                <div key={idx} className="sppg-card rounded-xl sm:rounded-2xl overflow-hidden flex flex-col justify-between">
+                <div key={idx} className="app-card rounded-2xl overflow-hidden flex flex-col justify-between">
                   <div>
-                    <div className="relative h-40 sm:h-48 w-full bg-slate-100">
+                    <div className="relative h-44 sm:h-48 w-full bg-slate-100">
                       <Image
                         src={p.imageUrl}
                         alt={p.title}
@@ -489,33 +511,33 @@ export default function HomePage() {
                         className="object-cover"
                       />
                       <div className="absolute top-2.5 left-2.5">
-                        <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded bg-[#0b1e3a]/90 text-white">
+                        <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-lg bg-slate-900/80 text-white backdrop-blur-xs shadow-xs">
                           {p.step}
                         </span>
                       </div>
                       {p.timeEstimate && (
                         <div className="absolute bottom-2.5 right-2.5">
-                          <span className="px-1.5 py-0.2 text-[10px] font-bold rounded bg-[#1759ab] text-white">
+                          <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-blue-600 text-white shadow-xs">
                             {p.timeEstimate}
                           </span>
                         </div>
                       )}
                     </div>
 
-                    <div className="p-3.5 sm:p-4 space-y-1">
-                      <h3 className="font-extrabold text-xs sm:text-sm text-[#0b1e3a] leading-snug">
+                    <div className="p-4 sm:p-5 space-y-1.5">
+                      <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
                         {p.title}
                       </h3>
-                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                      <p className="text-xs text-slate-600 leading-relaxed">
                         {p.description}
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-2.5 bg-slate-50 border-t border-[#cfe4fc] flex items-center justify-between text-[10px] text-slate-500 font-semibold">
+                  <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
                     <span>SOP SPPG Wonodri 3</span>
                     <span className="text-emerald-700 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Higienis
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Higienis Terverifikasi
                     </span>
                   </div>
                 </div>
@@ -524,46 +546,47 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* TAB 4: PENERIMA MANFAAT (DATA MASTER TETAP AKTIF) */}
+        {/* ===================== TAB 4: PENERIMA MANFAAT ===================== */}
         {activeTab === 'penerima' && (
           <div className="space-y-4">
-            <div className="space-y-2">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="text-xs text-slate-600 font-medium">
-                Data Master: <strong>1.555 Penerima</strong> (12 Sekolah + 1 Posyandu Wilayah Semarang Selatan)
+                Data Master: <strong>1.555 Penerima Manfaat</strong> (12 Sekolah + 1 Posyandu)
               </div>
-              <div className="relative w-full">
+              <div className="relative w-full sm:w-72">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Cari sekolah..."
+                  placeholder="Cari nama sekolah / posyandu..."
                   value={searchSite}
                   onChange={(e) => setSearchSite(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 rounded-xl text-xs border border-[#cfe4fc] bg-white focus:outline-none focus:ring-2 focus:ring-[#1759ab]"
+                  className="w-full pl-8 pr-3 py-2 rounded-xl text-xs border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
             </div>
 
+            {/* Mobile Card View (HP < 640px) */}
             <div className="grid grid-cols-1 gap-2.5 sm:hidden">
               {filteredSites.map((site, index) => (
-                <div key={site.id} className="sppg-card rounded-xl p-3 flex items-center justify-between gap-3">
+                <div key={site.id} className="app-card rounded-xl p-3.5 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] font-bold text-slate-400">{index + 1}.</span>
-                      <span className="font-extrabold text-xs text-[#0b1e3a] truncate">
+                      <span className="font-extrabold text-xs text-slate-900 truncate">
                         {site.name}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-100 text-blue-900">
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase bg-blue-50 text-blue-700 border border-blue-200">
                         {site.type}
                       </span>
-                      <span className="text-[10px] text-slate-500">
-                        Master: {site.masterCount}
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        Kuota: {site.masterCount} Siswa
                       </span>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-sm font-black text-[#1759ab] block tabular-nums">
+                    <span className="text-sm font-black text-blue-600 block tabular-nums">
                       {site.effectiveCount}
                     </span>
                     <span className="text-[9px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
@@ -574,60 +597,61 @@ export default function HomePage() {
               ))}
             </div>
 
-            <div className="sppg-card rounded-2xl overflow-hidden hidden sm:block">
+            {/* Desktop Table View (sm ke atas) */}
+            <div className="app-card rounded-2xl overflow-hidden hidden sm:block">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs sm:text-sm">
-                  <thead className="bg-[#e8f2fe] border-b border-[#cfe4fc] text-[#0b1e3a] font-extrabold uppercase tracking-wider text-[11px]">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-extrabold uppercase tracking-wider text-[11px]">
                     <tr>
-                      <th className="py-3 px-4">No</th>
-                      <th className="py-3 px-4">Nama Lembaga Penerima</th>
-                      <th className="py-3 px-4">Kategori</th>
-                      <th className="py-3 px-4 text-right">Master Kuota</th>
-                      <th className="py-3 px-4 text-right">Distribusi</th>
-                      <th className="py-3 px-4 text-center">Status</th>
+                      <th className="py-3.5 px-4 sm:px-6">No</th>
+                      <th className="py-3.5 px-4 sm:px-6">Nama Lembaga Penerima</th>
+                      <th className="py-3.5 px-4 sm:px-6">Kategori</th>
+                      <th className="py-3.5 px-4 sm:px-6 text-right">Master Kuota</th>
+                      <th className="py-3.5 px-4 sm:px-6 text-right">Distribusi Hari Ini</th>
+                      <th className="py-3.5 px-4 sm:px-6 text-center">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#cfe4fc]/60">
+                  <tbody className="divide-y divide-slate-100">
                     {filteredSites.map((site, index) => (
                       <tr key={site.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3 px-4 font-semibold text-slate-400">{index + 1}</td>
-                        <td className="py-3 px-4">
-                          <span className="font-extrabold text-[#0b1e3a] block text-xs sm:text-sm">
+                        <td className="py-3.5 px-4 sm:px-6 font-semibold text-slate-400">{index + 1}</td>
+                        <td className="py-3.5 px-4 sm:px-6">
+                          <span className="font-extrabold text-slate-900 block text-xs sm:text-sm">
                             {site.name}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-100 text-blue-900 border border-blue-200">
+                        <td className="py-3.5 px-4 sm:px-6">
+                          <span className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-blue-50 text-blue-800 border border-blue-200">
                             {site.type}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right font-bold text-slate-600">
+                        <td className="py-3.5 px-4 sm:px-6 text-right font-bold text-slate-600">
                           {site.masterCount.toLocaleString('id-ID')}
                         </td>
-                        <td className="py-3 px-4 text-right font-black text-[#0b1e3a]">
+                        <td className="py-3.5 px-4 sm:px-6 text-right font-black text-slate-900">
                           {site.effectiveCount.toLocaleString('id-ID')}
                         </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            Siap Distribusi
+                        <td className="py-3.5 px-4 sm:px-6 text-center">
+                          <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800">
+                            Aktif
                           </span>
                         </td>
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot className="bg-[#e8f2fe] border-t-2 border-[#cfe4fc] font-black text-[#0b1e3a] text-xs sm:text-sm">
+                  <tfoot className="bg-slate-50 border-t-2 border-slate-200 font-black text-slate-900 text-xs sm:text-sm">
                     <tr>
-                      <td colSpan={3} className="py-3.5 px-4">
-                        TOTAL MASTER PENERIMA
+                      <td colSpan={3} className="py-4 px-4 sm:px-6">
+                        TOTAL PENERIMA MANFAAT
                       </td>
-                      <td className="py-3.5 px-4 text-right text-slate-600">
+                      <td className="py-4 px-4 sm:px-6 text-right text-slate-600">
                         {totalMaster.toLocaleString('id-ID')}
                       </td>
-                      <td className="py-3.5 px-4 text-right text-[#1759ab] text-sm sm:text-base font-black">
+                      <td className="py-4 px-4 sm:px-6 text-right text-blue-600 text-sm sm:text-base font-black">
                         {totalEffective.toLocaleString('id-ID')}
                       </td>
-                      <td className="py-3.5 px-4 text-center text-[11px] text-emerald-800 font-bold">
-                        100% Siap
+                      <td className="py-4 px-4 sm:px-6 text-center text-[11px] text-emerald-800 font-bold">
+                        100% Terverifikasi
                       </td>
                     </tr>
                   </tfoot>
@@ -640,39 +664,39 @@ export default function HomePage() {
 
       {/* 5. Calendar Modal Pop-up */}
       {showCalendarModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-[#cfe4fc] shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="bg-[#0b1e3a] text-white p-4 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-slate-900 text-white p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5 text-[#c9a227]" />
+                <CalendarIcon className="w-5 h-5 text-blue-400" />
                 <div>
                   <h3 className="font-extrabold text-sm sm:text-base">Arsip Kalender Menu</h3>
-                  <p className="text-[10px] text-[#a5cdf9]">Operasional dimulai 01 Oktober 2026</p>
+                  <p className="text-[10px] text-slate-300">Pilih tanggal menu yang ingin dilihat</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowCalendarModal(false)}
-                className="p-1 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white"
+                className="p-1 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                <span className="font-black text-sm text-[#0b1e3a]">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span className="font-black text-sm text-slate-900">
                   {monthNames[calendarMonth]} {calendarYear}
                 </span>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={prevMonth}
-                    className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600"
+                    className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 cursor-pointer"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   <button
                     onClick={nextMonth}
-                    className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600"
+                    className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 cursor-pointer"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -703,68 +727,50 @@ export default function HomePage() {
                   return (
                     <button
                       key={dateStr}
-                      disabled={!hasMenu && dateStr !== '2026-10-01'}
+                      disabled={!hasMenu}
                       onClick={() => {
                         setSelectedDate(dateStr);
                         setShowCalendarModal(false);
                       }}
                       className={`h-9 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center relative ${
                         isSelected
-                          ? 'bg-[#1759ab] text-white shadow-sm'
+                          ? 'bg-blue-600 text-white shadow-xs'
                           : hasMenu
-                          ? 'bg-blue-50 text-[#0b1e3a] hover:bg-[#c9a227] hover:text-[#0b1e3a] cursor-pointer'
-                          : dateStr === '2026-10-01'
-                          ? 'border border-dashed border-[#1759ab] text-[#1759ab] hover:bg-blue-50 cursor-pointer'
+                          ? 'bg-blue-50 text-blue-900 hover:bg-blue-100 cursor-pointer font-black'
                           : 'text-slate-300 cursor-not-allowed'
                       }`}
                     >
                       <span>{day}</span>
-                      {hasMenu && (
-                        <span className="w-1 h-1 rounded-full bg-[#1759ab] absolute bottom-1" />
+                      {hasMenu && !isSelected && (
+                        <span className="w-1 h-1 rounded-full bg-blue-600 absolute bottom-1" />
                       )}
                     </button>
                   );
                 })}
-              </div>
-
-              <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-[#0b1e3a] flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-[#1759ab] shrink-0 mt-0.5" />
-                <span>
-                  Belum ada menu yang diinput sebelum <strong>01 Oktober 2026</strong>. Menu akan tampil otomatis setelah diinput melalui panel teknis.
-                </span>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* 6. Footer */}
-      <footer className="mt-auto py-6 px-4 bg-[#0b1e3a] text-white border-t border-[#174a8a]/40">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400 text-center sm:text-left">
+      {/* 6. Clean Footer */}
+      <footer className="mt-auto py-6 px-4 bg-white border-t border-slate-200 text-slate-500 text-xs">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <div className="flex items-center gap-2">
             <Image
               src="/logo.png"
               alt="Logo SPPG"
-              width={22}
-              height={22}
+              width={20}
+              height={20}
               className="object-contain"
             />
-            <span className="font-extrabold text-white text-xs">
+            <span className="font-extrabold text-slate-900 text-xs">
               SPPG Wonodri 3 Kota Semarang
             </span>
           </div>
 
-          <div className="flex items-center gap-3 text-[10px]">
-            <a
-              href="https://www.sppgwonodri3.web.id/portfolio/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#c9a227] hover:text-[#e8d5a3] font-bold"
-            >
-              Portofolio Unit
-            </a>
-            <span>•</span>
-            <span className="text-slate-400">Built by CilokTech Studio</span>
+          <div className="text-[11px] text-slate-400">
+            Built by CilokTech Studio
           </div>
         </div>
       </footer>
