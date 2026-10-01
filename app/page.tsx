@@ -20,6 +20,7 @@ import {
   Clock,
   PlusCircle,
 } from 'lucide-react';
+import { formatTanggalIndo } from '@/lib/dateUtils';
 
 export default function HomePage() {
   const [menuHistory, setMenuHistory] = useState<DailyMenuRecord[]>(INITIAL_MENU_HISTORY);
@@ -104,7 +105,7 @@ export default function HomePage() {
               className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1 cursor-pointer"
             >
               <CalendarIcon className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-              <span className="text-[11px] sm:text-xs">{selectedDate}</span>
+              <span className="text-[11px] sm:text-xs">{formatTanggalIndo(selectedDate)}</span>
             </button>
             <button
               onClick={() => window.print()}
@@ -156,12 +157,17 @@ export default function HomePage() {
                 </div>
               </div>
 
+              {/* Status Dokumen Metadata SNI */}
               <div className="bg-slate-50 sm:bg-transparent p-2.5 sm:p-0 rounded-lg sm:text-right border sm:border-0 border-slate-200 text-xs text-slate-600 shrink-0 space-y-1">
                 <div className="inline-block px-2 py-0.5 bg-blue-100 text-blue-900 rounded text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
                   Laporan Operasional Resmi
                 </div>
-                <div className="text-[11px] sm:text-xs">Tanggal: <strong className="text-slate-900">{selectedDate}</strong></div>
-                <div className="text-[11px] sm:text-xs">Alokasi: <strong className="text-slate-900">{totalMaster} Porsi (100%)</strong></div>
+                <div className="text-[11px] sm:text-xs">
+                  Tanggal: <strong className="text-slate-900">{formatTanggalIndo(selectedDate)}</strong>
+                </div>
+                <div className="text-[11px] sm:text-xs">
+                  Alokasi: <strong className="text-slate-900">{totalMaster} Porsi (100%)</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -174,7 +180,7 @@ export default function HomePage() {
               </div>
               <div className="space-y-1 max-w-md mx-auto">
                 <h3 className="font-extrabold text-base text-slate-900">
-                  Laporan Belum Diterbitkan untuk Tanggal {selectedDate}
+                  Laporan Belum Diterbitkan untuk Tanggal {formatTanggalIndo(selectedDate)}
                 </h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
                   Operasional dimulai pada tanggal 01 Oktober 2026. Operator dapat mengisi rincian menu dan foto melalui panel admin.
@@ -209,7 +215,7 @@ export default function HomePage() {
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-white text-[9px] font-bold">
-                      Sajian {currentMenu.date}
+                      Sajian {formatTanggalIndo(currentMenu.date)}
                     </div>
                   </div>
 
@@ -421,22 +427,22 @@ export default function HomePage() {
                 {/* Mobile View: List Card Sekolah */}
                 <div className="grid grid-cols-1 gap-1.5 sm:hidden text-xs">
                   {filteredBeneficiaries.map((site, index) => (
-                    <tr key={site.id} className="block p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
-                      <td className="min-w-0 pr-2">
+                    <div key={site.id} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
+                      <div className="min-w-0 pr-2">
                         <span className="font-extrabold text-slate-900 block truncate text-xs">
                           {index + 1}. {site.name}
                         </span>
                         <span className="text-[9px] text-slate-500 uppercase font-semibold">
                           Kategori {site.type}
                         </span>
-                      </td>
-                      <td className="text-right shrink-0">
+                      </div>
+                      <div className="text-right shrink-0">
                         <span className="font-black text-blue-900 text-xs block tabular-nums">
                           {site.masterCount} Porsi
                         </span>
                         <span className="text-[9px] text-emerald-700 font-bold">Tersalurkan</span>
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   ))}
                 </div>
 
