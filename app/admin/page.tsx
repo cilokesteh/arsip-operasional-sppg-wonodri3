@@ -45,11 +45,10 @@ export default function AdminPage() {
   const [inputPasscode, setInputPasscode] = useState<string>('');
   const [loginError, setLoginError] = useState<string>('');
 
-  // Mode panel: 'input' (input baru/edit form) atau 'list' (kelola/edit daftar arsip)
   const [activeTab, setActiveTab] = useState<'input' | 'list'>('input');
   const [savedMenuList, setSavedMenuList] = useState<DailyMenuRecord[]>([]);
 
-  // 1. Data Menu Harian & Fitur Backdate
+  // 1. Data Menu Harian
   const [menuDate, setMenuDate] = useState('2026-10-01');
   const [namaMenu, setNamaMenu] = useState('');
   const [components, setComponents] = useState({
@@ -81,7 +80,8 @@ export default function AdminPage() {
     fiberG: '',
   });
 
-  // 3. State 3 Foto Dapur
+  // 3. State 5 FOTO DOKUMENTASI LENGKAP:
+  // (1) Persiapan, (2) Pengolahan, (3) Pengemasan, (4) Distribusi, (5) Pencucian Ompreng
   const [prepPhotoUrl, setPrepPhotoUrl] = useState<string | null>(null);
   const [prepUploading, setPrepUploading] = useState<boolean>(false);
 
@@ -91,10 +91,16 @@ export default function AdminPage() {
   const [packPhotoUrl, setPackPhotoUrl] = useState<string | null>(null);
   const [packUploading, setPackUploading] = useState<boolean>(false);
 
+  const [distPhotoUrl, setDistPhotoUrl] = useState<string | null>(null);
+  const [distUploading, setDistUploading] = useState<boolean>(false);
+
+  const [washPhotoUrl, setWashPhotoUrl] = useState<string | null>(null);
+  const [washUploading, setWashUploading] = useState<boolean>(false);
+
   // 4. Data Alokasi Penerima Manfaat
   const [beneficiaryOverrides, setBeneficiaryOverrides] = useState<Record<string, { condition: 'aktif' | 'libur'; effectiveCount: number; reason: string }>>({});
 
-  // 5. Uraian Kegiatan Operasional Dapur Baku Resmi SPPG Wonodri 3
+  // 5. Uraian Kegiatan Operasional Dapur
   const [uraianKegiatan, setUraianKegiatan] = useState(
     `Uraian Kegiatan
 
@@ -120,7 +126,6 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
   const [publishSuccess, setPublishSuccess] = useState(false);
   const [editingAlert, setEditingAlert] = useState<string | null>(null);
 
-  // Load daftar arsip dan draft
   const loadSavedMenus = () => {
     try {
       const stored = localStorage.getItem('sppg_synced_menus');
@@ -134,7 +139,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       // fallback
     }
   };
-  // LOAD DRAFT TERSIMPAN SECARA OTOMATIS
+
   useEffect(() => {
     const authStatus = sessionStorage.getItem('sppg_admin_auth');
     if (authStatus === 'true') {
@@ -143,7 +148,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     loadSavedMenus();
 
     try {
-      const savedDraft = localStorage.getItem('sppg_admin_draft_v2');
+      const savedDraft = localStorage.getItem('sppg_admin_draft_v3');
       if (savedDraft) {
         const draft = JSON.parse(savedDraft);
         if (draft.menuDate) setMenuDate(draft.menuDate);
@@ -155,6 +160,8 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
         if (draft.prepPhotoUrl) setPrepPhotoUrl(draft.prepPhotoUrl);
         if (draft.cookPhotoUrl) setCookPhotoUrl(draft.cookPhotoUrl);
         if (draft.packPhotoUrl) setPackPhotoUrl(draft.packPhotoUrl);
+        if (draft.distPhotoUrl) setDistPhotoUrl(draft.distPhotoUrl);
+        if (draft.washPhotoUrl) setWashPhotoUrl(draft.washPhotoUrl);
         if (draft.beneficiaryOverrides) setBeneficiaryOverrides(draft.beneficiaryOverrides);
         if (draft.uraianKegiatan) setUraianKegiatan(draft.uraianKegiatan);
       }
@@ -163,7 +170,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     }
   }, []);
 
-  // AUTO-SAVE SETIAP KALI USER EDIT APAPUN (AKG, MENU, KOMPONEN, FOTO, TANGGAL, DLL)
+  // AUTO-SAVE SETIAP KALI USER KETIK
   useEffect(() => {
     if (!isAuthenticated) return;
     const draftPayload = {
@@ -176,12 +183,14 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       prepPhotoUrl,
       cookPhotoUrl,
       packPhotoUrl,
+      distPhotoUrl,
+      washPhotoUrl,
       beneficiaryOverrides,
       uraianKegiatan,
       lastSaved: new Date().toISOString(),
     };
     try {
-      localStorage.setItem('sppg_admin_draft_v2', JSON.stringify(draftPayload));
+      localStorage.setItem('sppg_admin_draft_v3', JSON.stringify(draftPayload));
     } catch {
       // fallback
     }
@@ -196,11 +205,12 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     prepPhotoUrl,
     cookPhotoUrl,
     packPhotoUrl,
+    distPhotoUrl,
+    washPhotoUrl,
     beneficiaryOverrides,
     uraianKegiatan,
   ]);
 
-  // FUNGSI PILIH & MUAT DATA ARSIP LAMA KE FORM UNTUK DI-EDIT
   const handleLoadMenuToEdit = (menu: DailyMenuRecord) => {
     setMenuDate(menu.date);
     setNamaMenu(menu.title || '');
@@ -212,7 +222,6 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       setUraianKegiatan(menu.uraianPekerjaan);
     }
 
-    // Ekstrak nilai AKG Besar & Kecil dari arsip yang dipilih
     const besarCard = menu.nutritionCards?.find((c) => c.groupName.toLowerCase() === 'besar');
     if (besarCard) {
       setAkgBesar({
@@ -235,17 +244,22 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       });
     }
 
-    // Foto Dapur
+    // 5 Foto Dokumentasi
     const pPrep = menu.photos?.find((p) => p.step.toLowerCase().includes('persiapan'));
-    if (pPrep) setPrepPhotoUrl(pPrep.imageUrl);
+    setPrepPhotoUrl(pPrep ? pPrep.imageUrl : null);
 
     const pCook = menu.photos?.find((p) => p.step.toLowerCase().includes('pengolahan'));
-    if (pCook) setCookPhotoUrl(pCook.imageUrl);
+    setCookPhotoUrl(pCook ? pCook.imageUrl : null);
 
     const pPack = menu.photos?.find((p) => p.step.toLowerCase().includes('pengemasan'));
-    if (pPack) setPackPhotoUrl(pPack.imageUrl);
+    setPackPhotoUrl(pPack ? pPack.imageUrl : null);
 
-    // Overrides
+    const pDist = menu.photos?.find((p) => p.step.toLowerCase().includes('distribusi'));
+    setDistPhotoUrl(pDist ? pDist.imageUrl : null);
+
+    const pWash = menu.photos?.find((p) => p.step.toLowerCase().includes('pencucian') || p.step.toLowerCase().includes('ompreng'));
+    setWashPhotoUrl(pWash ? pWash.imageUrl : null);
+
     if (menu.overrides && menu.overrides.length > 0) {
       const ovMap: Record<string, { condition: 'aktif' | 'libur'; effectiveCount: number; reason: string }> = {};
       menu.overrides.forEach((o) => {
@@ -262,7 +276,6 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     setTimeout(() => setEditingAlert(null), 7000);
   };
 
-  // FUNGSI HAPUS SATU ARSIP MENU
   const handleDeleteMenu = (dateToDelete: string) => {
     if (confirm(`Yakin ingin menghapus arsip menu untuk tanggal ${dateToDelete}?`)) {
       try {
@@ -280,13 +293,14 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     }
   };
 
-  // Bersihkan form untuk mulai input tanggal baru
   const handleResetForm = () => {
     setNamaMenu('');
     setMenuPhotoUrl(null);
     setPrepPhotoUrl(null);
     setCookPhotoUrl(null);
     setPackPhotoUrl(null);
+    setDistPhotoUrl(null);
+    setWashPhotoUrl(null);
     setComponents({ karbohidrat: '', laukHewani: '', laukNabati: '', sayur: '', buah: '' });
     setAkgBesar({ energyKcal: '', proteinG: '', fatG: '', carbsG: '', fiberG: '' });
     setAkgKecil({ energyKcal: '', proteinG: '', fatG: '', carbsG: '', fiberG: '' });
@@ -435,6 +449,46 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       reason: data.reason,
     }));
 
+    // 5 Tahap Dokumentasi Foto Lengkap:
+    // Persiapan, Pengolahan, Pengemasan, Distribusi, Pencucian Ompreng
+    const allPhotos = [
+      {
+        step: '1. Persiapan',
+        title: 'Sortasi Bahan Baku Higienis',
+        description: 'Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.',
+        imageUrl: prepPhotoUrl || '',
+        timeEstimate: '04:00 - 05:30 WIB',
+      },
+      {
+        step: '2. Pengolahan',
+        title: 'Pemasakan Suhu Terukur (>85°C)',
+        description: 'Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.',
+        imageUrl: cookPhotoUrl || '',
+        timeEstimate: '05:30 - 07:15 WIB',
+      },
+      {
+        step: '3. Pengemasan',
+        title: 'Food Plating & Segel Thermal Box',
+        description: 'Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.',
+        imageUrl: packPhotoUrl || '',
+        timeEstimate: '07:15 - 08:30 WIB',
+      },
+      {
+        step: '4. Distribusi',
+        title: 'Pengantaran & Serah Terima Sekolah',
+        description: 'Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.',
+        imageUrl: distPhotoUrl || '',
+        timeEstimate: '08:30 - 10:00 WIB',
+      },
+      {
+        step: '5. Pencucian',
+        title: 'Pencucian & Sterilisasi Ompreng',
+        description: 'Pembersihan menyeluruh wadah ompreng stainless steel dengan air panas dan sabun sanitasi.',
+        imageUrl: washPhotoUrl || '',
+        timeEstimate: '11:00 - 13:00 WIB',
+      },
+    ].filter((p) => p.imageUrl);
+
     const newRecord: DailyMenuRecord = {
       date: menuDate,
       menuNumber: 1,
@@ -445,48 +499,25 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       publishedAt: `${menuDate} • 08:30 WIB`,
       components,
       nutritionCards: generatedNutritionCards,
-      photos: [
-        {
-          step: 'Persiapan',
-          title: 'Sortasi Bahan Baku Higienis',
-          description: 'Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.',
-          imageUrl: prepPhotoUrl || '',
-          timeEstimate: '04:00 - 05:30 WIB',
-        },
-        {
-          step: 'Pengolahan',
-          title: 'Pemasakan Suhu Terukur (>85°C)',
-          description: 'Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.',
-          imageUrl: cookPhotoUrl || '',
-          timeEstimate: '05:30 - 07:15 WIB',
-        },
-        {
-          step: 'Pengemasan',
-          title: 'Food Plating & Segel Thermal Box',
-          description: 'Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.',
-          imageUrl: packPhotoUrl || '',
-          timeEstimate: '07:15 - 08:30 WIB',
-        },
-      ].filter((p) => p.imageUrl),
+      photos: allPhotos,
       overrides: overridesList,
     };
 
     try {
       const existing = localStorage.getItem('sppg_synced_menus');
       let list: DailyMenuRecord[] = existing ? JSON.parse(existing) : [];
-      // Simpan pembaruan atau tambah baru
       list = [newRecord, ...list.filter((item: { date: string }) => item.date !== menuDate)];
       list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
       setSavedMenuList(list);
-      localStorage.removeItem('sppg_admin_draft_v2');
+      localStorage.removeItem('sppg_admin_draft_v3');
     } catch {
       // fallback
     }
 
     setPublishSuccess(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    alert(`BERHASIL DISIMPAN!\n\nLaporan menu tanggal ${menuDate} ("${namaMenu}") telah berhasil disimpan dan terbit di arsip.`);
+    alert(`BERHASIL DISIMPAN!\n\nLaporan menu tanggal ${menuDate} ("${namaMenu}") telah berhasil disimpan.`);
     setTimeout(() => setPublishSuccess(false), 8000);
   };
 
@@ -640,7 +671,6 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
           </button>
         </div>
 
-        {/* Notifikasi Sedang Mengedit Arsip Tertentu */}
         {editingAlert && (
           <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-xs font-bold text-amber-900 flex items-center justify-between">
             <span>{editingAlert}</span>
@@ -713,7 +743,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                 <label className="text-xs font-bold text-slate-700 block mb-1">Nama Menu Lengkap</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Nasi Pandan Wangi, Ayam Semur, Tahu Bacem, Tumis Buncis, & Pisang"
+                  placeholder="Contoh: Nasi Putih Martabak Telur"
                   value={namaMenu}
                   onChange={(e) => setNamaMenu(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600"
@@ -791,7 +821,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     <label className="text-[10px] font-bold text-slate-500 block mb-0.5">1. Karbohidrat</label>
                     <input
                       type="text"
-                      placeholder="Nasi Pulen"
+                      placeholder="Nasi Putih"
                       value={components.karbohidrat}
                       onChange={(e) => setComponents({ ...components, karbohidrat: e.target.value })}
                       className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
@@ -801,7 +831,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     <label className="text-[10px] font-bold text-slate-500 block mb-0.5">2. Lauk Hewani</label>
                     <input
                       type="text"
-                      placeholder="Ayam Semur"
+                      placeholder="Telur Ayam"
                       value={components.laukHewani}
                       onChange={(e) => setComponents({ ...components, laukHewani: e.target.value })}
                       className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
@@ -811,7 +841,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     <label className="text-[10px] font-bold text-slate-500 block mb-0.5">3. Lauk Nabati</label>
                     <input
                       type="text"
-                      placeholder="Tahu Bacem"
+                      placeholder="Tempe"
                       value={components.laukNabati}
                       onChange={(e) => setComponents({ ...components, laukNabati: e.target.value })}
                       className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
@@ -821,7 +851,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     <label className="text-[10px] font-bold text-slate-500 block mb-0.5">4. Sayur</label>
                     <input
                       type="text"
-                      placeholder="Tumis Buncis"
+                      placeholder="Kacang Panjang & Putren"
                       value={components.sayur}
                       onChange={(e) => setComponents({ ...components, sayur: e.target.value })}
                       className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
@@ -831,7 +861,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     <label className="text-[10px] font-bold text-slate-500 block mb-0.5">5. Buah</label>
                     <input
                       type="text"
-                      placeholder="Pisang Cavendish"
+                      placeholder="Kelengkeng"
                       value={components.buah}
                       onChange={(e) => setComponents({ ...components, buah: e.target.value })}
                       className="w-full px-2.5 py-2 border border-slate-300 rounded-lg bg-white"
@@ -1021,37 +1051,41 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
               </div>
             </div>
 
-            {/* ===================== ALUR 3: DOKUMENTASI ===================== */}
+            {/* ===================== ALUR 3: DOKUMENTASI (LENGKAP 5 TAHAP) ===================== */}
             <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
                     <Camera className="w-4 h-4" />
                   </div>
-                  <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                    3. Dokumentasi Dapur (3 Tahap)
-                  </h2>
+                  <div>
+                    <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                      3. Dokumentasi Alur Dapur & Distribusi (5 Foto Lengkap)
+                    </h2>
+                    <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
+                      <CloudUpload className="w-3.5 h-3.5" />
+                      Auto-upload ke folder Google Drive SPPG
+                    </span>
+                  </div>
                 </div>
                 <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded">Alur 3</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              {/* Grid 5 Foto Dapur Lengkap */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 {/* 1. Persiapan */}
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                  <span className="text-xs font-bold text-slate-800 block">1. Persiapan Bahan</span>
-                  <div className="relative h-32 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                  <span className="text-[11px] font-bold text-slate-800 block truncate">1. Persiapan Bahan</span>
+                  <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
                     {prepUploading ? (
-                      <div className="flex flex-col items-center gap-1 text-blue-600">
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                        <span className="text-[10px] font-bold">Uploading ke GDrive...</span>
-                      </div>
+                      <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                     ) : prepPhotoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={prepPhotoUrl} alt="Persiapan" className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-slate-400 flex flex-col items-center gap-1">
-                        <Camera className="w-6 h-6 text-blue-600" />
-                        <span className="text-[11px] font-bold text-slate-700">Jepret / Ambil Foto</span>
+                        <Camera className="w-5 h-5 text-blue-600" />
+                        <span className="text-[9px] font-bold text-slate-700">Jepret Foto</span>
                       </div>
                     )}
                     <input
@@ -1066,37 +1100,29 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     />
                   </div>
                   {prepPhotoUrl && (
-                    <div className="flex items-center justify-between text-[11px] pt-0.5">
-                      <span className="text-emerald-700 font-bold flex items-center gap-0.5">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Tersimpan di GDrive
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setPrepPhotoUrl(null)}
-                        className="text-rose-600 hover:underline cursor-pointer text-[10px]"
-                      >
-                        <Trash2 className="w-3 h-3" /> Hapus
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setPrepPhotoUrl(null)}
+                      className="text-rose-600 hover:underline cursor-pointer text-[10px] block mx-auto"
+                    >
+                      Hapus
+                    </button>
                   )}
                 </div>
 
                 {/* 2. Pengolahan */}
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                  <span className="text-xs font-bold text-slate-800 block">2. Pengolahan Masak</span>
-                  <div className="relative h-32 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                  <span className="text-[11px] font-bold text-slate-800 block truncate">2. Pengolahan</span>
+                  <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
                     {cookUploading ? (
-                      <div className="flex flex-col items-center gap-1 text-blue-600">
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                        <span className="text-[10px] font-bold">Uploading ke GDrive...</span>
-                      </div>
+                      <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                     ) : cookPhotoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={cookPhotoUrl} alt="Pengolahan" className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-slate-400 flex flex-col items-center gap-1">
-                        <Camera className="w-6 h-6 text-blue-600" />
-                        <span className="text-[11px] font-bold text-slate-700">Jepret / Ambil Foto</span>
+                        <Camera className="w-5 h-5 text-blue-600" />
+                        <span className="text-[9px] font-bold text-slate-700">Jepret Foto</span>
                       </div>
                     )}
                     <input
@@ -1111,37 +1137,29 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     />
                   </div>
                   {cookPhotoUrl && (
-                    <div className="flex items-center justify-between text-[11px] pt-0.5">
-                      <span className="text-emerald-700 font-bold flex items-center gap-0.5">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Tersimpan di GDrive
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setCookPhotoUrl(null)}
-                        className="text-rose-600 hover:underline cursor-pointer text-[10px]"
-                      >
-                        <Trash2 className="w-3 h-3" /> Hapus
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCookPhotoUrl(null)}
+                      className="text-rose-600 hover:underline cursor-pointer text-[10px] block mx-auto"
+                    >
+                      Hapus
+                    </button>
                   )}
                 </div>
 
                 {/* 3. Pengemasan */}
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                  <span className="text-xs font-bold text-slate-800 block">3. Pengemasan Box</span>
-                  <div className="relative h-32 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                  <span className="text-[11px] font-bold text-slate-800 block truncate">3. Pengemasan Box</span>
+                  <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
                     {packUploading ? (
-                      <div className="flex flex-col items-center gap-1 text-blue-600">
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                        <span className="text-[10px] font-bold">Uploading ke GDrive...</span>
-                      </div>
+                      <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                     ) : packPhotoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={packPhotoUrl} alt="Pengemasan" className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-slate-400 flex flex-col items-center gap-1">
-                        <Camera className="w-6 h-6 text-blue-600" />
-                        <span className="text-[11px] font-bold text-slate-700">Jepret / Ambil Foto</span>
+                        <Camera className="w-5 h-5 text-blue-600" />
+                        <span className="text-[9px] font-bold text-slate-700">Jepret Foto</span>
                       </div>
                     )}
                     <input
@@ -1156,18 +1174,87 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     />
                   </div>
                   {packPhotoUrl && (
-                    <div className="flex items-center justify-between text-[11px] pt-0.5">
-                      <span className="text-emerald-700 font-bold flex items-center gap-0.5">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Tersimpan di GDrive
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setPackPhotoUrl(null)}
-                        className="text-rose-600 hover:underline cursor-pointer text-[10px]"
-                      >
-                        <Trash2 className="w-3 h-3" /> Hapus
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setPackPhotoUrl(null)}
+                      className="text-rose-600 hover:underline cursor-pointer text-[10px] block mx-auto"
+                    >
+                      Hapus
+                    </button>
+                  )}
+                </div>
+
+                {/* 4. Distribusi */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                  <span className="text-[11px] font-bold text-slate-800 block truncate">4. Distribusi</span>
+                  <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
+                    {distUploading ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                    ) : distPhotoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={distPhotoUrl} alt="Distribusi" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-slate-400 flex flex-col items-center gap-1">
+                        <Camera className="w-5 h-5 text-blue-600" />
+                        <span className="text-[9px] font-bold text-slate-700">Jepret Foto</span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={distUploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleAutoDriveUpload(file, setDistPhotoUrl, setDistUploading, 'Distribusi');
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                  </div>
+                  {distPhotoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setDistPhotoUrl(null)}
+                      className="text-rose-600 hover:underline cursor-pointer text-[10px] block mx-auto"
+                    >
+                      Hapus
+                    </button>
+                  )}
+                </div>
+
+                {/* 5. Pencucian Ompreng */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                  <span className="text-[11px] font-bold text-slate-800 block truncate">5. Pencucian Ompreng</span>
+                  <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
+                    {washUploading ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                    ) : washPhotoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={washPhotoUrl} alt="Pencucian Ompreng" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-slate-400 flex flex-col items-center gap-1">
+                        <Camera className="w-5 h-5 text-blue-600" />
+                        <span className="text-[9px] font-bold text-slate-700">Jepret Foto</span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={washUploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleAutoDriveUpload(file, setWashPhotoUrl, setWashUploading, 'Pencucian Ompreng');
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                  </div>
+                  {washPhotoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setWashPhotoUrl(null)}
+                      className="text-rose-600 hover:underline cursor-pointer text-[10px] block mx-auto"
+                    >
+                      Hapus
+                    </button>
                   )}
                 </div>
               </div>
@@ -1269,10 +1356,9 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                   Catatan / Log Uraian Kegiatan:
                 </label>
                 <textarea
-                  rows={5}
+                  rows={9}
                   value={uraianKegiatan}
                   onChange={(e) => setUraianKegiatan(e.target.value)}
-                  placeholder="Tuliskan uraian tahapan kegiatan operasional..."
                   className="w-full p-3 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600 leading-relaxed font-sans"
                 />
               </div>
@@ -1292,7 +1378,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
                 <button
                   type="submit"
-                  disabled={menuPhotoUploading || prepUploading || cookUploading || packUploading}
+                  disabled={menuPhotoUploading || prepUploading || cookUploading || packUploading || distUploading || washUploading}
                   className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />

@@ -383,23 +383,25 @@ export default function HomePage() {
               <section className="space-y-2">
                 <div className="border-b border-slate-200 pb-1.5">
                   <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                    3. Dokumentasi Dapur (3 Tahap Wajib)
+                    3. Dokumentasi Alur Dapur & Distribusi (5 Foto Lengkap)
                   </h2>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   {currentMenu.photos.map((p, idx) => (
-                    <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
-                      <div className="relative h-36 sm:h-32 w-full bg-slate-200">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover" />
-                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/75 text-white text-[9px] font-black uppercase">
-                          {p.step}
+                    <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50 flex flex-col justify-between">
+                      <div>
+                        <div className="relative h-32 sm:h-28 w-full bg-slate-200">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover" />
+                          <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/75 text-white text-[9px] font-black uppercase">
+                            {p.step}
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-2.5 space-y-0.5">
-                        <span className="font-extrabold text-xs text-slate-900 block truncate">{p.title}</span>
-                        <span className="text-[10px] text-slate-500 block leading-tight">{p.description}</span>
+                        <div className="p-2.5 space-y-0.5">
+                          <span className="font-extrabold text-xs text-slate-900 block truncate">{p.title}</span>
+                          <span className="text-[10px] text-slate-500 block leading-tight">{p.description}</span>
+                        </div>
                       </div>
                     </div>
                   ))}

@@ -38,7 +38,7 @@ export interface DailyMenuRecord {
   menuNumber: number;
   title: string;
   uraianPekerjaan?: string;
-  menuPhotoUrl?: string;
+  menuPhotoUrl?: string; // FOTO SAJIAN MAKANAN UTAMA HARIAN
   status: 'draft' | 'review' | 'published';
   publishedAt?: string;
   components: {
@@ -49,7 +49,7 @@ export interface DailyMenuRecord {
     buah: string;
   };
   nutritionCards: NutritionItem[];
-  photos: ProcessPhoto[];
+  photos: ProcessPhoto[]; // 5 Tahap Dokumentasi Foto: Persiapan, Pengolahan, Pengemasan, Distribusi, Pencucian Ompreng
   overrides?: {
     siteId: string;
     condition: 'libur' | 'penyesuaian';
