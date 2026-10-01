@@ -134,7 +134,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       // fallback
     }
   };
-
+  // LOAD DRAFT TERSIMPAN SECARA OTOMATIS
   useEffect(() => {
     const authStatus = sessionStorage.getItem('sppg_admin_auth');
     if (authStatus === 'true') {
@@ -162,6 +162,43 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       // fallback
     }
   }, []);
+
+  // AUTO-SAVE SETIAP KALI USER EDIT APAPUN (AKG, MENU, KOMPONEN, FOTO, TANGGAL, DLL)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const draftPayload = {
+      menuDate,
+      namaMenu,
+      components,
+      akgBesar,
+      akgKecil,
+      menuPhotoUrl,
+      prepPhotoUrl,
+      cookPhotoUrl,
+      packPhotoUrl,
+      beneficiaryOverrides,
+      uraianKegiatan,
+      lastSaved: new Date().toISOString(),
+    };
+    try {
+      localStorage.setItem('sppg_admin_draft_v2', JSON.stringify(draftPayload));
+    } catch {
+      // fallback
+    }
+  }, [
+    isAuthenticated,
+    menuDate,
+    namaMenu,
+    components,
+    akgBesar,
+    akgKecil,
+    menuPhotoUrl,
+    prepPhotoUrl,
+    cookPhotoUrl,
+    packPhotoUrl,
+    beneficiaryOverrides,
+    uraianKegiatan,
+  ]);
 
   // FUNGSI PILIH & MUAT DATA ARSIP LAMA KE FORM UNTUK DI-EDIT
   const handleLoadMenuToEdit = (menu: DailyMenuRecord) => {
