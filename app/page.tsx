@@ -510,7 +510,7 @@ export default function HomePage() {
             </>
           )}
 
-          {/* TANDA TANGAN / PENGESAHAN DOKUMEN RESMI SESUAI HIERARKI */}
+          {/* TANDA TANGAN / PENGESAHAN DOKUMEN RESMI SESUAI HIERARKI DENGAN NAMA PEJABAT */}
           <div className="pt-6 sm:pt-8 border-t border-slate-200 space-y-6 text-center text-xs text-slate-700">
             {/* Baris Atas: Penanggung Jawab Gizi Sejajar dengan Penanggung Jawab Ops */}
             <div className="grid grid-cols-2 gap-4 sm:gap-12">
@@ -519,8 +519,10 @@ export default function HomePage() {
                   Penanggung Jawab Gizi
                 </p>
                 <div className="h-12 sm:h-16" />
-                <p className="font-black text-slate-900 underline text-xs sm:text-sm">Ahli Gizi</p>
-                <p className="text-[10px] text-slate-500">SPPG Wonodri 3 Kota Semarang</p>
+                <p className="font-black text-slate-900 underline text-xs sm:text-sm">
+                  Sintia Mariam, A.Md.Gz
+                </p>
+                <p className="text-[10px] text-slate-500 font-medium">Ahli Gizi SPPG Wonodri 3</p>
               </div>
 
               <div className="p-3 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200">
@@ -528,20 +530,24 @@ export default function HomePage() {
                   Penanggung Jawab Ops
                 </p>
                 <div className="h-12 sm:h-16" />
-                <p className="font-black text-slate-900 underline text-xs sm:text-sm">Asisten Lapangan</p>
-                <p className="text-[10px] text-slate-500">Operasional MBG Wonodri 3</p>
+                <p className="font-black text-slate-900 underline text-xs sm:text-sm">
+                  Hakim
+                </p>
+                <p className="text-[10px] text-slate-500 font-medium">Asisten Lapangan MBG Wonodri 3</p>
               </div>
             </div>
 
             {/* Baris Bawah: Penanggung Jawab SPPG (Ka. SPPG) di Tengah Sebagai Pengesah Utama */}
             <div className="pt-2 flex justify-center">
-              <div className="p-3 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200 max-w-xs w-full text-center">
+              <div className="p-3 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200 max-w-sm w-full text-center">
                 <p className="font-bold text-slate-500 text-[11px] sm:text-xs uppercase tracking-wider">
                   Penanggung Jawab SPPG
                 </p>
                 <div className="h-12 sm:h-16" />
-                <p className="font-black text-slate-900 underline text-xs sm:text-sm">Ka. SPPG</p>
-                <p className="text-[10px] text-slate-500">Kepala Satuan Pelayanan Wonodri 3</p>
+                <p className="font-black text-slate-900 underline text-xs sm:text-sm">
+                  Dicky Yusuf Mulyadi, S.M
+                </p>
+                <p className="text-[10px] text-slate-500 font-medium">Ka. SPPG Wonodri 3 Kota Semarang</p>
               </div>
             </div>
           </div>
