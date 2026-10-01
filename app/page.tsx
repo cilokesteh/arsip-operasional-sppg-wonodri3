@@ -533,7 +533,7 @@ export default function HomePage() {
                 <p className="font-black text-slate-900 underline text-xs sm:text-sm">
                   Hakim
                 </p>
-                <p className="text-[10px] text-slate-500 font-medium">Asisten Lapangan MBG Wonodri 3</p>
+                <p className="text-[10px] text-slate-500 font-medium">Aslap MBG Wonodri 3</p>
               </div>
             </div>
 
