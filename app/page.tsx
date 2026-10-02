@@ -207,7 +207,7 @@ export default function HomePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5">
                   {/* Foto Porsi Makanan Sajian */}
-                  <div className="md:col-span-4 relative h-48 sm:h-56 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                  <div className="md:col-span-4 menu-photo-container relative h-48 sm:h-56 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={currentMenu.menuPhotoUrl || '/gallery-1.jpg'}
@@ -379,6 +379,9 @@ export default function HomePage() {
                 </div>
               </section>
 
+              {/* Batas Halaman 1 -> Halaman 2 saat Print / PDF */}
+              <div className="page-break-after-p1" />
+
               {/* ===================== 3. DOKUMENTASI ===================== */}
               <section className="doc-section-block space-y-2">
                 <div className="border-b border-slate-200 pb-1.5">
@@ -407,6 +410,9 @@ export default function HomePage() {
                   ))}
                 </div>
               </section>
+
+              {/* Batas Halaman 2 -> Halaman 3 saat Print / PDF */}
+              <div className="page-break-after-p2" />
 
               {/* ===================== 4. ALOKASI ===================== */}
               <section className="space-y-2">

@@ -19,18 +19,18 @@
   }
 }
 
-/* Formal Document Layout & Strict Print Optimization (Anti-Page-Spill) */
+/* Formal Document Layout & Strict Print Optimization (Target Pas 3 Halaman Lega & Elegan) */
 @media print {
   @page {
     size: auto;
-    margin: 8mm 10mm 8mm 10mm;
+    margin: 12mm 15mm 12mm 15mm;
   }
 
   html, body {
     background-color: #ffffff !important;
     color: #000000 !important;
-    font-size: 8.5pt !important;
-    line-height: 1.2 !important;
+    font-size: 9.5pt !important;
+    line-height: 1.35 !important;
     margin: 0 !important;
     padding: 0 !important;
   }
@@ -48,33 +48,57 @@
     width: 100% !important;
   }
 
-  /* Cegah pemotongan sembarangan di tengah tabel/section */
-  table, tr {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
+  /* ========================================================
+     PENGATURAN PAS 3 HALAMAN RESMI (CLEAN & LEGA):
+     HALAMAN 1: Kop BGN + 1. Menu Makanan (Foto Sajian Full Besar) + 2. AKG
+     HALAMAN 2: 3. Dokumentasi Alur Dapur & Distribusi (5 Foto Lengkap Besar)
+     HALAMAN 3: 4. Alokasi Penerima Manfaat + 5. Uraian Kegiatan + Tanda Tangan
+     ======================================================== */
+
+  .page-break-after-p1 {
+    page-break-after: always !important;
+    break-after: page !important;
   }
 
-  /* 3. DOKUMENTASI DAPUR & DISTRIBUSI: JANGAN TERPOTONG DI TENGAH-TENGAH */
+  .page-break-after-p2 {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  /* FOTO MENU UTAMA DI HALAMAN 1 (FULL, LEGA, JELAS) */
+  .menu-photo-container {
+    height: 200px !important;
+    width: 100% !important;
+    max-width: 320px !important;
+  }
+
+  .menu-photo-container img {
+    height: 100% !important;
+    width: 100% !important;
+    object-fit: cover !important;
+    max-height: none !important;
+  }
+
+  /* FOTO DOKUMENTASI DI HALAMAN 2 (LEGA, 5 FOTO FULL JELAS) */
   .doc-section-block {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
+    padding-top: 10px !important;
   }
 
-  /* Grid 5 Foto Saat Print: Buat 5 Kolom Sejajar Rapi dalam 1 Baris */
   .doc-photo-grid {
     display: grid !important;
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    gap: 6px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
   }
 
   .doc-photo-card {
     border: 1px solid #cbd5e1 !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     overflow: hidden !important;
+    background: #f8fafc !important;
   }
 
   .doc-photo-img-wrap {
-    height: 68px !important;
+    height: 125px !important;
     width: 100% !important;
     position: relative !important;
   }
@@ -83,15 +107,29 @@
     height: 100% !important;
     width: 100% !important;
     object-fit: cover !important;
+    max-height: none !important;
   }
 
-  /* Blok Uraian Kegiatan dan Tanda Tangan Wajib Satu Halaman Utuh */
+  /* Foto ke-5 (Pencucian Ompreng) span 2 kolom agar seimbang */
+  .doc-photo-card:nth-child(5) {
+    grid-column: span 2 !important;
+  }
+
+  .doc-photo-card:nth-child(5) .doc-photo-img-wrap {
+    height: 140px !important;
+  }
+
+  /* HALAMAN 3: ALOKASI & TANDA TANGAN */
+  table, tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
   .sign-off-block, .operation-summary-block {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
 
-  /* Struktur Hierarki Tanda Tangan Cetak: Atas 2 Kolom, Bawah Tengah 1 Kolom */
   .sign-top-row {
     display: flex !important;
     flex-direction: row !important;
@@ -108,7 +146,7 @@
     display: flex !important;
     justify-content: center !important;
     width: 100% !important;
-    margin-top: 12px !important;
+    margin-top: 24px !important;
   }
 
   .sign-bottom-col {
@@ -118,6 +156,6 @@
   }
 
   .sign-space {
-    height: 36px !important;
+    height: 52px !important;
   }
 }
