@@ -19,12 +19,20 @@
   }
 }
 
-/* Formal Document Layout & Print Styling */
+/* Formal Document Layout & Strict Print Optimization (Anti-Page-Spill) */
 @media print {
-  body {
+  @page {
+    size: auto;
+    margin: 10mm 12mm 10mm 12mm;
+  }
+
+  html, body {
     background-color: #ffffff !important;
     color: #000000 !important;
-    font-size: 10pt !important;
+    font-size: 8.5pt !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .no-print {
@@ -35,11 +43,33 @@
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
+    margin: 0 !important;
     max-width: 100% !important;
     width: 100% !important;
   }
 
-  .page-break-after {
-    page-break-after: always;
+  /* Cegah section dan tabel terpotong sembarangan */
+  section, table, tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Blok Tanda Tangan Wajib Satu Kesatuan (Anti Tercecer Sendirian di Halaman Baru) */
+  .sign-off-block {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-top: 1rem !important;
+    padding-top: 0.75rem !important;
+  }
+
+  /* Optimasi Gambar Cetak */
+  img {
+    max-height: 100px !important;
+    object-fit: cover !important;
+  }
+
+  /* Ruang Tanda Tangan Ringkas */
+  .sign-space {
+    height: 38px !important;
   }
 }
