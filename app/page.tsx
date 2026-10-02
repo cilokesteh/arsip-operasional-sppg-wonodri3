@@ -205,22 +205,24 @@ export default function HomePage() {
                   <span className="text-[10px] text-slate-500 font-semibold">Menu #{currentMenu.menuNumber || 1}</span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5">
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
                   {/* Foto Porsi Makanan Sajian */}
-                  <div className="md:col-span-4 relative h-48 sm:h-56 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={currentMenu.menuPhotoUrl || '/gallery-1.jpg'}
-                      alt={currentMenu.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-white text-[9px] font-bold">
-                      Sajian {formatTanggalIndo(currentMenu.date)}
+                  <div className="w-full sm:w-64 md:w-72 shrink-0">
+                    <div className="relative rounded-lg overflow-hidden border border-slate-200 bg-slate-100 aspect-[4/3] w-full">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={currentMenu.menuPhotoUrl || '/gallery-1.jpg'}
+                        alt={currentMenu.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-white text-[9px] font-bold">
+                        Sajian {formatTanggalIndo(currentMenu.date)}
+                      </div>
                     </div>
                   </div>
 
                   {/* Rincian Menu & 5 Komponen */}
-                  <div className="md:col-span-8 flex flex-col justify-between space-y-3">
+                  <div className="flex-1 w-full flex flex-col justify-between space-y-3">
                     <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
                       <span className="text-[9px] sm:text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Nama Menu:</span>
                       <h3 className="font-extrabold text-xs sm:text-sm md:text-base text-slate-900 leading-snug">

@@ -21,10 +21,15 @@
 
 /* Formal Document Layout & Print Styling */
 @media print {
+  @page {
+    size: auto;
+    margin: 8mm 10mm 8mm 10mm;
+  }
+
   body {
     background-color: #ffffff !important;
     color: #000000 !important;
-    font-size: 10pt !important;
+    font-size: 9.5pt !important;
   }
 
   .no-print {
@@ -37,6 +42,18 @@
     padding: 0 !important;
     max-width: 100% !important;
     width: 100% !important;
+  }
+
+  /* Pastikan foto menu tampil utuh di print / PDF tanpa terpotong */
+  .aspect-\[4\/3\] {
+    height: 180px !important;
+    width: 240px !important;
+  }
+
+  .aspect-\[4\/3\] img {
+    height: 100% !important;
+    width: 100% !important;
+    object-fit: cover !important;
   }
 
   .page-break-after {
