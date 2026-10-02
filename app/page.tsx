@@ -497,7 +497,7 @@ export default function HomePage() {
               </section>
 
               {/* ===================== 5. URAIAN KEGIATAN ===================== */}
-              <section className="space-y-2">
+              <section className="operation-summary-block space-y-2">
                 <div className="border-b border-slate-200 pb-1.5">
                   <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
                     5. Uraian Kegiatan Operasional Dapur & Distribusi
@@ -513,43 +513,46 @@ export default function HomePage() {
           )}
 
           {/* TANDA TANGAN / PENGESAHAN DOKUMEN RESMI SESUAI HIERARKI DENGAN NAMA PEJABAT */}
-          <div className="sign-off-block pt-4 sm:pt-6 border-t border-slate-200 text-center text-xs text-slate-700">
-            {/* Tata Letak 3 Pejabat Sejajar Ringkas Saat Cetak */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-6 items-start">
-              {/* 1. Gizi */}
+          <div className="sign-off-block pt-4 sm:pt-6 border-t border-slate-200 text-center text-xs text-slate-700 space-y-4 sm:space-y-6">
+            {/* Baris 1 (Atas): Ahli Gizi Sejajar Aslap */}
+            <div className="grid grid-cols-2 gap-4 sm:gap-12">
               <div className="p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200">
                 <p className="font-bold text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider">
                   Penanggung Jawab Gizi
                 </p>
-                <div className="h-10 sm:h-14 sign-space" />
+                <div className="h-10 sm:h-12 sign-space" />
                 <p className="font-black text-slate-900 underline text-xs">
                   Sintia Mariam, A.Md.Gz
                 </p>
                 <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium">Ahli Gizi SPPG Wonodri 3</p>
               </div>
 
-              {/* 2. Ka. SPPG (Pusat / Tengah) */}
-              <div className="p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200">
-                <p className="font-bold text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider">
-                  Mengetahui / Mengesahkan
-                </p>
-                <div className="h-10 sm:h-14 sign-space" />
-                <p className="font-black text-slate-900 underline text-xs">
-                  Dicky Yusuf Mulyadi, S.M
-                </p>
-                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium">Ka. SPPG Wonodri 3 Kota Smg</p>
-              </div>
-
-              {/* 3. Ops */}
               <div className="p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200">
                 <p className="font-bold text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider">
                   Penanggung Jawab Ops
                 </p>
-                <div className="h-10 sm:h-14 sign-space" />
+                <div className="h-10 sm:h-12 sign-space" />
                 <p className="font-black text-slate-900 underline text-xs">
                   Hakim
                 </p>
                 <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium">Aslap SPPG Wonodri 3</p>
+              </div>
+            </div>
+
+            {/* Baris 2 (Bawah): Ka. SPPG Sendiri di Bawah Tengah Sebagai Pimpinan Pengesah Utama */}
+            <div className="flex justify-center pt-1">
+              <div className="p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200 max-w-xs w-full text-center">
+                <p className="font-bold text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider">
+                  Mengetahui / Mengesahkan,
+                </p>
+                <p className="font-extrabold text-slate-700 text-[10px] sm:text-[11px] uppercase tracking-wider">
+                  Penanggung Jawab SPPG
+                </p>
+                <div className="h-10 sm:h-12 sign-space" />
+                <p className="font-black text-slate-900 underline text-xs sm:text-sm">
+                  Dicky Yusuf Mulyadi, S.M
+                </p>
+                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium">Ka. SPPG Wonodri 3 Kota Semarang</p>
               </div>
             </div>
           </div>

@@ -23,14 +23,14 @@
 @media print {
   @page {
     size: auto;
-    margin: 10mm 12mm 10mm 12mm;
+    margin: 8mm 10mm 8mm 10mm;
   }
 
   html, body {
     background-color: #ffffff !important;
     color: #000000 !important;
     font-size: 8.5pt !important;
-    line-height: 1.25 !important;
+    line-height: 1.2 !important;
     margin: 0 !important;
     padding: 0 !important;
   }
@@ -48,28 +48,25 @@
     width: 100% !important;
   }
 
-  /* Cegah section dan tabel terpotong sembarangan */
-  section, table, tr {
+  /* Cegah pemotongan sembarangan di tengah tabel/section */
+  table, tr {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
 
-  /* Blok Tanda Tangan Wajib Satu Kesatuan (Anti Tercecer Sendirian di Halaman Baru) */
-  .sign-off-block {
+  /* Blok Uraian Kegiatan dan Tanda Tangan Wajib Satu Halaman Utuh */
+  .sign-off-block, .operation-summary-block {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
-    margin-top: 1rem !important;
-    padding-top: 0.75rem !important;
   }
 
-  /* Optimasi Gambar Cetak */
+  /* Optimasi Gambar Dokumentasi Saat Print Agar Ringkas */
   img {
-    max-height: 100px !important;
+    max-height: 85px !important;
     object-fit: cover !important;
   }
 
-  /* Ruang Tanda Tangan Ringkas */
   .sign-space {
-    height: 38px !important;
+    height: 36px !important;
   }
 }
