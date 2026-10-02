@@ -60,6 +60,32 @@
     page-break-inside: avoid !important;
   }
 
+  /* Struktur Hierarki Tanda Tangan Cetak: Atas 2 Kolom, Bawah Tengah 1 Kolom */
+  .sign-top-row {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+
+  .sign-top-col {
+    width: 45% !important;
+    text-align: center !important;
+  }
+
+  .sign-bottom-row {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin-top: 15px !important;
+  }
+
+  .sign-bottom-col {
+    width: 50% !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+  }
+
   /* Optimasi Gambar Dokumentasi Saat Print Agar Ringkas */
   img {
     max-height: 85px !important;

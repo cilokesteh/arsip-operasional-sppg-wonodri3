@@ -515,8 +515,8 @@ export default function HomePage() {
           {/* TANDA TANGAN / PENGESAHAN DOKUMEN RESMI SESUAI HIERARKI DENGAN NAMA PEJABAT */}
           <div className="sign-off-block pt-4 sm:pt-6 border-t border-slate-200 text-center text-xs text-slate-700 space-y-4 sm:space-y-6">
             {/* Baris 1 (Atas): Ahli Gizi Sejajar Aslap */}
-            <div className="grid grid-cols-2 gap-4 sm:gap-12">
-              <div className="p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200">
+            <div className="sign-top-row grid grid-cols-2 gap-4 sm:gap-12">
+              <div className="sign-top-col p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200">
                 <p className="font-bold text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider">
                   Penanggung Jawab Gizi
                 </p>
@@ -527,7 +527,7 @@ export default function HomePage() {
                 <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium">Ahli Gizi SPPG Wonodri 3</p>
               </div>
 
-              <div className="p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200">
+              <div className="sign-top-col p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200">
                 <p className="font-bold text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider">
                   Penanggung Jawab Ops
                 </p>
@@ -540,8 +540,8 @@ export default function HomePage() {
             </div>
 
             {/* Baris 2 (Bawah): Ka. SPPG Sendiri di Bawah Tengah Sebagai Pimpinan Pengesah Utama */}
-            <div className="flex justify-center pt-1">
-              <div className="p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200 max-w-xs w-full text-center">
+            <div className="sign-bottom-row flex justify-center pt-1">
+              <div className="sign-bottom-col p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200 max-w-xs w-full text-center">
                 <p className="font-bold text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider">
                   Mengetahui / Mengesahkan,
                 </p>
