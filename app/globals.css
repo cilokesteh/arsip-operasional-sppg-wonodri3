@@ -54,6 +54,37 @@
     page-break-inside: avoid !important;
   }
 
+  /* 3. DOKUMENTASI DAPUR & DISTRIBUSI: JANGAN TERPOTONG DI TENGAH-TENGAH */
+  .doc-section-block {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Grid 5 Foto Saat Print: Buat 5 Kolom Sejajar Rapi dalam 1 Baris */
+  .doc-photo-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .doc-photo-card {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+  }
+
+  .doc-photo-img-wrap {
+    height: 68px !important;
+    width: 100% !important;
+    position: relative !important;
+  }
+
+  .doc-photo-img-wrap img {
+    height: 100% !important;
+    width: 100% !important;
+    object-fit: cover !important;
+  }
+
   /* Blok Uraian Kegiatan dan Tanda Tangan Wajib Satu Halaman Utuh */
   .sign-off-block, .operation-summary-block {
     break-inside: avoid !important;
@@ -77,19 +108,13 @@
     display: flex !important;
     justify-content: center !important;
     width: 100% !important;
-    margin-top: 15px !important;
+    margin-top: 12px !important;
   }
 
   .sign-bottom-col {
     width: 50% !important;
     text-align: center !important;
     margin: 0 auto !important;
-  }
-
-  /* Optimasi Gambar Dokumentasi Saat Print Agar Ringkas */
-  img {
-    max-height: 85px !important;
-    object-fit: cover !important;
   }
 
   .sign-space {
