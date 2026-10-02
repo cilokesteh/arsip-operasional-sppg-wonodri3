@@ -207,7 +207,7 @@ export default function HomePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5">
                   {/* Foto Porsi Makanan Sajian */}
-                  <div className="md:col-span-4 menu-photo-container relative h-48 sm:h-56 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                  <div className="md:col-span-4 relative h-48 sm:h-56 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={currentMenu.menuPhotoUrl || '/gallery-1.jpg'}
@@ -379,40 +379,32 @@ export default function HomePage() {
                 </div>
               </section>
 
-              {/* Batas Halaman 1 -> Halaman 2 saat Print / PDF */}
-              <div className="page-break-after-p1" />
-
               {/* ===================== 3. DOKUMENTASI ===================== */}
-              <section className="doc-section-block space-y-2">
+              <section className="space-y-2">
                 <div className="border-b border-slate-200 pb-1.5">
                   <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                    3. Dokumentasi Alur Dapur & Distribusi (5 Foto Lengkap)
+                    3. Dokumentasi Dapur (3 Tahap Wajib)
                   </h2>
                 </div>
 
-                <div className="doc-photo-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {currentMenu.photos.map((p, idx) => (
-                    <div key={idx} className="doc-photo-card border border-slate-200 rounded-lg overflow-hidden bg-slate-50 flex flex-col justify-between">
-                      <div>
-                        <div className="doc-photo-img-wrap relative h-32 sm:h-28 w-full bg-slate-200">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover" />
-                          <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/75 text-white text-[8px] sm:text-[9px] font-black uppercase">
-                            {p.step}
-                          </div>
+                    <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                      <div className="relative h-36 sm:h-32 w-full bg-slate-200">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover" />
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/75 text-white text-[9px] font-black uppercase">
+                          {p.step}
                         </div>
-                        <div className="p-2 sm:p-2.5 space-y-0.5">
-                          <span className="font-extrabold text-[11px] sm:text-xs text-slate-900 block truncate">{p.title}</span>
-                          <span className="text-[9px] sm:text-[10px] text-slate-500 block leading-tight">{p.description}</span>
-                        </div>
+                      </div>
+                      <div className="p-2.5 space-y-0.5">
+                        <span className="font-extrabold text-xs text-slate-900 block truncate">{p.title}</span>
+                        <span className="text-[10px] text-slate-500 block leading-tight">{p.description}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               </section>
-
-              {/* Batas Halaman 2 -> Halaman 3 saat Print / PDF */}
-              <div className="page-break-after-p2" />
 
               {/* ===================== 4. ALOKASI ===================== */}
               <section className="space-y-2">
@@ -503,7 +495,7 @@ export default function HomePage() {
               </section>
 
               {/* ===================== 5. URAIAN KEGIATAN ===================== */}
-              <section className="operation-summary-block space-y-2">
+              <section className="space-y-2">
                 <div className="border-b border-slate-200 pb-1.5">
                   <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
                     5. Uraian Kegiatan Operasional Dapur & Distribusi
@@ -519,46 +511,43 @@ export default function HomePage() {
           )}
 
           {/* TANDA TANGAN / PENGESAHAN DOKUMEN RESMI SESUAI HIERARKI DENGAN NAMA PEJABAT */}
-          <div className="sign-off-block pt-4 sm:pt-6 border-t border-slate-200 text-center text-xs text-slate-700 space-y-4 sm:space-y-6">
-            {/* Baris 1 (Atas): Ahli Gizi Sejajar Aslap */}
-            <div className="sign-top-row grid grid-cols-2 gap-4 sm:gap-12">
-              <div className="sign-top-col p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200">
-                <p className="font-bold text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider">
+          <div className="pt-6 sm:pt-8 border-t border-slate-200 space-y-6 text-center text-xs text-slate-700">
+            {/* Baris Atas: Penanggung Jawab Gizi Sejajar dengan Penanggung Jawab Ops */}
+            <div className="grid grid-cols-2 gap-4 sm:gap-12">
+              <div className="p-3 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200">
+                <p className="font-bold text-slate-500 text-[11px] sm:text-xs uppercase tracking-wider">
                   Penanggung Jawab Gizi
                 </p>
-                <div className="h-10 sm:h-12 sign-space" />
-                <p className="font-black text-slate-900 underline text-xs">
+                <div className="h-12 sm:h-16" />
+                <p className="font-black text-slate-900 underline text-xs sm:text-sm">
                   Sintia Mariam, A.Md.Gz
                 </p>
-                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium">Ahli Gizi SPPG Wonodri 3</p>
+                <p className="text-[10px] text-slate-500 font-medium">Ahli Gizi SPPG Wonodri 3</p>
               </div>
 
-              <div className="sign-top-col p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200">
-                <p className="font-bold text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider">
+              <div className="p-3 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200">
+                <p className="font-bold text-slate-500 text-[11px] sm:text-xs uppercase tracking-wider">
                   Penanggung Jawab Ops
                 </p>
-                <div className="h-10 sm:h-12 sign-space" />
-                <p className="font-black text-slate-900 underline text-xs">
+                <div className="h-12 sm:h-16" />
+                <p className="font-black text-slate-900 underline text-xs sm:text-sm">
                   Hakim
                 </p>
-                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium">Aslap SPPG Wonodri 3</p>
+                <p className="text-[10px] text-slate-500 font-medium">Aslap SPPG Wonodri 3</p>
               </div>
             </div>
 
-            {/* Baris 2 (Bawah): Ka. SPPG Sendiri di Bawah Tengah Sebagai Pimpinan Pengesah Utama */}
-            <div className="sign-bottom-row flex justify-center pt-1">
-              <div className="sign-bottom-col p-2 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200 max-w-xs w-full text-center">
-                <p className="font-bold text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider">
-                  Mengetahui / Mengesahkan,
-                </p>
-                <p className="font-extrabold text-slate-700 text-[10px] sm:text-[11px] uppercase tracking-wider">
+            {/* Baris Bawah: Penanggung Jawab SPPG (Ka. SPPG) di Tengah Sebagai Pengesah Utama */}
+            <div className="pt-2 flex justify-center">
+              <div className="p-3 sm:p-0 rounded-lg bg-slate-50 sm:bg-transparent border sm:border-0 border-slate-200 max-w-sm w-full text-center">
+                <p className="font-bold text-slate-500 text-[11px] sm:text-xs uppercase tracking-wider">
                   Penanggung Jawab SPPG
                 </p>
-                <div className="h-10 sm:h-12 sign-space" />
+                <div className="h-12 sm:h-16" />
                 <p className="font-black text-slate-900 underline text-xs sm:text-sm">
                   Dicky Yusuf Mulyadi, S.M
                 </p>
-                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium">Ka. SPPG Wonodri 3 Kota Semarang</p>
+                <p className="text-[10px] text-slate-500 font-medium">Ka. SPPG Wonodri 3 Kota Semarang</p>
               </div>
             </div>
           </div>

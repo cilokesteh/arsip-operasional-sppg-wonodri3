@@ -19,20 +19,12 @@
   }
 }
 
-/* Formal Document Layout & Strict Print Optimization (Target Pas 3 Halaman Lega & Elegan) */
+/* Formal Document Layout & Print Styling */
 @media print {
-  @page {
-    size: auto;
-    margin: 12mm 15mm 12mm 15mm;
-  }
-
-  html, body {
+  body {
     background-color: #ffffff !important;
     color: #000000 !important;
-    font-size: 9.5pt !important;
-    line-height: 1.35 !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    font-size: 10pt !important;
   }
 
   .no-print {
@@ -43,119 +35,11 @@
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
-    margin: 0 !important;
     max-width: 100% !important;
     width: 100% !important;
   }
 
-  /* ========================================================
-     PENGATURAN PAS 3 HALAMAN RESMI (CLEAN & LEGA):
-     HALAMAN 1: Kop BGN + 1. Menu Makanan (Foto Sajian Full Besar) + 2. AKG
-     HALAMAN 2: 3. Dokumentasi Alur Dapur & Distribusi (5 Foto Lengkap Besar)
-     HALAMAN 3: 4. Alokasi Penerima Manfaat + 5. Uraian Kegiatan + Tanda Tangan
-     ======================================================== */
-
-  .page-break-after-p1 {
-    page-break-after: always !important;
-    break-after: page !important;
-  }
-
-  .page-break-after-p2 {
-    page-break-after: always !important;
-    break-after: page !important;
-  }
-
-  /* FOTO MENU UTAMA DI HALAMAN 1 (FULL, LEGA, JELAS) */
-  .menu-photo-container {
-    height: 200px !important;
-    width: 100% !important;
-    max-width: 320px !important;
-  }
-
-  .menu-photo-container img {
-    height: 100% !important;
-    width: 100% !important;
-    object-fit: cover !important;
-    max-height: none !important;
-  }
-
-  /* FOTO DOKUMENTASI DI HALAMAN 2 (LEGA, 5 FOTO FULL JELAS) */
-  .doc-section-block {
-    padding-top: 10px !important;
-  }
-
-  .doc-photo-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 12px !important;
-  }
-
-  .doc-photo-card {
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 8px !important;
-    overflow: hidden !important;
-    background: #f8fafc !important;
-  }
-
-  .doc-photo-img-wrap {
-    height: 125px !important;
-    width: 100% !important;
-    position: relative !important;
-  }
-
-  .doc-photo-img-wrap img {
-    height: 100% !important;
-    width: 100% !important;
-    object-fit: cover !important;
-    max-height: none !important;
-  }
-
-  /* Foto ke-5 (Pencucian Ompreng) span 2 kolom agar seimbang */
-  .doc-photo-card:nth-child(5) {
-    grid-column: span 2 !important;
-  }
-
-  .doc-photo-card:nth-child(5) .doc-photo-img-wrap {
-    height: 140px !important;
-  }
-
-  /* HALAMAN 3: ALOKASI & TANDA TANGAN */
-  table, tr {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-
-  .sign-off-block, .operation-summary-block {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-
-  .sign-top-row {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-  }
-
-  .sign-top-col {
-    width: 45% !important;
-    text-align: center !important;
-  }
-
-  .sign-bottom-row {
-    display: flex !important;
-    justify-content: center !important;
-    width: 100% !important;
-    margin-top: 24px !important;
-  }
-
-  .sign-bottom-col {
-    width: 50% !important;
-    text-align: center !important;
-    margin: 0 auto !important;
-  }
-
-  .sign-space {
-    height: 52px !important;
+  .page-break-after {
+    page-break-after: always;
   }
 }
