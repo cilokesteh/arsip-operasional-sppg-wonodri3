@@ -487,7 +487,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
         imageUrl: washPhotoUrl || '',
         timeEstimate: '11:00 - 13:00 WIB',
       },
-    ].filter((p) => p.imageUrl);
+    ].filter((p) => p.imageUrl && p.imageUrl.trim() !== '');
 
     const newRecord: DailyMenuRecord = {
       date: menuDate,
