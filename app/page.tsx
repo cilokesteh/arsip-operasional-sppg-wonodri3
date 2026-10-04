@@ -25,10 +25,15 @@ import {
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
+import staticMenusData from '@/lib/staticMenus.json';
 
 export default function HomePage() {
-  const [menuHistory, setMenuHistory] = useState<DailyMenuRecord[]>(INITIAL_MENU_HISTORY);
-  const [selectedDate, setSelectedDate] = useState<string>('2026-10-02');
+  const [menuHistory, setMenuHistory] = useState<DailyMenuRecord[]>(
+    (staticMenusData as unknown as DailyMenuRecord[]) || INITIAL_MENU_HISTORY
+  );
+  const [selectedDate, setSelectedDate] = useState<string>(
+    staticMenusData && staticMenusData.length > 0 ? staticMenusData[0].date : '2026-10-02'
+  );
   const [showCalendarModal, setShowCalendarModal] = useState<boolean>(false);
   const [searchBeneficiary, setSearchBeneficiary] = useState<string>('');
 
