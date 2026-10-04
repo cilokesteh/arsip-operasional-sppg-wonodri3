@@ -24,6 +24,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';
+import { fetchMenusFromCloud } from '@/lib/cloudSync';
 
 export default function HomePage() {
   const [menuHistory, setMenuHistory] = useState<DailyMenuRecord[]>(INITIAL_MENU_HISTORY);
@@ -69,6 +70,7 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    // 1. Baca dulu dari localStorage lokal untuk kecepatan render awal
     try {
       const saved = localStorage.getItem('sppg_synced_menus');
       if (saved) {
@@ -81,6 +83,19 @@ export default function HomePage() {
     } catch {
       // fallback
     }
+
+    // 2. Tarik data terbaru dari Cloud (Cloudflare KV) agar sinkron antar-device (HP, Laptop, PC)
+    fetchMenusFromCloud().then((cloudMenus) => {
+      if (cloudMenus && cloudMenus.length > 0) {
+        setMenuHistory(cloudMenus);
+        setSelectedDate(cloudMenus[0].date);
+        try {
+          localStorage.setItem('sppg_synced_menus', JSON.stringify(cloudMenus));
+        } catch {
+          // ignore
+        }
+      }
+    });
   }, []);
 
   const currentMenu = menuHistory.find((m) => m.date === selectedDate);

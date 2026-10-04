@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
 import { INITIAL_BENEFICIARIES, DailyMenuRecord } from '@/lib/data';
+import { fetchMenusFromCloud, saveMenusToCloud } from '@/lib/cloudSync';
 
 interface AKGInputRaw {
   groupName: string;
@@ -138,6 +139,18 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     } catch {
       // fallback
     }
+
+    // Tarik juga dari Cloud agar tab daftar arsip selalu sinkron
+    fetchMenusFromCloud().then((cloudList) => {
+      if (cloudList && cloudList.length > 0) {
+        setSavedMenuList(cloudList);
+        try {
+          localStorage.setItem('sppg_synced_menus', JSON.stringify(cloudList));
+        } catch {
+          // ignore
+        }
+      }
+    });
   };
 
   useEffect(() => {
@@ -285,6 +298,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
           const updated = list.filter((m: { date: string }) => m.date !== dateToDelete);
           localStorage.setItem('sppg_synced_menus', JSON.stringify(updated));
           setSavedMenuList(updated);
+          saveMenusToCloud(updated);
           alert(`Arsip menu tanggal ${dateToDelete} berhasil dihapus.`);
         }
       } catch {
@@ -511,6 +525,9 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
       setSavedMenuList(list);
       localStorage.removeItem('sppg_admin_draft_v3');
+
+      // SINKRONKAN LANGSUNG KE CLOUDFLARE KV (Agar terbaca di Laptop, PC, dan Pengunjung Lain)
+      saveMenusToCloud(list);
     } catch {
       // fallback
     }
@@ -606,7 +623,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                   Admin Panel SPPG Wonodri 3
                 </span>
                 <span className="text-[10px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
-                  <CloudUpload className="w-3 h-3" /> Auto-Save GDrive & Edit Arsip
+                  <CloudUpload className="w-3 h-3" /> Auto-Sync Cloudflare KV & GDrive
                 </span>
               </div>
             </div>
