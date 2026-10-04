@@ -28,7 +28,7 @@ import { fetchMenusFromCloud } from '@/lib/cloudSync';
 
 export default function HomePage() {
   const [menuHistory, setMenuHistory] = useState<DailyMenuRecord[]>(INITIAL_MENU_HISTORY);
-  const [selectedDate, setSelectedDate] = useState<string>('2026-10-01');
+  const [selectedDate, setSelectedDate] = useState<string>('2026-10-02');
   const [showCalendarModal, setShowCalendarModal] = useState<boolean>(false);
   const [searchBeneficiary, setSearchBeneficiary] = useState<string>('');
 
@@ -88,7 +88,11 @@ export default function HomePage() {
     fetchMenusFromCloud().then((cloudMenus) => {
       if (cloudMenus && cloudMenus.length > 0) {
         setMenuHistory(cloudMenus);
-        setSelectedDate(cloudMenus[0].date);
+        // Jika belum ada tanggal yang dipilih atau tanggal terpilih tidak ada di list, set ke menu terbaru
+        setSelectedDate((prevDate) => {
+          const exists = cloudMenus.some((m) => m.date === prevDate);
+          return exists ? prevDate : cloudMenus[0].date;
+        });
         try {
           localStorage.setItem('sppg_synced_menus', JSON.stringify(cloudMenus));
         } catch {
