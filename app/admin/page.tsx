@@ -688,41 +688,6 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
           </button>
         </div>
 
-        {/* Banner Sinkronisasi Cloud Antar-Perangkat */}
-        <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-blue-950">
-          <div className="flex items-center gap-2">
-            <CloudUpload className="w-4 h-4 text-blue-600 shrink-0" />
-            <span>
-              <strong>Sinkronisasi Cloud Aktif:</strong> Kirim data yang ada di HP ini ke Cloud agar langsung terbaca di Laptop dan perangkat lain.
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                const stored = localStorage.getItem('sppg_synced_menus');
-                const list = stored ? JSON.parse(stored) : [];
-                if (list.length === 0) {
-                  alert('Belum ada menu yang tersimpan di memori perangkat ini.');
-                  return;
-                }
-                const ok = await saveMenusToCloud(list);
-                if (ok) {
-                  alert(`SINKRONISASI BERHASIL!\n\nSebanyak ${list.length} arsip menu telah diunggah ke Cloud. Sekarang silakan buka / refresh di Laptop.`);
-                } else {
-                  alert('Gagal menyinkronkan ke Cloud. Silakan periksa koneksi internet.');
-                }
-              } catch (e: unknown) {
-                const msg = e instanceof Error ? e.message : 'Terjadi kesalahan';
-                alert('Gagal: ' + msg);
-              }
-            }}
-            className="w-full sm:w-auto px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-black shrink-0 cursor-pointer shadow-xs"
-          >
-            Upload Semua Arsip ke Cloud
-          </button>
-        </div>
-
         {editingAlert && (
           <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-xs font-bold text-amber-900 flex items-center justify-between">
             <span>{editingAlert}</span>
