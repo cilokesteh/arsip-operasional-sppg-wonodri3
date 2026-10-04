@@ -5,11 +5,8 @@ export const CLOUD_SYNC_ENDPOINT = 'https://sppg-sync-worker.cilokesteh.workers.
 // Ambil semua daftar menu resmi dari Cloudflare KV Database
 export async function fetchMenusFromCloud(): Promise<DailyMenuRecord[]> {
   try {
-    const res = await fetch(CLOUD_SYNC_ENDPOINT, {
+    const res = await fetch(`${CLOUD_SYNC_ENDPOINT}?t=${Date.now()}`, {
       method: 'GET',
-      headers: {
-        'Cache-Control': 'no-cache',
-      },
     });
     if (!res.ok) return [];
     const data = await res.json();
