@@ -19,6 +19,9 @@ import {
   Search,
   Clock,
   PlusCircle,
+  Lock,
+  KeyRound,
+  ShieldAlert,
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';
 
@@ -30,6 +33,40 @@ export default function HomePage() {
 
   const [calendarMonth, setCalendarMonth] = useState<number>(9);
   const [calendarYear, setCalendarYear] = useState<number>(2026);
+
+  // Proteksi Akses Cetak Dokumen Resmi dengan PIN
+  const [showPinModal, setShowPinModal] = useState<boolean>(false);
+  const [inputPin, setInputPin] = useState<string>('');
+  const [pinError, setPinError] = useState<string>('');
+
+  const OFFICIAL_PRINT_PIN = '91206';
+
+  const handleOpenPrintModal = () => {
+    // Jika sudah pernah auth di sesi browser ini, langsung print
+    const sessionAuth = sessionStorage.getItem('sppg_print_auth');
+    if (sessionAuth === 'true') {
+      window.print();
+    } else {
+      setInputPin('');
+      setPinError('');
+      setShowPinModal(true);
+    }
+  };
+
+  const handleVerifyPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputPin.trim() === OFFICIAL_PRINT_PIN) {
+      sessionStorage.setItem('sppg_print_auth', 'true');
+      setShowPinModal(false);
+      setInputPin('');
+      setPinError('');
+      setTimeout(() => {
+        window.print();
+      }, 300);
+    } else {
+      setPinError('PIN verifikasi salah! Khusus operator resmi.');
+    }
+  };
 
   useEffect(() => {
     try {
@@ -108,9 +145,11 @@ export default function HomePage() {
               <span className="text-[11px] sm:text-xs">{formatTanggalIndo(selectedDate)}</span>
             </button>
             <button
-              onClick={() => window.print()}
+              onClick={handleOpenPrintModal}
+              title="Cetak Dokumen Resmi (Wajib PIN)"
               className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center gap-1 cursor-pointer shadow-xs"
             >
+              <Lock className="w-3 h-3 text-blue-200 shrink-0" />
               <Printer className="w-3.5 h-3.5 shrink-0" />
               <span className="text-[11px] sm:text-xs">Cetak</span>
             </button>
@@ -555,6 +594,86 @@ export default function HomePage() {
           </div>
         </div>
       </main>
+
+      {/* Modal Verifikasi PIN Cetak Dokumen Resmi */}
+      {showPinModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 no-print">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-900 leading-tight">
+                    Otorisasi Cetak Dokumen
+                  </h3>
+                  <span className="text-[10px] text-slate-500 block">
+                    Khusus Tim & Operator SPPG
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPinModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Dokumen ini memuat pengesahan resmi SPPG Wonodri 3 Kota Semarang. Masukkan <strong>Kode PIN Operator</strong> untuk mengunduh / mencetak PDF:
+            </p>
+
+            <form onSubmit={handleVerifyPin} className="space-y-3.5">
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-600 block mb-1">
+                  Masukkan PIN (5 Digit):
+                </label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={10}
+                    placeholder="Ketik PIN resmi..."
+                    value={inputPin}
+                    onChange={(e) => setInputPin(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none font-mono"
+                    required
+                    autoFocus
+                  />
+                  <KeyRound className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                </div>
+              </div>
+
+              {pinError && (
+                <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 flex items-center gap-1.5">
+                  <ShieldAlert className="w-4 h-4 shrink-0 text-rose-600" />
+                  <span>{pinError}</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowPinModal(false)}
+                  className="w-1/2 py-2.5 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="w-1/2 py-2.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Buka Cetak</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Modal Kalender */}
       {showCalendarModal && (
