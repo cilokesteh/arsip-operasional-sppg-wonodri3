@@ -448,11 +448,11 @@ export default function HomePage() {
               <section className="space-y-2">
                 <div className="border-b border-slate-200 pb-1.5">
                   <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                    3. Dokumentasi Dapur (3 Tahap Wajib)
+                    3. Dokumentasi Alur Dapur & Distribusi (5 Tahap Lengkap)
                   </h2>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   {currentMenu.photos.map((p, idx) => (
                     <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
                       <div className="relative h-36 sm:h-32 w-full bg-slate-200">
