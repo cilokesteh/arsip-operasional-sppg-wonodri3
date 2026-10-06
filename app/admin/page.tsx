@@ -128,6 +128,29 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
   const [editingAlert, setEditingAlert] = useState<string | null>(null);
 
   const loadSavedMenus = () => {
+    // 1. Tarik dari Cloudflare KV Database terlebih dahulu (Global Authority)
+    fetchMenusFromCloud().then((cloudList) => {
+      if (cloudList && cloudList.length > 0) {
+        setSavedMenuList((prev) => {
+          // Gabungkan dengan data lokal jika ada yang belum ter-upload
+          const merged = [...cloudList];
+          prev.forEach((p) => {
+            if (!merged.some((m) => m.date === p.date)) {
+              merged.push(p);
+            }
+          });
+          merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          try {
+            localStorage.setItem('sppg_synced_menus', JSON.stringify(merged));
+          } catch {
+            // ignore
+          }
+          return merged;
+        });
+      }
+    });
+
+    // 2. Baca dari localStorage lokal
     try {
       const stored = localStorage.getItem('sppg_synced_menus');
       if (stored) {
@@ -139,18 +162,6 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     } catch {
       // fallback
     }
-
-    // Tarik juga dari Cloud agar tab daftar arsip selalu sinkron
-    fetchMenusFromCloud().then((cloudList) => {
-      if (cloudList && cloudList.length > 0) {
-        setSavedMenuList(cloudList);
-        try {
-          localStorage.setItem('sppg_synced_menus', JSON.stringify(cloudList));
-        } catch {
-          // ignore
-        }
-      }
-    });
   };
 
   useEffect(() => {
