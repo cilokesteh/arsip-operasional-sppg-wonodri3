@@ -24,6 +24,7 @@ import {
   Calendar,
   Edit,
   RotateCcw,
+  X,
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
 import { INITIAL_BENEFICIARIES, DailyMenuRecord } from '@/lib/data';
@@ -125,6 +126,8 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
   );
 
   const [publishSuccess, setPublishSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitToast, setSubmitToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [editingAlert, setEditingAlert] = useState<string | null>(null);
 
   const loadSavedMenus = () => {
@@ -385,9 +388,13 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!namaMenu.trim()) {
-      alert('Silakan tulis nama menu.');
+      setSubmitToast({ type: 'error', message: 'Silakan isi Nama Menu terlebih dahulu.' });
+      setTimeout(() => setSubmitToast(null), 4000);
       return;
     }
+
+    setIsSubmitting(true);
+    setSubmitToast(null);
 
     const parseNum = (s: string, def: number) => {
       const v = parseFloat(s.replace(',', '.'));
@@ -539,14 +546,25 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
       // SINKRONKAN LANGSUNG KE CLOUDFLARE KV (Agar terbaca di Laptop, PC, dan Pengunjung Lain)
       await saveMenusToCloud(list);
-    } catch {
-      // fallback
+      setPublishSuccess(true);
+      setSubmitToast({
+        type: 'success',
+        message: `BERHASIL DIRILIS! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan & sinkron ke seluruh perangkat.`,
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal menyimpan data';
+      setSubmitToast({
+        type: 'error',
+        message: `Terjadi kendala saat menyimpan: ${msg}`,
+      });
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => {
+        setPublishSuccess(false);
+        setSubmitToast(null);
+      }, 7000);
     }
-
-    setPublishSuccess(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    alert(`BERHASIL DISIMPAN!\n\nLaporan menu tanggal ${menuDate} ("${namaMenu}") telah berhasil disimpan.`);
-    setTimeout(() => setPublishSuccess(false), 8000);
   };
 
   // JIKA BELUM LOGIN
@@ -668,6 +686,33 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       </header>
 
       <main className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
+        {/* Floating / Top Banner Feedback Notifikasi */}
+        {submitToast && (
+          <div
+            className={`p-4 rounded-2xl text-xs font-bold border shadow-lg flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
+              submitToast.type === 'success'
+                ? 'bg-emerald-500 text-white border-emerald-600'
+                : 'bg-rose-500 text-white border-rose-600'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              {submitToast.type === 'success' ? (
+                <CheckCircle2 className="w-5 h-5 text-emerald-100 shrink-0" />
+              ) : (
+                <ShieldAlert className="w-5 h-5 text-rose-100 shrink-0" />
+              )}
+              <span className="text-xs sm:text-sm font-black leading-snug">{submitToast.message}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSubmitToast(null)}
+              className="p-1 rounded-lg hover:bg-white/20 transition-colors text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Toggle Mode: Input Baru vs Kelola / Edit Arsip Lama */}
         <div className="flex bg-slate-200/70 p-1 rounded-xl max-w-sm mx-auto text-xs font-bold">
           <button
@@ -1406,11 +1451,20 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
                 <button
                   type="submit"
-                  disabled={menuPhotoUploading || prepUploading || cookUploading || packUploading || distUploading || washUploading}
-                  className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  disabled={isSubmitting || menuPhotoUploading || prepUploading || cookUploading || packUploading || distUploading || washUploading}
+                  className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none"
                 >
-                  <Save className="w-4 h-4" />
-                  <span>Simpan & Rilis Laporan Harian</span>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span>Menyimpan & Menyinkronkan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Simpan & Rilis Laporan Harian</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
