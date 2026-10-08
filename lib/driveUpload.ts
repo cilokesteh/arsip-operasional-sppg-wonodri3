@@ -1,9 +1,9 @@
 // Konfigurasi Webhook Resmi Google Drive Upload untuk SPPG Wonodri 3
-// Menggunakan Cloudflare Proxy Endpoint agar bebas CORS / Failed to fetch di semua browser HP
 export const DRIVE_UPLOAD_PROXY_URL = 'https://sppg-sync-worker.cilokesteh.workers.dev/api/upload-drive';
+export const DIRECT_GOOGLE_DRIVE_URL = 'https://script.google.com/macros/s/AKfycbxmZrKCgkz63IGMpdU5QIV3rlJVW_QN7Qnp0M_jBP1HKRfvaEXWbsguXRHDJNLVlq-_/exec';
 
-// Kompres foto langsung di browser sebelum kirim (supaya foto kamera HP 5-15MB jadi ~300KB kilat)
-async function compressImageFile(file: File, maxWidth = 1200, quality = 0.8): Promise<{ base64: string; type: string }> {
+// Kompres foto langsung di browser sebelum kirim (supaya foto kamera HP 5-15MB jadi ~250KB super enteng)
+async function compressImageFile(file: File, maxWidth = 1000, quality = 0.75): Promise<{ base64: string; type: string }> {
   return new Promise((resolve, reject) => {
     if (!file.type.startsWith('image/')) {
       const reader = new FileReader();
@@ -61,7 +61,7 @@ async function compressImageFile(file: File, maxWidth = 1200, quality = 0.8): Pr
   });
 }
 
-// Upload File langsung dari browser ke Google Drive via Cloudflare Worker Proxy
+// Upload File dengan Dual-Route: Coba Proxy dulu, jika gagal coba Direct GAS
 export async function uploadToGoogleDrive(
   file: File,
   folderName: string = 'Dokumentasi_SPPG_Wonodri_3'
@@ -75,43 +75,68 @@ export async function uploadToGoogleDrive(
       base64,
       folder: folderName,
     };
+    const bodyStr = JSON.stringify(payload);
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 detik timeout
+    // ROUTE 1: LEWAT CLOUDFLARE PROXY
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 35000);
 
-    const response = await fetch(DRIVE_UPLOAD_PROXY_URL, {
+      const response = await fetch(DRIVE_UPLOAD_PROXY_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: bodyStr,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result && result.success) {
+          return {
+            success: true,
+            url: result.url || `https://lh3.googleusercontent.com/d/${result.fileId}`,
+            fileId: result.fileId,
+          };
+        }
+      }
+    } catch (proxyErr) {
+      console.warn('Proxy route gagal, mencoba direct route:', proxyErr);
+    }
+
+    // ROUTE 2: FALLBACK LANGSUNG KE GOOGLE APPS SCRIPT
+    const directController = new AbortController();
+    const directTimeoutId = setTimeout(() => directController.abort(), 35000);
+
+    const directRes = await fetch(DIRECT_GOOGLE_DRIVE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'text/plain;charset=utf-8',
       },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
+      body: bodyStr,
+      signal: directController.signal,
     });
 
-    clearTimeout(timeoutId);
+    clearTimeout(directTimeoutId);
 
-    if (!response.ok) {
-      throw new Error(`Server proxy error HTTP ${response.status}`);
-    }
-
-    const result = await response.json();
-    if (result && result.success) {
+    const directResult = await directRes.json();
+    if (directResult && directResult.success) {
       return {
         success: true,
-        url: result.url || `https://lh3.googleusercontent.com/d/${result.fileId}`,
-        fileId: result.fileId,
+        url: directResult.url || `https://lh3.googleusercontent.com/d/${directResult.fileId}`,
+        fileId: directResult.fileId,
       };
     } else {
       return {
         success: false,
-        error: result?.error || 'Google Drive menolak file.',
+        error: directResult?.error || 'Google Drive menolak file.',
       };
     }
   } catch (err: unknown) {
-    if (err instanceof Error && err.name === 'AbortError') {
-      return { success: false, error: 'Koneksi timeout. Jaringan internet HP sedang tidak stabil.' };
-    }
-    const msg = err instanceof Error ? err.message : 'Koneksi ke server upload gagal.';
+    const msg = err instanceof Error ? err.message : 'Upload gagal';
     return {
       success: false,
       error: msg,
