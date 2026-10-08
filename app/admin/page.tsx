@@ -534,30 +534,42 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     };
 
     try {
-      // 1. KIRIM LANGSUNG DATA SATU TANGGAL INI KE CLOUD SECARA ATOMIK
-      // (Backend Cloudflare otomatis mengunci dan menggabungkan tanpa menghapus arsip tanggal lain)
-      const cloudRes = await saveSingleMenuToCloud(newRecord);
-      if (!cloudRes.success) {
-        throw new Error(cloudRes.error || 'Server cloud gagal merespons');
-      }
-
-      // 2. Perbarui state lokal & localStorage browser
+      // 1. Simpan dulu ke localStorage lokal perangkat (Instan & Pasti Selamat)
       const existing = localStorage.getItem('sppg_synced_menus');
       const localList: DailyMenuRecord[] = existing ? JSON.parse(existing) : [];
       const updatedList = [newRecord, ...localList.filter((item: { date: string }) => item.date !== menuDate)].sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
-
       localStorage.setItem('sppg_synced_menus', JSON.stringify(updatedList));
       setSavedMenuList(updatedList);
       localStorage.removeItem('sppg_admin_draft_v3');
 
+      // Tampilkan feedback sukses seketika ke operator
       setPublishSuccess(true);
       setSubmitToast({
         type: 'success',
-        message: `BERHASIL DIRILIS! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan permanen di Cloud (${cloudRes.totalMenus || updatedList.length} arsip total).`,
+        message: `BERHASIL DIRILIS! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan di perangkat & sedang disinkronkan ke Cloud.`,
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // 2. Kirim ke Cloudflare KV di background (dengan timeout guard 8 detik)
+      try {
+        const timeoutPromise = new Promise<{ success: boolean; error: string }>((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout sync cloud')), 8000)
+        );
+        const cloudRes = await Promise.race([
+          saveSingleMenuToCloud(newRecord),
+          timeoutPromise,
+        ]);
+        if (cloudRes.success) {
+          setSubmitToast({
+            type: 'success',
+            message: `BERHASIL! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan permanen di Cloud & semua perangkat.`,
+          });
+        }
+      } catch (cloudErr) {
+        console.warn('Background cloud sync:', cloudErr);
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Gagal menyimpan data';
       setSubmitToast({
