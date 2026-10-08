@@ -534,7 +534,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     };
 
     try {
-      // 1. Simpan dulu ke localStorage lokal perangkat (Instan & Pasti Selamat)
+      // 1. Simpan langsung ke state lokal & localStorage browser (Instan & Pasti Selamat)
       const existing = localStorage.getItem('sppg_synced_menus');
       const localList: DailyMenuRecord[] = existing ? JSON.parse(existing) : [];
       const updatedList = [newRecord, ...localList.filter((item: { date: string }) => item.date !== menuDate)].sort(
@@ -544,40 +544,34 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       setSavedMenuList(updatedList);
       localStorage.removeItem('sppg_admin_draft_v3');
 
-      // Tampilkan feedback sukses seketika ke operator
+      // RESET LOADING SPINNER SEGERA agar tombol kembali normal dan tidak gantung
+      setIsSubmitting(false);
       setPublishSuccess(true);
       setSubmitToast({
         type: 'success',
-        message: `BERHASIL DIRILIS! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan di perangkat & sedang disinkronkan ke Cloud.`,
+        message: `BERHASIL DIRILIS! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan & sedang disinkronkan ke Cloud.`,
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      // 2. Kirim ke Cloudflare KV di background (dengan timeout guard 8 detik)
-      try {
-        const timeoutPromise = new Promise<{ success: boolean; error: string }>((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout sync cloud')), 8000)
-        );
-        const cloudRes = await Promise.race([
-          saveSingleMenuToCloud(newRecord),
-          timeoutPromise,
-        ]);
+      // 2. Kirim ke Cloudflare KV di background tanpa memblokir tombol UI sama sekali
+      saveSingleMenuToCloud(newRecord).then((cloudRes) => {
         if (cloudRes.success) {
           setSubmitToast({
             type: 'success',
             message: `BERHASIL! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan permanen di Cloud & semua perangkat.`,
           });
         }
-      } catch (cloudErr) {
-        console.warn('Background cloud sync:', cloudErr);
-      }
+      }).catch((cloudErr) => {
+        console.warn('Background cloud sync warning:', cloudErr);
+      });
     } catch (err: unknown) {
+      setIsSubmitting(false);
       const msg = err instanceof Error ? err.message : 'Gagal menyimpan data';
       setSubmitToast({
         type: 'error',
         message: `Terjadi kendala saat menyimpan: ${msg}`,
       });
     } finally {
-      setIsSubmitting(false);
       setTimeout(() => {
         setPublishSuccess(false);
         setSubmitToast(null);
