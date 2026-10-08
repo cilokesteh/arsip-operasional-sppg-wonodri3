@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
 import { INITIAL_BENEFICIARIES, DailyMenuRecord } from '@/lib/data';
-import { fetchMenusFromCloud, saveMenusToCloud } from '@/lib/cloudSync';
+import { fetchMenusFromCloud, saveSingleMenuToCloud, saveMenusToCloud } from '@/lib/cloudSync';
 
 interface AKGInputRaw {
   groupName: string;
@@ -534,33 +534,28 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     };
 
     try {
-      // 1. Ambil data terbaru langsung dari Cloudflare KV dulu agar tidak pernah menimpa tanggal lain
-      const cloudMenus = await fetchMenusFromCloud();
+      // 1. KIRIM LANGSUNG DATA SATU TANGGAL INI KE CLOUD SECARA ATOMIK
+      // (Backend Cloudflare otomatis mengunci dan menggabungkan tanpa menghapus arsip tanggal lain)
+      const cloudRes = await saveSingleMenuToCloud(newRecord);
+      if (!cloudRes.success) {
+        throw new Error(cloudRes.error || 'Server cloud gagal merespons');
+      }
+
+      // 2. Perbarui state lokal & localStorage browser
       const existing = localStorage.getItem('sppg_synced_menus');
       const localList: DailyMenuRecord[] = existing ? JSON.parse(existing) : [];
-
-      const byDate = new Map<string, DailyMenuRecord>();
-      // Gabungkan cloud dan local
-      cloudMenus.forEach((m) => byDate.set(m.date, m));
-      localList.forEach((m) => byDate.set(m.date, m));
-      // Tambahkan/update record baru
-      byDate.set(newRecord.date, newRecord);
-
-      const list = Array.from(byDate.values()).sort(
+      const updatedList = [newRecord, ...localList.filter((item: { date: string }) => item.date !== menuDate)].sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
-      localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
-      setSavedMenuList(list);
+      localStorage.setItem('sppg_synced_menus', JSON.stringify(updatedList));
+      setSavedMenuList(updatedList);
       localStorage.removeItem('sppg_admin_draft_v3');
-
-      // 2. Sinkronkan ke Cloudflare KV
-      const cloudSuccess = await saveMenusToCloud(list);
 
       setPublishSuccess(true);
       setSubmitToast({
         type: 'success',
-        message: `BERHASIL DIRILIS! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan & sinkron (${list.length} arsip total).`,
+        message: `BERHASIL DIRILIS! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan permanen di Cloud (${cloudRes.totalMenus || updatedList.length} arsip total).`,
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: unknown) {
