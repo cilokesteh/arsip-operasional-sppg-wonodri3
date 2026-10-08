@@ -737,19 +737,16 @@ export default function HomePage() {
                 return (
                   <button
                     key={dateStr}
-                    disabled={!hasMenu && dateStr !== '2026-10-01'}
                     onClick={() => {
                       setSelectedDate(dateStr);
                       setShowCalendarModal(false);
                     }}
-                    className={`h-8 rounded text-xs font-bold transition-all flex items-center justify-center ${
+                    className={`h-8 rounded text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
                       isSelected
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-blue-600 text-white shadow-xs'
                         : hasMenu
-                        ? 'bg-blue-50 text-blue-900 hover:bg-blue-100 cursor-pointer font-black'
-                        : dateStr === '2026-10-01'
-                        ? 'border border-dashed border-blue-600 text-blue-600 hover:bg-blue-50 cursor-pointer'
-                        : 'text-slate-300 cursor-not-allowed'
+                        ? 'bg-blue-50 text-blue-900 hover:bg-blue-100 font-black border border-blue-200'
+                        : 'text-slate-600 hover:bg-slate-100'
                     }`}
                   >
                     {day}

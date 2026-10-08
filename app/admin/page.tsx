@@ -481,8 +481,6 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       reason: data.reason,
     }));
 
-    // 5 Tahap Dokumentasi Foto Lengkap:
-    // Persiapan, Pengolahan, Pengemasan, Distribusi, Pencucian Ompreng
     const allPhotos = [
       {
         step: '1. Persiapan',
@@ -536,20 +534,33 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     };
 
     try {
+      // 1. Ambil data terbaru langsung dari Cloudflare KV dulu agar tidak pernah menimpa tanggal lain
+      const cloudMenus = await fetchMenusFromCloud();
       const existing = localStorage.getItem('sppg_synced_menus');
-      let list: DailyMenuRecord[] = existing ? JSON.parse(existing) : [];
-      list = [newRecord, ...list.filter((item: { date: string }) => item.date !== menuDate)];
-      list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const localList: DailyMenuRecord[] = existing ? JSON.parse(existing) : [];
+
+      const byDate = new Map<string, DailyMenuRecord>();
+      // Gabungkan cloud dan local
+      cloudMenus.forEach((m) => byDate.set(m.date, m));
+      localList.forEach((m) => byDate.set(m.date, m));
+      // Tambahkan/update record baru
+      byDate.set(newRecord.date, newRecord);
+
+      const list = Array.from(byDate.values()).sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
       localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
       setSavedMenuList(list);
       localStorage.removeItem('sppg_admin_draft_v3');
 
-      // SINKRONKAN LANGSUNG KE CLOUDFLARE KV (Agar terbaca di Laptop, PC, dan Pengunjung Lain)
-      await saveMenusToCloud(list);
+      // 2. Sinkronkan ke Cloudflare KV
+      const cloudSuccess = await saveMenusToCloud(list);
+
       setPublishSuccess(true);
       setSubmitToast({
         type: 'success',
-        message: `BERHASIL DIRILIS! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan & sinkron ke seluruh perangkat.`,
+        message: `BERHASIL DIRILIS! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan & sinkron (${list.length} arsip total).`,
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: unknown) {
