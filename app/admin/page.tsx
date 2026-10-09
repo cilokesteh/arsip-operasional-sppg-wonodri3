@@ -1356,7 +1356,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                       4. Alokasi Penerima Manfaat (12 Sekolah + 1 Posyandu)
                     </h2>
                     <span className="text-[11px] text-slate-500">
-                      Total Master: 1.554 Porsi. Atur sekolah libur khusus tanggal ini jika ada.
+                      Total Master: 1.556 Porsi. Atur sekolah libur khusus tanggal ini jika ada.
                     </span>
                   </div>
                 </div>
