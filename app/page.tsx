@@ -89,20 +89,41 @@ export default function HomePage() {
       // fallback
     }
 
-    // 2. Tarik data terbaru dari Cloud (Cloudflare KV) agar sinkron antar-device (HP, Laptop, PC)
+    // 2. Tarik data terbaru dari Cloud (Cloudflare KV) dan MERGE dengan lokal (Anti-Wipe)
     fetchMenusFromCloud().then((cloudMenus) => {
       if (cloudMenus && cloudMenus.length > 0) {
-        setMenuHistory(cloudMenus);
-        // Jika belum ada tanggal yang dipilih atau tanggal terpilih tidak ada di list, set ke menu terbaru
-        setSelectedDate((prevDate) => {
-          const exists = cloudMenus.some((m) => m.date === prevDate);
-          return exists ? prevDate : cloudMenus[0].date;
+        setMenuHistory((prev) => {
+          const byDate = new Map<string, DailyMenuRecord>();
+          // Muat data lokal dulu
+          prev.forEach((p) => byDate.set(p.date, p));
+          // Gabungkan cloud
+          cloudMenus.forEach((c) => byDate.set(c.date, c));
+          const merged = Array.from(byDate.values()).sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+
+          try {
+            localStorage.setItem('sppg_synced_menus', JSON.stringify(merged));
+          } catch {
+            // ignore
+          }
+
+          // Sinkronkan selectedDate ke tanggal paling baru
+          setSelectedDate((prevDate) => {
+            const exists = merged.some((m) => m.date === prevDate);
+            return exists ? prevDate : merged[0].date;
+          });
+
+          // PUSH BALIK ke Cloud jika lokal punya tanggal yang belum ada di cloud!
+          const missingInCloud = merged.filter((m) => !cloudMenus.some((c) => c.date === m.date));
+          if (missingInCloud.length > 0) {
+            import('@/lib/cloudSync').then(({ saveMenusToCloud }) => {
+              saveMenusToCloud(merged).catch((e) => console.warn('Auto-repair push failed:', e));
+            });
+          }
+
+          return merged;
         });
-        try {
-          localStorage.setItem('sppg_synced_menus', JSON.stringify(cloudMenus));
-        } catch {
-          // ignore
-        }
       }
     });
   }, []);
