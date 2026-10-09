@@ -4,10 +4,10 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  INITIAL_BENEFICIARIES,
   INITIAL_MENU_HISTORY,
   STANDARD_AKG_REFERENCE,
   DailyMenuRecord,
+  getBeneficiariesForDate,
 } from '@/lib/data';
 import {
   Calendar as CalendarIcon,
@@ -108,9 +108,10 @@ export default function HomePage() {
   }, []);
 
   const currentMenu = menuHistory.find((m) => m.date === selectedDate);
-  const totalMaster = INITIAL_BENEFICIARIES.reduce((acc, site) => acc + site.masterCount, 0);
+  const activeBeneficiaries = getBeneficiariesForDate(selectedDate);
+  const totalMaster = activeBeneficiaries.reduce((acc, site) => acc + site.masterCount, 0);
 
-  const filteredBeneficiaries = INITIAL_BENEFICIARIES.filter((b) =>
+  const filteredBeneficiaries = activeBeneficiaries.filter((b) =>
     b.name.toLowerCase().includes(searchBeneficiary.toLowerCase())
   );
 

@@ -27,7 +27,7 @@ import {
   X,
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
-import { INITIAL_BENEFICIARIES, DailyMenuRecord } from '@/lib/data';
+import { DailyMenuRecord, getBeneficiariesForDate } from '@/lib/data';
 import { fetchMenusFromCloud, saveSingleMenuToCloud, saveMenusToCloud } from '@/lib/cloudSync';
 
 interface AKGInputRaw {
@@ -1356,7 +1356,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                       4. Alokasi Penerima Manfaat (12 Sekolah + 1 Posyandu)
                     </h2>
                     <span className="text-[11px] text-slate-500">
-                      Total Master: 1.556 Porsi. Atur sekolah libur khusus tanggal ini jika ada.
+                      Total Master: {getBeneficiariesForDate(menuDate).reduce((a, s) => a + s.masterCount, 0).toLocaleString('id-ID')} Porsi ({menuDate < '2026-10-12' ? 'Baseline Lama s/d 11 Okt: 1.554' : 'Baseline Baru per 12 Okt: 1.556'}). Atur sekolah libur khusus tanggal ini jika ada.
                     </span>
                   </div>
                 </div>
@@ -1375,7 +1375,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {INITIAL_BENEFICIARIES.map((site) => {
+                      {getBeneficiariesForDate(menuDate).map((site) => {
                         const isOverridden = beneficiaryOverrides[site.id]?.condition === 'libur';
                         return (
                           <tr key={site.id} className="hover:bg-slate-50">
