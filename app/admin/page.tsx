@@ -379,6 +379,39 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     setLoading(false);
     if (res.success && res.url) {
       setUrl(res.url);
+
+      // AUTO-SAVE LANGSUNG KE RECORD AGAR FOTO TIDAK PERNAH HILANG WALAUPUN HALAMAN DI-REFRESH
+      try {
+        const existing = localStorage.getItem('sppg_synced_menus');
+        if (existing) {
+          const list: DailyMenuRecord[] = JSON.parse(existing);
+          const currentRecord = list.find((m) => m.date === menuDate);
+          if (currentRecord) {
+            if (stepName === 'Makanan') {
+              currentRecord.menuPhotoUrl = res.url;
+            } else {
+              if (!currentRecord.photos) currentRecord.photos = [];
+              const photoIdx = currentRecord.photos.findIndex((p) => p.step.toLowerCase().includes(stepName.toLowerCase()));
+              if (photoIdx !== -1) {
+                currentRecord.photos[photoIdx].imageUrl = res.url;
+              } else {
+                currentRecord.photos.push({
+                  step: stepName,
+                  title: stepName,
+                  description: `Dokumentasi ${stepName} SPPG Wonodri 3`,
+                  imageUrl: res.url,
+                  timeEstimate: 'Operasional',
+                });
+              }
+            }
+            localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
+            setSavedMenuList(list);
+            saveSingleMenuToCloud(currentRecord).catch((e) => console.warn('Instant photo sync error:', e));
+          }
+        }
+      } catch (err) {
+        console.warn('Auto-save photo error:', err);
+      }
     } else {
       alert(`Gagal upload foto ${stepName} ke Google Drive: ${res.error || 'Terjadi kesalahan'}`);
     }
