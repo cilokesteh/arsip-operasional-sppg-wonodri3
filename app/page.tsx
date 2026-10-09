@@ -89,15 +89,40 @@ export default function HomePage() {
       // fallback
     }
 
-    // 2. Tarik data terbaru dari Cloud (Cloudflare KV) dan MERGE dengan lokal (Anti-Wipe)
+    // 2. Tarik data terbaru dari Cloud (Cloudflare KV) dan MERGE pintar:
+    // ATURAN MUTLAK: Jika data lokal memiliki foto yang valid sedangkan cloud belum punya/kosong,
+    // JANGAN PERNAH menimpa foto lokal dengan data kosong dari cloud!
     fetchMenusFromCloud().then((cloudMenus) => {
       if (cloudMenus && cloudMenus.length > 0) {
         setMenuHistory((prev) => {
           const byDate = new Map<string, DailyMenuRecord>();
-          // Muat data lokal dulu
-          prev.forEach((p) => byDate.set(p.date, p));
-          // Gabungkan cloud
+          
+          // 1. Masukkan cloud menus dulu sebagai dasar
           cloudMenus.forEach((c) => byDate.set(c.date, c));
+
+          // 2. Timpa dengan data lokal yang lebih kaya (memiliki foto yang baru diupload)
+          prev.forEach((localItem) => {
+            const cloudItem = byDate.get(localItem.date);
+            if (!cloudItem) {
+              byDate.set(localItem.date, localItem);
+            } else {
+              // Jika lokal punya foto tapi cloud kosong, pertahankan foto lokal!
+              const mergedPhotos = (localItem.photos && localItem.photos.length > 0) 
+                ? localItem.photos 
+                : cloudItem.photos;
+              const mergedMenuPhoto = (localItem.menuPhotoUrl && localItem.menuPhotoUrl.trim() !== '')
+                ? localItem.menuPhotoUrl
+                : cloudItem.menuPhotoUrl;
+
+              byDate.set(localItem.date, {
+                ...cloudItem,
+                ...localItem,
+                photos: mergedPhotos,
+                menuPhotoUrl: mergedMenuPhoto,
+              });
+            }
+          });
+
           const merged = Array.from(byDate.values()).sort(
             (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
           );
@@ -113,14 +138,6 @@ export default function HomePage() {
             const exists = merged.some((m) => m.date === prevDate);
             return exists ? prevDate : merged[0].date;
           });
-
-          // PUSH BALIK ke Cloud jika lokal punya tanggal yang belum ada di cloud!
-          const missingInCloud = merged.filter((m) => !cloudMenus.some((c) => c.date === m.date));
-          if (missingInCloud.length > 0) {
-            import('@/lib/cloudSync').then(({ saveMenusToCloud }) => {
-              saveMenusToCloud(merged).catch((e) => console.warn('Auto-repair push failed:', e));
-            });
-          }
 
           return merged;
         });

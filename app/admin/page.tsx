@@ -135,10 +135,33 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     fetchMenusFromCloud().then((cloudList) => {
       if (cloudList && cloudList.length > 0) {
         setSavedMenuList((prev) => {
-          // Gabungkan cloud dan data lokal: JANGAN PERNAH timpa tanggal yang ada di lokal tapi belum ada di cloud
           const byDate = new Map<string, DailyMenuRecord>();
-          prev.forEach((p) => byDate.set(p.date, p));
+          
+          // Masukkan cloud sebagai baseline
           cloudList.forEach((c) => byDate.set(c.date, c));
+
+          // Gabungkan lokal dan prioritaskan foto lokal jika cloud masih kosong
+          prev.forEach((localItem) => {
+            const cloudItem = byDate.get(localItem.date);
+            if (!cloudItem) {
+              byDate.set(localItem.date, localItem);
+            } else {
+              const mergedPhotos = (localItem.photos && localItem.photos.length > 0)
+                ? localItem.photos
+                : cloudItem.photos;
+              const mergedMenuPhoto = (localItem.menuPhotoUrl && localItem.menuPhotoUrl.trim() !== '')
+                ? localItem.menuPhotoUrl
+                : cloudItem.menuPhotoUrl;
+
+              byDate.set(localItem.date, {
+                ...cloudItem,
+                ...localItem,
+                photos: mergedPhotos,
+                menuPhotoUrl: mergedMenuPhoto,
+              });
+            }
+          });
+
           const merged = Array.from(byDate.values()).sort(
             (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
           );
