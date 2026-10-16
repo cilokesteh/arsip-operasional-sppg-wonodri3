@@ -75,8 +75,8 @@ export const BENEFICIARIES_OCT_1_11: BeneficiarySite[] = [
   { id: 'tk-hapsari', name: 'TK Hapsari', type: 'TK', masterCount: 11 },
 ];
 
-// 13 Titik Layanan Resmi SPPG Wonodri 3 (Efektif per 12 Okt 2026: 1.556 Porsi)
-export const BENEFICIARIES_OCT_12_ONWARDS: BeneficiarySite[] = [
+// 13 Titik Layanan Resmi SPPG Wonodri 3 (Periode 12 - 18 Okt 2026: 1.556 Porsi)
+export const BENEFICIARIES_OCT_12_18: BeneficiarySite[] = [
   { id: 'sd-it-al-firdaus', name: 'SD IT Al Firdaus', type: 'SD', masterCount: 350 },
   { id: 'sdn-pleburan-03', name: 'SDN Pleburan 03', type: 'SD', masterCount: 341 },
   { id: 'sdn-lamper-lor', name: 'SDN Lamper Lor', type: 'SD', masterCount: 154 },
@@ -92,18 +92,37 @@ export const BENEFICIARIES_OCT_12_ONWARDS: BeneficiarySite[] = [
   { id: 'tk-hapsari', name: 'TK Hapsari', type: 'TK', masterCount: 11 },
 ];
 
-// Helper dinamis berdasarkan tanggal laporan (tgl 01 - 11 Okt = 1.554, per 12 Okt = 1.556)
+// 13 Titik Layanan Resmi SPPG Wonodri 3 (Efektif per 19 Okt 2026: 1.553 Porsi — TK Sultan Agung 98, Posyandu 72)
+export const BENEFICIARIES_OCT_19_ONWARDS: BeneficiarySite[] = [
+  { id: 'sd-it-al-firdaus', name: 'SD IT Al Firdaus', type: 'SD', masterCount: 350 },
+  { id: 'sdn-pleburan-03', name: 'SDN Pleburan 03', type: 'SD', masterCount: 341 },
+  { id: 'sdn-lamper-lor', name: 'SDN Lamper Lor', type: 'SD', masterCount: 154 },
+  { id: 'sdn-pleburan-04', name: 'SDN Pleburan 04', type: 'SD', masterCount: 150 },
+  { id: 'sdn-pleburan-01', name: 'SDN Pleburan 01', type: 'SD', masterCount: 122 },
+  { id: 'tk-it-sultan-agung', name: 'TK IT Sultan Agung', type: 'TK', masterCount: 98 },
+  { id: 'sdn-wonodri', name: 'SDN Wonodri', type: 'SD', masterCount: 91 },
+  { id: 'posyandu-erlangga', name: 'Posyandu Erlangga', type: 'Posyandu', masterCount: 72 },
+  { id: 'tk-nirwana-burhan', name: 'TK Nirwana Burhan', type: 'TK', masterCount: 61 },
+  { id: 'tk-kartika-iii', name: 'TK Kartika III', type: 'TK', masterCount: 43 },
+  { id: 'tk-kuntum-mekar', name: 'TK Kuntum Mekar', type: 'TK', masterCount: 31 },
+  { id: 'tk-siwi-peni', name: 'TK Siwi Peni', type: 'TK', masterCount: 29 },
+  { id: 'tk-hapsari', name: 'TK Hapsari', type: 'TK', masterCount: 11 },
+];
+
+// Helper dinamis berdasarkan tanggal laporan (01-11 Okt = 1.554, 12-18 Okt = 1.556, per 19 Okt = 1.553)
 export function getBeneficiariesForDate(dateStr?: string): BeneficiarySite[] {
-  if (!dateStr) return BENEFICIARIES_OCT_12_ONWARDS;
-  // Perbandingan string ISO YYYY-MM-DD
+  if (!dateStr) return BENEFICIARIES_OCT_19_ONWARDS;
   if (dateStr < '2026-10-12') {
     return BENEFICIARIES_OCT_1_11;
   }
-  return BENEFICIARIES_OCT_12_ONWARDS;
+  if (dateStr < '2026-10-19') {
+    return BENEFICIARIES_OCT_12_18;
+  }
+  return BENEFICIARIES_OCT_19_ONWARDS;
 }
 
 // Default export untuk backward-compatibility
-export const INITIAL_BENEFICIARIES: BeneficiarySite[] = BENEFICIARIES_OCT_12_ONWARDS;
+export const INITIAL_BENEFICIARIES: BeneficiarySite[] = BENEFICIARIES_OCT_19_ONWARDS;
 
 // Standar Acuan Gizi Nasional BGN untuk 5 Kategori Porsi
 export const STANDARD_AKG_REFERENCE: NutritionItem[] = [

@@ -1412,7 +1412,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                       4. Alokasi Penerima Manfaat (12 Sekolah + 1 Posyandu)
                     </h2>
                     <span className="text-[11px] text-slate-500">
-                      Total Master: {getBeneficiariesForDate(menuDate).reduce((a, s) => a + s.masterCount, 0).toLocaleString('id-ID')} Porsi ({menuDate < '2026-10-12' ? 'Baseline Lama s/d 11 Okt: 1.554' : 'Baseline Baru per 12 Okt: 1.556'}). Atur sekolah libur khusus tanggal ini jika ada.
+                      Total Master: {getBeneficiariesForDate(menuDate).reduce((a, s) => a + s.masterCount, 0).toLocaleString('id-ID')} Porsi ({menuDate < '2026-10-12' ? 'Baseline Lama s/d 11 Okt: 1.554' : (menuDate < '2026-10-19' ? 'Periode 12-18 Okt: 1.556' : 'Baseline Baru per 19 Okt: 1.553')}). Atur sekolah libur khusus tanggal ini jika ada.
                     </span>
                   </div>
                 </div>
