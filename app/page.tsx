@@ -133,11 +133,8 @@ export default function HomePage() {
             // ignore
           }
 
-          // Sinkronkan selectedDate ke tanggal paling baru
-          setSelectedDate((prevDate) => {
-            const exists = merged.some((m) => m.date === prevDate);
-            return exists ? prevDate : merged[0].date;
-          });
+          // Sinkronkan selectedDate ke tanggal paling baru (selalu pilih tanggal paling atas/terbaru)
+          setSelectedDate(merged[0].date);
 
           return merged;
         });
