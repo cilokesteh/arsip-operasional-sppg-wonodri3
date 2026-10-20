@@ -22,6 +22,7 @@ import {
   Lock,
   KeyRound,
   ShieldAlert,
+  Users,
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
@@ -216,6 +217,16 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <Link
+              href="/absensi"
+              className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1.5 cursor-pointer transition-colors"
+              title="Absensi 40 Relawan & Upah Dapur"
+            >
+              <Users className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="hidden md:inline">Absensi Relawan</span>
+              <span className="md:hidden">Absensi</span>
+            </Link>
+
             <button
               onClick={() => setShowCalendarModal(true)}
               className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1 cursor-pointer"

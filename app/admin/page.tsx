@@ -726,6 +726,14 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
           </div>
 
           <div className="flex items-center gap-2">
+            <Link
+              href="/absensi"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1"
+              title="Absensi 40 Relawan & Upah Dapur"
+            >
+              <Users className="w-3.5 h-3.5 text-blue-600" />
+              <span className="hidden sm:inline">Absensi</span>
+            </Link>
             <button
               type="button"
               onClick={() => window.print()}
