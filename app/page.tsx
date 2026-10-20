@@ -143,7 +143,26 @@ export default function HomePage() {
   }, []);
 
   const currentMenu = menuHistory.find((m) => m.date === selectedDate);
-  const activeBeneficiaries = getBeneficiariesForDate(selectedDate);
+  const baselineBeneficiaries = getBeneficiariesForDate(selectedDate);
+  
+// Terapkan override libur / penyesuaian khusus tanggal ini jika ada
+  const activeBeneficiaries = baselineBeneficiaries.map((site) => {
+    const override = currentMenu?.overrides?.find((o) => o.siteId === site.id);
+    if (override) {
+      return {
+        ...site,
+        masterCount: override.condition === 'libur' ? 0 : override.effectiveCount,
+        condition: override.condition,
+        reason: override.reason,
+      };
+    }
+    return {
+      ...site,
+      condition: undefined,
+      reason: undefined,
+    };
+  });
+
   const totalMaster = activeBeneficiaries.reduce((acc, site) => acc + site.masterCount, 0);
 
   const filteredBeneficiaries = activeBeneficiaries.filter((b) =>
@@ -527,24 +546,29 @@ export default function HomePage() {
 
                 {/* Mobile View: List Card Sekolah */}
                 <div className="grid grid-cols-1 gap-1.5 sm:hidden text-xs">
-                  {filteredBeneficiaries.map((site, index) => (
-                    <div key={site.id} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
-                      <div className="min-w-0 pr-2">
-                        <span className="font-extrabold text-slate-900 block truncate text-xs">
-                          {index + 1}. {site.name}
-                        </span>
-                        <span className="text-[9px] text-slate-500 uppercase font-semibold">
-                          Kategori {site.type}
-                        </span>
+                  {filteredBeneficiaries.map((site, index) => {
+                    const isLibur = site.masterCount === 0;
+                    return (
+                      <div key={site.id} className={`p-2.5 rounded-lg border flex items-center justify-between ${isLibur ? 'bg-amber-50/70 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
+                        <div className="min-w-0 pr-2">
+                          <span className={`font-extrabold block truncate text-xs ${isLibur ? 'text-slate-500 line-through' : 'text-slate-900'}`}>
+                            {index + 1}. {site.name}
+                          </span>
+                          <span className="text-[9px] text-slate-500 uppercase font-semibold">
+                            Kategori {site.type} {isLibur && `• ${site.reason || 'Libur'}`}
+                          </span>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className={`font-black text-xs block tabular-nums ${isLibur ? 'text-amber-800' : 'text-blue-900'}`}>
+                            {site.masterCount} Porsi
+                          </span>
+                          <span className={`text-[9px] font-bold ${isLibur ? 'text-amber-700' : 'text-emerald-700'}`}>
+                            {isLibur ? 'Libur (Off)' : 'Tersalurkan'}
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-right shrink-0">
-                        <span className="font-black text-blue-900 text-xs block tabular-nums">
-                          {site.masterCount} Porsi
-                        </span>
-                        <span className="text-[9px] text-emerald-700 font-bold">Tersalurkan</span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Desktop Table View */}
@@ -560,23 +584,39 @@ export default function HomePage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {filteredBeneficiaries.map((site, index) => (
-                        <tr key={site.id} className="hover:bg-slate-50">
-                          <td className="py-1.5 px-3 text-slate-400 font-semibold">{index + 1}</td>
-                          <td className="py-1.5 px-3 font-extrabold text-slate-900">{site.name}</td>
-                          <td className="py-1.5 px-3">
-                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200">
-                              {site.type}
-                            </span>
-                          </td>
-                          <td className="py-1.5 px-3 text-right font-black text-slate-900 tabular-nums">
-                            {site.masterCount}
-                          </td>
-                          <td className="py-1.5 px-3 text-center">
-                            <span className="text-[10px] font-bold text-emerald-700">Tersalurkan</span>
-                          </td>
-                        </tr>
-                      ))}
+                      {filteredBeneficiaries.map((site, index) => {
+                        const isLibur = site.masterCount === 0;
+                        return (
+                          <tr key={site.id} className={`hover:bg-slate-50 ${isLibur ? 'bg-amber-50/40' : ''}`}>
+                            <td className="py-1.5 px-3 text-slate-400 font-semibold">{index + 1}</td>
+                            <td className="py-1.5 px-3 font-extrabold text-slate-900">
+                              <span className={isLibur ? 'line-through text-slate-500' : ''}>{site.name}</span>
+                              {isLibur && (
+                                <span className="ml-2 px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded text-[9px] font-bold">
+                                  {site.reason || 'Libur Sekolah'}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-1.5 px-3">
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200">
+                                {site.type}
+                              </span>
+                            </td>
+                            <td className={`py-1.5 px-3 text-right font-black tabular-nums ${isLibur ? 'text-amber-800 font-mono' : 'text-slate-900'}`}>
+                              {site.masterCount}
+                            </td>
+                            <td className="py-1.5 px-3 text-center">
+                              {isLibur ? (
+                                <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                                  Libur (0 Porsi)
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-bold text-emerald-700">Tersalurkan</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                     <tfoot className="bg-slate-100 border-t-2 border-slate-300 font-black text-slate-900 text-xs">
                       <tr>
