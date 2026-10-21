@@ -109,9 +109,19 @@ export default function PortalHome() {
 
   useEffect(() => {
     try {
-      // Cache versioning: bump versi untuk invalidasi cache lama (mis. jam timeline salah)
-      const CACHE_KEY = 'sppg_synced_menus_v2';
-      const saved = localStorage.getItem(CACHE_KEY);
+      // MIGRASI v1 -> v2: data lama (mis. draft 15/16 Okt yang belum ke-push cloud)
+      // dibawa masuk ke cache baru lalu cache v1 ditandai sudah dimigrasi.
+      const V1 = 'sppg_synced_menus';
+      const V2 = 'sppg_synced_menus_v2';
+      if (!localStorage.getItem(V2) && localStorage.getItem(V1)) {
+        try {
+          localStorage.setItem(V2, localStorage.getItem(V1) as string);
+        } catch {
+          /* ignore */
+        }
+      }
+
+      const saved = localStorage.getItem(V2);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -126,9 +136,9 @@ export default function PortalHome() {
     fetchMenusFromCloud().then((cloudMenus) => {
       if (cloudMenus && cloudMenus.length > 0) {
         setMenuHistory((prev) => {
-          /* CLOUD WINS: cloud adalah source of truth.
-             localStorage lama boleh menambah tanggal yang belum ada di cloud,
-             tapi TIDAK BOLEH menimpa field yang sudah benar (termasuk jam timeline). */
+          /* CLOUD WINS untuk tanggal yang ADA DI CLOUD.
+             Tanggal yang HANYA ada di lokal (mis. 15/16 Okt yang gagal push ke cloud)
+             TETAP DIPERTAHANKAN — jangan sampai data lokal hilang. */
           const byDate = new Map<string, DailyMenuRecord>();
           prev.forEach((localItem) => byDate.set(localItem.date, localItem));
           cloudMenus.forEach((c) => {

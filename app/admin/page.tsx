@@ -136,28 +136,21 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       if (cloudList && cloudList.length > 0) {
         setSavedMenuList((prev) => {
           const byDate = new Map<string, DailyMenuRecord>();
-          
-          // Masukkan cloud sebagai baseline
-          cloudList.forEach((c) => byDate.set(c.date, c));
 
-          // Gabungkan lokal dan prioritaskan foto lokal jika cloud masih kosong
-          prev.forEach((localItem) => {
-            const cloudItem = byDate.get(localItem.date);
-            if (!cloudItem) {
-              byDate.set(localItem.date, localItem);
+          /* CLOUD WINS untuk tanggal yang ada di cloud.
+             Tanggal yang hanya ada di lokal (gagal push) tetap dipertahankan. */
+          prev.forEach((localItem) => byDate.set(localItem.date, localItem));
+          cloudList.forEach((c) => {
+            const localItem = byDate.get(c.date);
+            if (!localItem) {
+              byDate.set(c.date, c);
             } else {
-              const mergedPhotos = (localItem.photos && localItem.photos.length > 0)
-                ? localItem.photos
-                : cloudItem.photos;
-              const mergedMenuPhoto = (localItem.menuPhotoUrl && localItem.menuPhotoUrl.trim() !== '')
-                ? localItem.menuPhotoUrl
-                : cloudItem.menuPhotoUrl;
-
-              byDate.set(localItem.date, {
-                ...cloudItem,
+              byDate.set(c.date, {
                 ...localItem,
-                photos: mergedPhotos,
-                menuPhotoUrl: mergedMenuPhoto,
+                ...c,
+                photos: c.photos && c.photos.length > 0 ? c.photos : localItem.photos,
+                menuPhotoUrl:
+                  c.menuPhotoUrl && c.menuPhotoUrl.trim() !== '' ? c.menuPhotoUrl : localItem.menuPhotoUrl,
               });
             }
           });
