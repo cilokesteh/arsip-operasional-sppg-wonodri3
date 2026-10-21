@@ -117,28 +117,28 @@
         "title": "Sortasi Bahan Baku Higienis",
         "description": "Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1GL4H4F2_Hlrpw2p_vjTI95kVahwu-AVN",
-        "timeEstimate": "04:00 - 05:30 WIB"
+        "timeEstimate": "17:00 - 01:00 WIB"
       },
       {
         "step": "2. Pengolahan",
         "title": "Pemasakan Suhu Terukur (>85°C)",
         "description": "Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.",
         "imageUrl": "https://lh3.googleusercontent.com/d/13WhKOdmVEzfuBNn-32Ld-LQeN9TIPpWM",
-        "timeEstimate": "05:30 - 07:15 WIB"
+        "timeEstimate": "02:00 - 08:30 WIB"
       },
       {
         "step": "3. Pengemasan",
         "title": "Food Plating & Segel Thermal Box",
         "description": "Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1x70Vm-st2wLGs6zeJP6epw3chLoVmkwI",
-        "timeEstimate": "07:15 - 08:30 WIB"
+        "timeEstimate": "05:00 - 09:00 WIB"
       },
       {
         "step": "4. Distribusi",
         "title": "Pengantaran & Serah Terima Sekolah",
         "description": "Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1xGh7Tadf9a5lfvipqg77R4c4EDRFr5Xv",
-        "timeEstimate": "08:30 - 10:00 WIB"
+        "timeEstimate": "06:00 - 09:00 WIB"
       }
     ],
     "overrides": [
@@ -268,35 +268,35 @@
         "title": "Sortasi Bahan Baku Higienis",
         "description": "Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1MGumEvH1gF5BdyAxIDKgrhzv2PdoYopC",
-        "timeEstimate": "04:00 - 05:30 WIB"
+        "timeEstimate": "17:00 - 01:00 WIB"
       },
       {
         "step": "2. Pengolahan",
         "title": "Pemasakan Suhu Terukur (>85°C)",
         "description": "Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1KWJQHtgP0jsCVmDMxBae2ypIi08yA77H",
-        "timeEstimate": "05:30 - 07:15 WIB"
+        "timeEstimate": "02:00 - 08:30 WIB"
       },
       {
         "step": "3. Pengemasan",
         "title": "Food Plating & Segel Thermal Box",
         "description": "Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1jAD9TltHzXAwE-EiTShTUgWYdq6P6LuT",
-        "timeEstimate": "07:15 - 08:30 WIB"
+        "timeEstimate": "05:00 - 09:00 WIB"
       },
       {
         "step": "4. Distribusi",
         "title": "Pengantaran & Serah Terima Sekolah",
         "description": "Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1jj9lXDLulRRIDFYabLTwPP2o4vV51qzW",
-        "timeEstimate": "08:30 - 10:00 WIB"
+        "timeEstimate": "06:00 - 09:00 WIB"
       },
       {
         "step": "5. Pencucian",
         "title": "Pencucian & Sterilisasi Ompreng",
         "description": "Pembersihan menyeluruh wadah ompreng stainless steel dengan air panas dan sabun sanitasi.",
         "imageUrl": "https://lh3.googleusercontent.com/d/18r2Zc0dIp-uKpWn4V6NBfldonKQRZ6nS",
-        "timeEstimate": "11:00 - 13:00 WIB"
+        "timeEstimate": "13:00 - 21:00 WIB"
       }
     ],
     "overrides": []
@@ -419,35 +419,35 @@
         "title": "Sortasi Bahan Baku Higienis",
         "description": "Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1e5C9zEzqVjfcMctw69q-ERx3LWFuW8sE",
-        "timeEstimate": "04:00 - 05:30 WIB"
+        "timeEstimate": "17:00 - 01:00 WIB"
       },
       {
         "step": "2. Pengolahan",
         "title": "Pemasakan Suhu Terukur (>85°C)",
         "description": "Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1Gna7QSf1poosAR_pMrQFn06jGHLw2EFp",
-        "timeEstimate": "05:30 - 07:15 WIB"
+        "timeEstimate": "02:00 - 08:30 WIB"
       },
       {
         "step": "3. Pengemasan",
         "title": "Food Plating & Segel Thermal Box",
         "description": "Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1nZbhEAm3JMjCMXNrq6WO5-s0RqmTDQ7y",
-        "timeEstimate": "07:15 - 08:30 WIB"
+        "timeEstimate": "05:00 - 09:00 WIB"
       },
       {
         "step": "4. Distribusi",
         "title": "Pengantaran & Serah Terima Sekolah",
         "description": "Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1w8hdsk7qqT0Fn_oj1PB1EWWLHvuYMTaO",
-        "timeEstimate": "08:30 - 10:00 WIB"
+        "timeEstimate": "06:00 - 09:00 WIB"
       },
       {
         "step": "5. Pencucian",
         "title": "Pencucian & Sterilisasi Ompreng",
         "description": "Pembersihan menyeluruh wadah ompreng stainless steel dengan air panas dan sabun sanitasi.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1uASZu5FgTk9Idz_q7xV3i-K5ZAPzTKFA",
-        "timeEstimate": "11:00 - 13:00 WIB"
+        "timeEstimate": "13:00 - 21:00 WIB"
       }
     ],
     "overrides": []
@@ -570,35 +570,35 @@
         "title": "Sortasi Bahan Baku Higienis",
         "description": "Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1s3Ti2ffzva47h69djUqrZes2FPDGARS2",
-        "timeEstimate": "04:00 - 05:30 WIB"
+        "timeEstimate": "17:00 - 01:00 WIB"
       },
       {
         "step": "2. Pengolahan",
         "title": "Pemasakan Suhu Terukur (>85°C)",
         "description": "Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1FcQoAZnkLsqaIPdgIXF28P2x1UNR4DJe",
-        "timeEstimate": "05:30 - 07:15 WIB"
+        "timeEstimate": "02:00 - 08:30 WIB"
       },
       {
         "step": "3. Pengemasan",
         "title": "Food Plating & Segel Thermal Box",
         "description": "Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1GuJtntF4tgAvS06YGaW-D2Xb9Xh7WXxe",
-        "timeEstimate": "07:15 - 08:30 WIB"
+        "timeEstimate": "05:00 - 09:00 WIB"
       },
       {
         "step": "4. Distribusi",
         "title": "Pengantaran & Serah Terima Sekolah",
         "description": "Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1MLVsULfcjKuHcoOWgA-BMptNtgPCZPRD",
-        "timeEstimate": "08:30 - 10:00 WIB"
+        "timeEstimate": "06:00 - 09:00 WIB"
       },
       {
         "step": "5. Pencucian",
         "title": "Pencucian & Sterilisasi Ompreng",
         "description": "Pembersihan menyeluruh wadah ompreng stainless steel dengan air panas dan sabun sanitasi.",
         "imageUrl": "https://lh3.googleusercontent.com/d/11EoGBVHJ22_kF4mDw2AsXiVu0NkFamT8",
-        "timeEstimate": "11:00 - 13:00 WIB"
+        "timeEstimate": "13:00 - 21:00 WIB"
       }
     ],
     "overrides": []
@@ -721,35 +721,35 @@
         "title": "Sortasi Bahan Baku Higienis",
         "description": "Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1VczCxl2h7cDpdxzyFbLE7DRnHR49c4Df",
-        "timeEstimate": "04:00 - 05:30 WIB"
+        "timeEstimate": "17:00 - 01:00 WIB"
       },
       {
         "step": "2. Pengolahan",
         "title": "Pemasakan Suhu Terukur (>85°C)",
         "description": "Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.",
         "imageUrl": "https://lh3.googleusercontent.com/d/14EvXRw27eJfjBddRPoiymx9OjPCLxPCs",
-        "timeEstimate": "05:30 - 07:15 WIB"
+        "timeEstimate": "02:00 - 08:30 WIB"
       },
       {
         "step": "3. Pengemasan",
         "title": "Food Plating & Segel Thermal Box",
         "description": "Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1TtViNMEXv-8qz2n3X34gfinOMbxaBV-J",
-        "timeEstimate": "07:15 - 08:30 WIB"
+        "timeEstimate": "05:00 - 09:00 WIB"
       },
       {
         "step": "4. Distribusi",
         "title": "Pengantaran & Serah Terima Sekolah",
         "description": "Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1JW24UVO-3crIbHw4Velft2YWKCf2Ynvl",
-        "timeEstimate": "08:30 - 10:00 WIB"
+        "timeEstimate": "06:00 - 09:00 WIB"
       },
       {
         "step": "5. Pencucian",
         "title": "Pencucian & Sterilisasi Ompreng",
         "description": "Pembersihan menyeluruh wadah ompreng stainless steel dengan air panas dan sabun sanitasi.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1L4bmKd2kt9HWHh_kj4ikbNJCB0kuoBiY",
-        "timeEstimate": "11:00 - 13:00 WIB"
+        "timeEstimate": "13:00 - 21:00 WIB"
       }
     ],
     "overrides": []
@@ -872,28 +872,28 @@
         "title": "Sortasi Bahan Baku Higienis",
         "description": "Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1_28TxqKTCgfBnRYxJYyHMXMc3SpnLk6T",
-        "timeEstimate": "04:00 - 05:30 WIB"
+        "timeEstimate": "17:00 - 01:00 WIB"
       },
       {
         "step": "2. Pengolahan",
         "title": "Pemasakan Suhu Terukur (>85°C)",
         "description": "Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1TqQJMSUyyhFGSRdZbEK9XsCv_QtVRI43",
-        "timeEstimate": "05:30 - 07:15 WIB"
+        "timeEstimate": "02:00 - 08:30 WIB"
       },
       {
         "step": "3. Pengemasan",
         "title": "Food Plating & Segel Thermal Box",
         "description": "Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1_yeDFOPpevAFqr2VE2lbpDP-wadgkqm_",
-        "timeEstimate": "07:15 - 08:30 WIB"
+        "timeEstimate": "05:00 - 09:00 WIB"
       },
       {
         "step": "4. Distribusi",
         "title": "Pengantaran & Serah Terima Sekolah",
         "description": "Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.",
         "imageUrl": "https://lh3.googleusercontent.com/d/10dfaxUbdrl0JBdWkgD-L3FuL33mwzzcb",
-        "timeEstimate": "08:30 - 10:00 WIB"
+        "timeEstimate": "06:00 - 09:00 WIB"
       }
     ],
     "overrides": []
@@ -1131,35 +1131,35 @@
         "title": "Sortasi Bahan Baku Higienis",
         "description": "Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1rPJORs-lMm3oawA1XKLn-v5XMpDElrsR",
-        "timeEstimate": "04:00 - 05:30 WIB"
+        "timeEstimate": "17:00 - 01:00 WIB"
       },
       {
         "step": "2. Pengolahan",
         "title": "Pemasakan Suhu Terukur (>85°C)",
         "description": "Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1WRPUbIvEiVraUrrE_ehTlwCb7b_hksYB",
-        "timeEstimate": "05:30 - 07:15 WIB"
+        "timeEstimate": "02:00 - 08:30 WIB"
       },
       {
         "step": "3. Pengemasan",
         "title": "Food Plating & Segel Thermal Box",
         "description": "Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1u9lLWeyaP1DwbxC1aHfgZ0Y_OMVpeBXW",
-        "timeEstimate": "07:15 - 08:30 WIB"
+        "timeEstimate": "05:00 - 09:00 WIB"
       },
       {
         "step": "4. Distribusi",
         "title": "Pengantaran & Serah Terima Sekolah",
         "description": "Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1CXbCMyjhVXlVYg6rFrapV4Fki-J82WHs",
-        "timeEstimate": "08:30 - 10:00 WIB"
+        "timeEstimate": "06:00 - 09:00 WIB"
       },
       {
         "step": "5. Pencucian",
         "title": "Pencucian & Sterilisasi Ompreng",
         "description": "Pembersihan menyeluruh wadah ompreng stainless steel dengan air panas dan sabun sanitasi.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1qaMiZMV8tiIPcvKsSslLdnRm1cOidG-L",
-        "timeEstimate": "11:00 - 13:00 WIB"
+        "timeEstimate": "13:00 - 21:00 WIB"
       }
     ],
     "overrides": []
@@ -1282,35 +1282,35 @@
         "title": "Sortasi Bahan Baku Higienis",
         "description": "Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1AP478hD_gAzAvI2La6ryMSn0qW9Tq3Vi",
-        "timeEstimate": "04:00 - 05:30 WIB"
+        "timeEstimate": "17:00 - 01:00 WIB"
       },
       {
         "step": "2. Pengolahan",
         "title": "Pemasakan Suhu Terukur (>85°C)",
         "description": "Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1tN_3F2rYUJgs5Q-ABXBacOTowj_i43L0",
-        "timeEstimate": "05:30 - 07:15 WIB"
+        "timeEstimate": "02:00 - 08:30 WIB"
       },
       {
         "step": "3. Pengemasan",
         "title": "Food Plating & Segel Thermal Box",
         "description": "Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1BY2YIl-s8WaUJIX6NLvY-3aPadz6zJGS",
-        "timeEstimate": "07:15 - 08:30 WIB"
+        "timeEstimate": "05:00 - 09:00 WIB"
       },
       {
         "step": "4. Distribusi",
         "title": "Pengantaran & Serah Terima Sekolah",
         "description": "Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1jJeVvG7HPC35zMnaaWPuNCSSBnK0yTX9",
-        "timeEstimate": "08:30 - 10:00 WIB"
+        "timeEstimate": "06:00 - 09:00 WIB"
       },
       {
         "step": "5. Pencucian",
         "title": "Pencucian & Sterilisasi Ompreng",
         "description": "Pembersihan menyeluruh wadah ompreng stainless steel dengan air panas dan sabun sanitasi.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1CcKoWwW6rjDtAIBUk5oNW0QWotd4EWgU",
-        "timeEstimate": "11:00 - 13:00 WIB"
+        "timeEstimate": "13:00 - 21:00 WIB"
       }
     ],
     "overrides": []
@@ -1433,35 +1433,35 @@
         "title": "Sortasi Bahan Baku Higienis",
         "description": "Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1Spht7KO4l1ljy_WWSR8vnNLdYGLOSDQs",
-        "timeEstimate": "04:00 - 05:30 WIB"
+        "timeEstimate": "17:00 - 01:00 WIB"
       },
       {
         "step": "2. Pengolahan",
         "title": "Pemasakan Suhu Terukur (>85°C)",
         "description": "Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1v7bqm57_0Sdb8jC-8XszNzDpNOp4ozZ1",
-        "timeEstimate": "05:30 - 07:15 WIB"
+        "timeEstimate": "02:00 - 08:30 WIB"
       },
       {
         "step": "3. Pengemasan",
         "title": "Food Plating & Segel Thermal Box",
         "description": "Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1RAMPXtv_cfuYq5TiIQlX-gOzGNgq-H7_",
-        "timeEstimate": "07:15 - 08:30 WIB"
+        "timeEstimate": "05:00 - 09:00 WIB"
       },
       {
         "step": "4. Distribusi",
         "title": "Pengantaran & Serah Terima Sekolah",
         "description": "Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1vK80MMG_avyn6cpUkz8Qcu2JXK6FT5lL",
-        "timeEstimate": "08:30 - 10:00 WIB"
+        "timeEstimate": "06:00 - 09:00 WIB"
       },
       {
         "step": "5. Pencucian",
         "title": "Pencucian & Sterilisasi Ompreng",
         "description": "Pembersihan menyeluruh wadah ompreng stainless steel dengan air panas dan sabun sanitasi.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1J1fMTb397-qvSQ36jVpV_1BD1B9oaK5e",
-        "timeEstimate": "11:00 - 13:00 WIB"
+        "timeEstimate": "13:00 - 21:00 WIB"
       }
     ],
     "overrides": []
@@ -1584,35 +1584,35 @@
         "title": "Sortasi Bahan Baku Higienis",
         "description": "Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1xoKRb5rI8U_sxGLRa3rDDo5exvbGk8bV",
-        "timeEstimate": "04:00 - 05:30 WIB"
+        "timeEstimate": "17:00 - 01:00 WIB"
       },
       {
         "step": "2. Pengolahan",
         "title": "Pemasakan Suhu Terukur (>85°C)",
         "description": "Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1QYC0GVqjXZpIBDt8o2WOUGt2ViqauVGn",
-        "timeEstimate": "05:30 - 07:15 WIB"
+        "timeEstimate": "02:00 - 08:30 WIB"
       },
       {
         "step": "3. Pengemasan",
         "title": "Food Plating & Segel Thermal Box",
         "description": "Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1AIJ8NacqI5bO0V9l5pP4XCNwSCPFLTnh",
-        "timeEstimate": "07:15 - 08:30 WIB"
+        "timeEstimate": "05:00 - 09:00 WIB"
       },
       {
         "step": "4. Distribusi",
         "title": "Pengantaran & Serah Terima Sekolah",
         "description": "Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1T_XEVf4zzlI1BTQm4DhmaW1c9SJvzeNf",
-        "timeEstimate": "08:30 - 10:00 WIB"
+        "timeEstimate": "06:00 - 09:00 WIB"
       },
       {
         "step": "5. Pencucian",
         "title": "Pencucian & Sterilisasi Ompreng",
         "description": "Pembersihan menyeluruh wadah ompreng stainless steel dengan air panas dan sabun sanitasi.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1oU5LDCewlLwQDMUYovCD1YaG53Z4Kz5t",
-        "timeEstimate": "11:00 - 13:00 WIB"
+        "timeEstimate": "13:00 - 21:00 WIB"
       }
     ],
     "overrides": []
@@ -1735,35 +1735,35 @@
         "title": "Sortasi Bahan Baku Higienis",
         "description": "Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1zhYhspClrFVhPNzqpkmLvjOa3OaHcl8Y",
-        "timeEstimate": "04:00 - 05:30 WIB"
+        "timeEstimate": "17:00 - 01:00 WIB"
       },
       {
         "step": "2. Pengolahan",
         "title": "Pemasakan Suhu Terukur (>85°C)",
         "description": "Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1uGfffA5zJOjldEmJeOTALAHSIt0106Rh",
-        "timeEstimate": "05:30 - 07:15 WIB"
+        "timeEstimate": "02:00 - 08:30 WIB"
       },
       {
         "step": "3. Pengemasan",
         "title": "Food Plating & Segel Thermal Box",
         "description": "Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1kUt1m4Qd_VIMsQjhPRfZMaofl2skSVkv",
-        "timeEstimate": "07:15 - 08:30 WIB"
+        "timeEstimate": "05:00 - 09:00 WIB"
       },
       {
         "step": "4. Distribusi",
         "title": "Pengantaran & Serah Terima Sekolah",
         "description": "Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.",
         "imageUrl": "https://lh3.googleusercontent.com/d/11Xo9iVQbanX6duylpHR7MEksqd3thQh5",
-        "timeEstimate": "08:30 - 10:00 WIB"
+        "timeEstimate": "06:00 - 09:00 WIB"
       },
       {
         "step": "5. Pencucian",
         "title": "Pencucian & Sterilisasi Ompreng",
         "description": "Pembersihan menyeluruh wadah ompreng stainless steel dengan air panas dan sabun sanitasi.",
         "imageUrl": "https://lh3.googleusercontent.com/d/1666ThWYnTEoalMWuvD7XdnAqwpEUD35Z",
-        "timeEstimate": "11:00 - 13:00 WIB"
+        "timeEstimate": "13:00 - 21:00 WIB"
       }
     ],
     "overrides": []

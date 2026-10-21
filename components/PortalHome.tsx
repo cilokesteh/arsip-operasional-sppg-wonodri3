@@ -109,7 +109,9 @@ export default function PortalHome() {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('sppg_synced_menus');
+      // Cache versioning: bump versi untuk invalidasi cache lama (mis. jam timeline salah)
+      const CACHE_KEY = 'sppg_synced_menus_v2';
+      const saved = localStorage.getItem(CACHE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -124,24 +126,23 @@ export default function PortalHome() {
     fetchMenusFromCloud().then((cloudMenus) => {
       if (cloudMenus && cloudMenus.length > 0) {
         setMenuHistory((prev) => {
+          /* CLOUD WINS: cloud adalah source of truth.
+             localStorage lama boleh menambah tanggal yang belum ada di cloud,
+             tapi TIDAK BOLEH menimpa field yang sudah benar (termasuk jam timeline). */
           const byDate = new Map<string, DailyMenuRecord>();
-          cloudMenus.forEach((c) => byDate.set(c.date, c));
-          prev.forEach((localItem) => {
-            const cloudItem = byDate.get(localItem.date);
-            if (!cloudItem) {
-              byDate.set(localItem.date, localItem);
+          prev.forEach((localItem) => byDate.set(localItem.date, localItem));
+          cloudMenus.forEach((c) => {
+            const localItem = byDate.get(c.date);
+            if (!localItem) {
+              byDate.set(c.date, c);
             } else {
-              const mergedPhotos =
-                localItem.photos && localItem.photos.length > 0 ? localItem.photos : cloudItem.photos;
-              const mergedMenuPhoto =
-                localItem.menuPhotoUrl && localItem.menuPhotoUrl.trim() !== ''
-                  ? localItem.menuPhotoUrl
-                  : cloudItem.menuPhotoUrl;
-              byDate.set(localItem.date, {
-                ...cloudItem,
+              // Cloud menang; local hanya melengkapi field yang kosong di cloud
+              byDate.set(c.date, {
                 ...localItem,
-                photos: mergedPhotos,
-                menuPhotoUrl: mergedMenuPhoto,
+                ...c,
+                photos: c.photos && c.photos.length > 0 ? c.photos : localItem.photos,
+                menuPhotoUrl:
+                  c.menuPhotoUrl && c.menuPhotoUrl.trim() !== '' ? c.menuPhotoUrl : localItem.menuPhotoUrl,
               });
             }
           });
@@ -149,7 +150,7 @@ export default function PortalHome() {
             (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
           );
           try {
-            localStorage.setItem('sppg_synced_menus', JSON.stringify(merged));
+            localStorage.setItem('sppg_synced_menus_v2', JSON.stringify(merged));
           } catch {
             /* ignore */
           }
