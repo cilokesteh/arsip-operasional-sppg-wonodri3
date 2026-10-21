@@ -230,7 +230,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   const [saveToast, setSaveToast] = useState<string | null>(null);
 
   const [absensiSubTab, setAbsensiSubTab] = useState<AbsensiSubTab>('harian');
-  const [rekapPeriod, setRekapPeriod] = useState<'mingguan' | 'bulanan'>('mingguan');
+  const [rekapPeriod, setRekapPeriod] = useState<'harian' | 'mingguan' | 'bulanan'>('harian');
   const [selectedMonth, setSelectedMonth] = useState<string>('2026-10');
 
   const [searchName, setSearchName] = useState<string>('');
@@ -464,7 +464,10 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     let fileSuffix = selectedDate;
 
     if (absensiSubTab === 'rekap') {
-      if (rekapPeriod === 'mingguan') {
+      if (rekapPeriod === 'harian') {
+        exportEntries = currentDayDraft;
+        fileSuffix = `Harian-${selectedDate}`;
+      } else if (rekapPeriod === 'mingguan') {
         const week = getWeekDays(selectedDate);
         exportEntries = ledger.filter((e) => e.date >= week[0].date && e.date <= week[week.length - 1].date);
         fileSuffix = `Week-${week[0].date}_sampai_${week[week.length - 1].date}`;
@@ -1131,8 +1134,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   }`}
                 >
                   <Users className="w-3.5 h-3.5 hidden sm:inline-block" />
-                  <span className="sm:hidden">Roster</span>
-                  <span className="hidden sm:inline">Roster 40</span>
+                  <span>Relawan</span>
                 </button>
               </div>
 
@@ -1180,6 +1182,14 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 <div className="flex items-center gap-2 self-end md:self-auto">
                   <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-xs font-bold">
                     <button
+                      onClick={() => setRekapPeriod('harian')}
+                      className={`px-2.5 py-1 rounded transition-colors ${
+                        rekapPeriod === 'harian' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'
+                      }`}
+                    >
+                      Harian
+                    </button>
+                    <button
                       onClick={() => setRekapPeriod('mingguan')}
                       className={`px-2.5 py-1 rounded transition-colors ${
                         rekapPeriod === 'mingguan' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'
@@ -1196,6 +1206,17 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                       Bulanan
                     </button>
                   </div>
+
+                  {rekapPeriod === 'harian' && (
+                    <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="bg-transparent text-xs font-bold text-slate-800 cursor-pointer"
+                      />
+                    </div>
+                  )}
 
                   {rekapPeriod === 'bulanan' && (
                     <input
@@ -1539,10 +1560,91 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               </div>
             )}
 
-            {/* SUB-TAB 2: REKAPITULASI (SENIN - MINGGU) */}
+            {/* SUB-TAB 2: REKAPITULASI (HARIAN / MINGGUAN / BULANAN) */}
             {absensiSubTab === 'rekap' && (
               <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden animate-in fade-in">
-                {rekapPeriod === 'mingguan' ? (
+                {rekapPeriod === 'harian' ? (
+                  <div className="p-4 sm:p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                      <div>
+                        <h3 className="font-bold text-sm text-slate-900">
+                          Rekapitulasi Kehadiran & Beban Upah Harian ({formatIndoDate(selectedDate)})
+                        </h3>
+                        <span className="text-[11px] text-slate-400">Ringkasan per divisi & rekapitulasi status kehadiran</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs text-slate-400 block">Total Beban Hari Ini:</span>
+                        <strong className="text-sm font-mono text-blue-900">{renderSalary(dailySummary.totalEarned)}</strong>
+                      </div>
+                    </div>
+
+                    {/* Ringkasan Status Harian */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                      <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
+                        <span className="text-[10px] uppercase font-bold text-emerald-800 block">Hadir</span>
+                        <strong className="text-xl font-mono text-emerald-700">{dailySummary.statusCounts.Hadir} Orang</strong>
+                      </div>
+                      <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-center">
+                        <span className="text-[10px] uppercase font-bold text-amber-800 block">Izin</span>
+                        <strong className="text-xl font-mono text-amber-700">{dailySummary.statusCounts.Izin} Orang</strong>
+                      </div>
+                      <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 text-center">
+                        <span className="text-[10px] uppercase font-bold text-purple-800 block">Sakit</span>
+                        <strong className="text-xl font-mono text-purple-700">{dailySummary.statusCounts.Sakit} Orang</strong>
+                      </div>
+                      <div className="p-3 rounded-xl bg-slate-100 border border-slate-200 text-center">
+                        <span className="text-[10px] uppercase font-bold text-slate-600 block">Libur / Nonaktif</span>
+                        <strong className="text-xl font-mono text-slate-700">{dailySummary.statusCounts.Libur + dailySummary.statusCounts.Nonaktif} Orang</strong>
+                      </div>
+                    </div>
+
+                    {/* Breakdown Per Divisi Harian */}
+                    <div className="border border-slate-200 rounded-xl overflow-hidden">
+                      <div className="p-3 bg-slate-50 border-b border-slate-200 font-bold text-xs text-slate-700">
+                        Rincian Kehadiran Per Divisi Kerja
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead>
+                            <tr className="bg-slate-100/70 text-slate-600 font-semibold border-b border-slate-200 text-[11px]">
+                              <th className="py-2 px-3">DIVISI / SEKSI</th>
+                              <th className="py-2 px-3 text-center">TOTAL ANGGOTA</th>
+                              <th className="py-2 px-3 text-center">HADIR</th>
+                              <th className="py-2 px-3 text-center">TIDAK HADIR</th>
+                              <th className="py-2 px-3 text-right">TOTAL UPAH DIVISI</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {DUTY_SECTIONS.filter((s) => s !== 'Semua').map((sec) => {
+                              const secPersons = roster.filter((p) => p.dutySection === sec);
+                              const secEntries = currentDayDraft.filter((e) => {
+                                const p = rosterMap.get(e.volunteerId);
+                                return p?.dutySection === sec;
+                              });
+                              const secHadir = secEntries.filter((e) => e.status === 'Hadir').length;
+                              const secAbsen = secEntries.filter((e) => e.status === 'Izin' || e.status === 'Sakit' || e.status === 'Alpha').length;
+                              const secEarned = secEntries.reduce((acc, curr) => acc + curr.earnedAmount, 0);
+
+                              return (
+                                <tr key={sec} className="hover:bg-slate-50">
+                                  <td className="py-2 px-3 font-semibold text-slate-900">{sec}</td>
+                                  <td className="py-2 px-3 text-center font-mono text-slate-500">{secPersons.length}</td>
+                                  <td className="py-2 px-3 text-center font-mono font-bold text-emerald-700">{secHadir}</td>
+                                  <td className="py-2 px-3 text-center font-mono text-amber-700">
+                                    {secAbsen > 0 ? `${secAbsen} orang` : '-'}
+                                  </td>
+                                  <td className="py-2 px-3 text-right font-mono font-bold whitespace-nowrap">
+                                    {renderSalary(secEarned)}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                ) : rekapPeriod === 'mingguan' ? (
                   <div className="overflow-x-auto">
                     <div className="p-3.5 border-b border-slate-200 flex items-center justify-between text-xs">
                       <span className="font-bold text-slate-800">
@@ -1736,12 +1838,12 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               </div>
             )}
 
-            {/* SUB-TAB 4: ROSTER 40 */}
+            {/* SUB-TAB 4: DAFTAR RELAWAN */}
             {absensiSubTab === 'roster' && (
               <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 animate-in fade-in shadow-2xs">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div>
-                    <h3 className="font-bold text-sm text-slate-900">Roster Resmi 40 Personel</h3>
+                    <h3 className="font-bold text-sm text-slate-900">Daftar Relawan Dapur ({roster.length} Personel)</h3>
                     <span className="text-xs text-slate-400">Shift jadwal & tarif upah harian BGN</span>
                   </div>
                   <button
@@ -1749,7 +1851,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-1"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>+ Personel</span>
+                    <span>+ Tambah Relawan</span>
                   </button>
                 </div>
 
@@ -2255,8 +2357,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   >
                     <Users className="w-4 h-4 mt-0.5 shrink-0 text-pink-400" />
                     <div>
-                      <div className="text-xs font-bold">Master Roster 40 Personel</div>
-                      <div className="text-[10px] text-slate-400">Shift 24 Jam & Tarif Upah Resmi</div>
+                      <div className="text-xs font-bold">Daftar Relawan Dapur</div>
+                      <div className="text-[10px] text-slate-400">Data 40 Personel, Shift 24 Jam & Tarif Upah</div>
                     </div>
                   </button>
                 </div>
