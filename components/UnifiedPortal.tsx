@@ -1299,7 +1299,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   {!isSalaryUnlocked && <Lock className="w-3 h-3 text-slate-300" />}
                 </div>
                 <div className="pt-0.5 truncate">{renderSalary(dailySummary.totalEarned)}</div>
-                <span className="text-[9px] sm:text-[10px] text-slate-400 block truncate">Plafon Rp 5.005.000 / BNI</span>
+                <span className="text-[9px] sm:text-[10px] text-slate-400 block truncate">
+                  {isSalaryUnlocked ? 'Plafon Rp 5.005.000 / BNI' : 'Plafon •••••• / BNI'}
+                </span>
               </div>
 
               <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-0.5 min-w-0">
@@ -2444,11 +2446,15 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               </div>
               <div className="flex items-center justify-between font-mono">
                 <span>Plafon Upah Harian:</span>
-                <span className="text-white font-bold">{formatRupiah(5005000)}</span>
+                <span className="text-white font-bold">
+                  {isSalaryUnlocked ? formatRupiah(5005000) : '••••••••'}
+                </span>
               </div>
               <div className="flex items-center justify-between font-mono">
                 <span>Rekening VA BNI:</span>
-                <span className="text-emerald-400 font-bold">9880-1556-2026-0003</span>
+                <span className="text-emerald-400 font-bold">
+                  {isSalaryUnlocked ? '9880-1556-2026-0003' : '••••-••••-••••-0003'}
+                </span>
               </div>
               <p className="text-[10px] text-slate-500 pt-1">
                 Verifikasi: Arief Rahman Hakim (Aslap) & Salsabiila Zainima, S.Ak (Akuntan)
