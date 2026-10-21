@@ -548,12 +548,12 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   const printableSummary = useMemo(() => calculatePeriodSummary(printableEntries), [printableEntries]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans antialiased">
-      {/* 1. MASTER UNIFIED NAVBAR (DUA KATEGORI UTAMA TERPADU) */}
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans antialiased w-full overflow-x-hidden">
+      {/* 1. MASTER UNIFIED NAVBAR */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40 no-print shadow-2xs">
-        <div className="max-w-6xl mx-auto px-4 h-15 flex items-center justify-between gap-3">
-          {/* Logo & Identity */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 h-14 sm:h-15 flex items-center justify-between gap-2 sm:gap-3">
+          {/* Left: Hamburger + Logo & Title */}
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0">
             <button
               onClick={() => setIsDrawerOpen(true)}
               className="p-1.5 sm:p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer border border-slate-200 flex items-center justify-center shrink-0"
@@ -563,27 +563,28 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               <Menu className="w-4 h-4 text-slate-700" />
             </button>
 
-            <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 p-1 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 p-0.5 flex items-center justify-center shrink-0">
               <Image src="/logo.png" alt="Logo BGN" width={24} height={24} className="object-contain" priority />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-sm text-slate-900 tracking-tight">
+
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold text-xs sm:text-sm text-slate-900 tracking-tight truncate block">
                   SPPG Wonodri 3
                 </span>
-                <span className="text-[10px] text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 font-mono hidden sm:inline-block">
+                <span className="text-[9px] text-blue-700 font-bold bg-blue-50 px-1.5 py-0.2 rounded-full border border-blue-200 font-mono hidden md:inline-block">
                   Portal Terpadu
                 </span>
               </div>
-              <span className="text-[11px] text-slate-400 block -mt-0.5">Central Kitchen Semarang Selatan</span>
+              <span className="text-[10px] text-slate-400 block truncate -mt-0.5">Central Kitchen Semarang Selatan</span>
             </div>
           </div>
 
-          {/* DUA KATEGORI UTAMA: [ ARSIP OPS MBG ] vs [ PRESENSI RELAWAN ] */}
-          <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold">
+          {/* Center: DUA KATEGORI UTAMA (Desktop only, on mobile it lives in dedicated sub-bar below) */}
+          <div className="hidden md:flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold">
             <button
               onClick={() => setMainCategory('arsip')}
-              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+              className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 mainCategory === 'arsip'
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -595,7 +596,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
             <button
               onClick={() => setMainCategory('absensi')}
-              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+              className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 mainCategory === 'absensi'
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -607,30 +608,30 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
           </div>
 
           {/* Right Action Buttons */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {mainCategory === 'arsip' ? (
               <>
                 <button
                   onClick={() => setShowCalendarModal(true)}
-                  className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center gap-1.5 cursor-pointer transition-colors"
+                  className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center gap-1 cursor-pointer transition-colors"
                 >
-                  <CalendarIcon className="w-3.5 h-3.5 text-blue-700" />
-                  <span className="hidden sm:inline">{formatTanggalIndo(selectedDate)}</span>
+                  <CalendarIcon className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+                  <span className="text-[11px] sm:text-xs hidden sm:inline">{formatTanggalIndo(selectedDate)}</span>
                 </button>
 
                 <button
                   onClick={handleOpenPrintModalMenu}
                   title="Cetak Dokumen Resmi (Wajib PIN)"
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center gap-1 cursor-pointer shadow-xs transition-colors"
                 >
-                  <Lock className="w-3 h-3 text-blue-200" />
-                  <Printer className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Cetak</span>
+                  <Lock className="w-3 h-3 text-blue-200 shrink-0" />
+                  <Printer className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-[11px] sm:text-xs">Cetak</span>
                 </button>
 
                 <Link
                   href="/admin"
-                  className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+                  className="p-1.5 sm:p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
                   title="Panel Operator Admin"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
@@ -642,29 +643,29 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   <button
                     type="button"
                     onClick={handleLockSalary}
-                    className="px-2.5 py-1.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1.5 cursor-pointer transition-colors"
+                    className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
                     title="Kunci kembali tampilan upah"
                   >
-                    <Unlock className="w-3.5 h-3.5 text-emerald-600" />
+                    <Unlock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                     <span className="hidden sm:inline">Upah Terbuka</span>
-                    <span className="sm:hidden">Kunci</span>
+                    <span className="sm:hidden text-[11px]">Kunci</span>
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={() => handleOpenPinModalSalary('unlock')}
-                    className="px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1.5 cursor-pointer transition-colors"
+                    className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1 cursor-pointer transition-colors"
                     title="Buka tampilan upah dengan PIN"
                   >
-                    <Lock className="w-3.5 h-3.5 text-slate-500" />
-                    <span className="hidden sm:inline">Buka Upah (PIN)</span>
-                    <span className="sm:hidden">PIN</span>
+                    <Lock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    <span className="hidden sm:inline">Buka Upah</span>
+                    <span className="sm:hidden text-[11px]">PIN</span>
                   </button>
                 )}
 
                 <button
                   onClick={handleExportCsv}
-                  className="p-2 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 flex items-center gap-1.5 cursor-pointer transition-colors"
+                  className="hidden sm:flex p-1.5 sm:p-2 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 items-center gap-1 cursor-pointer transition-colors"
                   title="Unduh Spreadsheet CSV"
                 >
                   <Download className="w-3.5 h-3.5 text-slate-500" />
@@ -672,17 +673,46 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
                 <button
                   onClick={() => handleOpenPrintForDate(selectedDate)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                  className="hidden sm:flex px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 items-center gap-1 cursor-pointer shadow-xs transition-colors"
                   title="Cetak Berita Acara & SPJ A4"
                 >
-                  <Printer className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Cetak SPJ</span>
+                  <Printer className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">SPJ</span>
                 </button>
               </>
             )}
           </div>
         </div>
       </header>
+
+      {/* DEDICATED FULL-WIDTH MOBILE CATEGORY SWITCHER (MD:HIDDEN) */}
+      <div className="md:hidden bg-white border-b border-slate-200 px-3 py-2 no-print w-full">
+        <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold">
+          <button
+            onClick={() => setMainCategory('arsip')}
+            className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              mainCategory === 'arsip'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Utensils className="w-3.5 h-3.5" />
+            <span>Arsip Ops MBG</span>
+          </button>
+
+          <button
+            onClick={() => setMainCategory('absensi')}
+            className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              mainCategory === 'absensi'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Absensi Relawan</span>
+          </button>
+        </div>
+      </div>
 
       {/* 2. BODY KONTEN BERDASARKAN KATEGORI AKTIF */}
       <main className="max-w-6xl mx-auto w-full px-4 py-5 flex-1">
@@ -1053,88 +1083,93 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             {/* Control Bar & Sub-Tabs */}
             <div className="bg-white rounded-2xl border border-slate-200 p-2 sm:p-2.5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
               {/* Segmented Sub-Tabs */}
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold overflow-x-auto">
+              <div className="grid grid-cols-4 sm:flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold w-full md:w-auto">
                 <button
                   onClick={() => setAbsensiSubTab('harian')}
-                  className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  className={`py-1.5 px-2 sm:px-3.5 rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 text-center ${
                     absensiSubTab === 'harian'
                       ? 'bg-white text-blue-800 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <CalendarIcon className="w-3.5 h-3.5" />
-                  <span>Presensi Harian</span>
+                  <CalendarIcon className="w-3.5 h-3.5 hidden sm:inline-block" />
+                  <span className="sm:hidden">Harian</span>
+                  <span className="hidden sm:inline">Presensi Harian</span>
                 </button>
 
                 <button
                   onClick={() => setAbsensiSubTab('rekap')}
-                  className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  className={`py-1.5 px-2 sm:px-3.5 rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 text-center ${
                     absensiSubTab === 'rekap'
                       ? 'bg-white text-blue-800 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <TableIcon className="w-3.5 h-3.5" />
-                  <span>Rekapitulasi (Senin-Minggu)</span>
+                  <TableIcon className="w-3.5 h-3.5 hidden sm:inline-block" />
+                  <span className="sm:hidden">Rekap</span>
+                  <span className="hidden sm:inline">Rekapitulasi (7 Hari)</span>
                 </button>
 
                 <button
                   onClick={() => setAbsensiSubTab('arsip')}
-                  className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  className={`py-1.5 px-2 sm:px-3.5 rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 text-center ${
                     absensiSubTab === 'arsip'
                       ? 'bg-white text-blue-800 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Archive className="w-3.5 h-3.5" />
-                  <span>Arsip Absensi</span>
+                  <Archive className="w-3.5 h-3.5 hidden sm:inline-block" />
+                  <span>Arsip</span>
                 </button>
 
                 <button
                   onClick={() => setAbsensiSubTab('roster')}
-                  className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  className={`py-1.5 px-2 sm:px-3.5 rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 text-center ${
                     absensiSubTab === 'roster'
                       ? 'bg-white text-blue-800 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Users className="w-3.5 h-3.5" />
-                  <span>Roster 40</span>
+                  <Users className="w-3.5 h-3.5 hidden sm:inline-block" />
+                  <span className="sm:hidden">Roster</span>
+                  <span className="hidden sm:inline">Roster 40</span>
                 </button>
               </div>
 
               {/* Date Controls */}
               {absensiSubTab === 'harian' && (
-                <div className="flex items-center gap-1.5 self-end md:self-auto">
-                  <button
-                    onClick={() => handleShiftDate(-1)}
-                    className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-colors border border-slate-200 cursor-pointer"
-                    title="Hari Sebelumnya"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
+                <div className="flex items-center justify-between sm:justify-start gap-1.5 w-full md:w-auto">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleShiftDate(-1)}
+                      className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-colors border border-slate-200 cursor-pointer shrink-0"
+                      title="Hari Sebelumnya"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
 
-                  <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1">
-                    <CalendarIcon className="w-3.5 h-3.5 text-blue-700" />
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
-                    />
+                    <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
+                      <CalendarIcon className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
+                      />
+                    </div>
+
+                    <button
+                      onClick={() => handleShiftDate(1)}
+                      className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-colors border border-slate-200 cursor-pointer shrink-0"
+                      title="Hari Berikutnya"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
                   </div>
 
                   <button
-                    onClick={() => handleShiftDate(1)}
-                    className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-colors border border-slate-200 cursor-pointer"
-                    title="Hari Berikutnya"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-
-                  <button
                     onClick={() => setSelectedDate(toIsoDateLocal(new Date()))}
-                    className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                    className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0"
                   >
                     Hari Ini
                   </button>
@@ -1175,59 +1210,59 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             </div>
 
             {/* 4 SUMMARY METRIC CARDS */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-0.5">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 text-xs w-full">
+              <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-0.5 min-w-0">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block truncate">
                   Hadir ({formatIndoDate(selectedDate).split(',')[0]})
                 </span>
-                <div className="text-xl sm:text-2xl font-black text-emerald-600 font-mono">
-                  {dailySummary.statusCounts.Hadir} <span className="text-xs font-normal text-slate-400">/ 38 Aktif</span>
+                <div className="text-lg sm:text-2xl font-black text-emerald-600 font-mono">
+                  {dailySummary.statusCounts.Hadir} <span className="text-[10px] sm:text-xs font-normal text-slate-400">/ 38</span>
                 </div>
-                <span className="text-[11px] text-emerald-700 font-medium block">
+                <span className="text-[10px] sm:text-[11px] text-emerald-700 font-medium block truncate">
                   Efektivitas {Math.round((dailySummary.statusCounts.Hadir / 38) * 100)}%
                 </span>
               </div>
 
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-1">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+              <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-1 min-w-0">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block truncate">
                   Izin / Tidak Hadir
                 </span>
                 {absentPersonnel.length === 0 ? (
                   <div>
-                    <div className="text-lg font-bold text-slate-900 font-mono">0 Orang</div>
-                    <span className="text-[11px] text-emerald-600 font-medium block">Semua Hadir Lengkap</span>
+                    <div className="text-base sm:text-lg font-bold text-slate-900 font-mono">0 Orang</div>
+                    <span className="text-[10px] sm:text-[11px] text-emerald-600 font-medium block truncate">Semua Hadir</span>
                   </div>
                 ) : (
                   <div className="space-y-0.5">
-                    <div className="text-sm font-black text-amber-700">
+                    <div className="text-xs sm:text-sm font-black text-amber-700 truncate">
                       {absentPersonnel.length} Orang Izin:
                     </div>
-                    <div className="text-[11px] font-medium text-slate-700 truncate" title={absentPersonnel.map((p) => p.name).join(', ')}>
+                    <div className="text-[10px] sm:text-[11px] font-medium text-slate-700 truncate" title={absentPersonnel.map((p) => p.name).join(', ')}>
                       {absentPersonnel.map((p) => p.name).join(', ')}
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-0.5">
+              <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-0.5 min-w-0">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block truncate">
                     Upah Hari Ini
                   </span>
                   {!isSalaryUnlocked && <Lock className="w-3 h-3 text-slate-300" />}
                 </div>
-                <div className="pt-0.5">{renderSalary(dailySummary.totalEarned)}</div>
-                <span className="text-[10px] text-slate-400 block">Plafon Rp 5.005.000 / BNI</span>
+                <div className="pt-0.5 truncate">{renderSalary(dailySummary.totalEarned)}</div>
+                <span className="text-[9px] sm:text-[10px] text-slate-400 block truncate">Plafon Rp 5.005.000 / BNI</span>
               </div>
 
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-0.5">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Total Roster Dapur
+              <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-0.5 min-w-0">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block truncate">
+                  Total Roster
                 </span>
-                <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
-                  40 <span className="text-xs font-normal text-slate-400">Personel</span>
+                <div className="text-lg sm:text-2xl font-black text-slate-900 font-mono">
+                  40 <span className="text-[10px] sm:text-xs font-normal text-slate-400">Org</span>
                 </div>
-                <span className="text-[11px] text-slate-400 block">38 Masuk Shift • 2 Nonaktif</span>
+                <span className="text-[10px] sm:text-[11px] text-slate-400 block truncate">38 Shift • 2 Nonaktif</span>
               </div>
             </div>
 
