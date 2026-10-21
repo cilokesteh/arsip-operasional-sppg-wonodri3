@@ -1,4 +1,5 @@
 export type AttendanceStatus = 'Hadir' | 'Izin' | 'Sakit' | 'Alpha' | 'Libur' | 'Nonaktif';
+import officialLedgerData from './officialAttendanceLedger.json';
 
 export interface VolunteerProfile {
   id: string;
@@ -366,17 +367,25 @@ export function saveRosterToStorage(roster: VolunteerProfile[]): void {
 }
 
 export function loadLedgerFromStorage(_roster: VolunteerProfile[]): AttendanceEntry[] {
-  if (typeof window === 'undefined') return [];
+  const baseLedger = (officialLedgerData as unknown as AttendanceEntry[]) || [];
+  if (typeof window === 'undefined') return baseLedger;
   try {
     const raw = localStorage.getItem(ARSIP_ATTENDANCE_LEDGER_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Merge user updates on top of baseLedger
+        const map = new Map<string, AttendanceEntry>(baseLedger.map((e) => [e.id, e]));
+        parsed.forEach((e) => map.set(e.id, e));
+        return Array.from(map.values()).sort(
+          (a, b) => a.date.localeCompare(b.date) || a.volunteerId.localeCompare(b.volunteerId)
+        );
+      }
     }
   } catch (err) {
     console.error('Failed to load attendance ledger from localStorage:', err);
   }
-  return [];
+  return baseLedger;
 }
 
 export function saveLedgerToStorage(ledger: AttendanceEntry[]): void {
