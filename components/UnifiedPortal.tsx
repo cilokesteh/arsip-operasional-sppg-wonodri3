@@ -323,18 +323,22 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       .sort((a, b) => a.no - b.no);
   }, [currentDayDraft, rosterMap]);
 
-  // Draft updates
-  const handleUpdateStatus = (volunteerId: string, nextStatus: AttendanceStatus) => {
+  // 1-Click Hadir Lock (Hanya bisa dipencet 1x, tidak bisa reversal kembali ke Belum Absen)
+  const handleMarkHadirOnce = (volunteerId: string) => {
     const person = rosterMap.get(volunteerId);
-    if (!person) return;
+    if (!person || !person.isActive) return;
+
     setCurrentDayDraft((prev) =>
       prev.map((entry) => {
         if (entry.volunteerId === volunteerId) {
+          // Jika sudah hadir, kunci (tidak bisa reversal)
+          if (entry.status === 'Hadir') return entry;
+
           const raw = {
             ...entry,
-            status: nextStatus,
-            checkIn: nextStatus === 'Hadir' ? (entry.checkIn || person.defaultCheckIn) : '',
-            checkOut: nextStatus === 'Hadir' ? (entry.checkOut || person.defaultCheckOut) : '',
+            status: 'Hadir' as AttendanceStatus,
+            checkIn: entry.checkIn || person.defaultCheckIn,
+            checkOut: entry.checkOut || person.defaultCheckOut,
           };
           return normalizeAttendanceEntry(raw, person);
         }
@@ -344,11 +348,32 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     setIsDirty(true);
   };
 
-  const handleUpdateTime = (volunteerId: string, field: 'checkIn' | 'checkOut', value: string) => {
+  const handleMarkIzin = (volunteerId: string, status: 'Izin' | 'Sakit' | 'Alpha' = 'Izin') => {
     const person = rosterMap.get(volunteerId);
-    if (!person) return;
+    if (!person || !person.isActive) return;
+
     setCurrentDayDraft((prev) =>
-      prev.map((entry) => (entry.volunteerId === volunteerId ? normalizeAttendanceEntry({ ...entry, [field]: value }, person) : entry))
+      prev.map((entry) => {
+        if (entry.volunteerId === volunteerId) {
+          // Jika sudah hadir, tidak bisa reversal!
+          if (entry.status === 'Hadir') {
+            alert('Presensi HADIR sudah terkunci dan tidak bisa di-reversal!');
+            return entry;
+          }
+
+          const raw = {
+            ...entry,
+            status,
+            checkIn: '',
+            checkOut: '',
+            earnedAmount: 0,
+            paid: false,
+            notes: status,
+          };
+          return normalizeAttendanceEntry(raw, person);
+        }
+        return entry;
+      })
     );
     setIsDirty(true);
   };
@@ -1385,9 +1410,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                           <th className="py-2.5 px-3 w-10 text-center">NO</th>
                           <th className="py-2.5 px-3 min-w-[180px]">NAMA RELAWAN</th>
                           <th className="py-2.5 px-3">DIVISI</th>
-                          <th className="py-2.5 px-3 text-center">STATUS</th>
-                          <th className="py-2.5 px-3 text-center">JAM MASUK</th>
-                          <th className="py-2.5 px-3 text-center">JAM PULANG</th>
+                          <th className="py-2.5 px-3 text-center min-w-[160px]">PRESENSI MASUK</th>
+                          <th className="py-2.5 px-3 text-center">SHIFT KERJA</th>
                           <th className="py-2.5 px-3 text-right">UPAH</th>
                           <th className="py-2.5 px-3 text-center">STATUS BNI</th>
                           <th className="py-2.5 px-3">CATATAN</th>
@@ -1408,10 +1432,10 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                 isNonAktif ? 'bg-slate-50/50 text-slate-400' : !isHadir ? 'bg-amber-50/30' : ''
                               }`}
                             >
-                              <td className="py-2 px-3 text-center font-mono text-slate-400 font-medium">
+                              <td className="py-2.5 px-3 text-center font-mono text-slate-400 font-medium">
                                 {person.no}
                               </td>
-                              <td className="py-2 px-3">
+                              <td className="py-2.5 px-3">
                                 <div className="font-semibold text-slate-900">
                                   <span className={isNonAktif ? 'line-through text-slate-400' : ''}>
                                     {person.name}
@@ -1421,63 +1445,55 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                   Shift: {person.defaultCheckIn}-{person.defaultCheckOut}
                                 </span>
                               </td>
-                              <td className="py-2 px-3 text-slate-600 font-medium whitespace-nowrap">
+                              <td className="py-2.5 px-3 text-slate-600 font-medium whitespace-nowrap">
                                 {person.dutySection}
                               </td>
-                              <td className="py-2 px-3 text-center">
-                                <select
-                                  value={entry.status}
-                                  disabled={!person.isActive}
-                                  onChange={(e) => handleUpdateStatus(person.id, e.target.value as AttendanceStatus)}
-                                  className={`text-xs font-semibold rounded-md px-2 py-1 border cursor-pointer focus:outline-none ${
-                                    entry.status === 'Hadir'
-                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                      : entry.status === 'Izin'
-                                      ? 'bg-amber-50 text-amber-800 border-amber-200'
-                                      : entry.status === 'Sakit'
-                                      ? 'bg-purple-50 text-purple-800 border-purple-200'
-                                      : 'bg-slate-100 text-slate-600 border-slate-200'
-                                  }`}
-                                >
-                                  {STATUS_ORDER.map((st) => (
-                                    <option key={st} value={st}>
-                                      {st}
-                                    </option>
-                                  ))}
-                                </select>
-                              </td>
 
-                              <td className="py-2 px-3 text-center">
-                                {isHadir ? (
-                                  <input
-                                    type="time"
-                                    value={entry.checkIn}
-                                    onChange={(e) => handleUpdateTime(person.id, 'checkIn', e.target.value)}
-                                    className="bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 text-xs font-mono font-medium text-slate-800 focus:outline-none focus:border-blue-500"
-                                  />
+                              {/* 1-Click Hadir Lock (Hanya 1x pencet, tidak bisa reversal) */}
+                              <td className="py-2.5 px-3 text-center">
+                                {isNonAktif ? (
+                                  <span className="text-[10px] text-slate-400 font-mono font-medium">Nonaktif</span>
+                                ) : isHadir ? (
+                                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-lg border border-emerald-300">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                    <span>HADIR (Terkunci)</span>
+                                  </span>
                                 ) : (
-                                  <span className="text-slate-300 font-mono">-</span>
+                                  <div className="inline-flex items-center gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMarkHadirOnce(person.id)}
+                                      className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow-2xs transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                                      title="Pencet 1x untuk Hadir (Tidak bisa reversal)"
+                                    >
+                                      <UserCheck className="w-3.5 h-3.5" />
+                                      <span>Hadir</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMarkIzin(person.id, 'Izin')}
+                                      className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold text-xs rounded-lg border border-amber-200 transition-colors cursor-pointer"
+                                      title="Tandai Izin"
+                                    >
+                                      Izin
+                                    </button>
+                                  </div>
                                 )}
                               </td>
 
-                              <td className="py-2 px-3 text-center">
-                                {isHadir ? (
-                                  <input
-                                    type="time"
-                                    value={entry.checkOut}
-                                    onChange={(e) => handleUpdateTime(person.id, 'checkOut', e.target.value)}
-                                    className="bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 text-xs font-mono font-medium text-slate-800 focus:outline-none focus:border-blue-500"
-                                  />
-                                ) : (
-                                  <span className="text-slate-300 font-mono">-</span>
-                                )}
+                              {/* Jam Kerja */}
+                              <td className="py-2.5 px-3 text-center font-mono text-xs text-slate-700">
+                                {isHadir ? `${entry.checkIn} - ${entry.checkOut}` : '-'}
                               </td>
 
-                              <td className="py-2 px-3 text-right whitespace-nowrap">
+                              {/* Upah */}
+                              <td className="py-2.5 px-3 text-right whitespace-nowrap">
                                 {isHadir ? renderSalary(entry.earnedAmount) : renderSalary(person.dailyRate, true)}
                               </td>
 
-                              <td className="py-2 px-3 text-center whitespace-nowrap">
+                              {/* Status Cair */}
+                              <td className="py-2.5 px-3 text-center whitespace-nowrap">
                                 {isHadir ? (
                                   <button
                                     onClick={() => handleTogglePaid(person.id)}
@@ -1494,7 +1510,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                 )}
                               </td>
 
-                              <td className="py-2 px-3">
+                              {/* Catatan */}
+                              <td className="py-2.5 px-3">
                                 <input
                                   type="text"
                                   value={entry.notes}
@@ -1535,42 +1552,41 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                           <div>{isHadir ? renderSalary(entry.earnedAmount) : renderSalary(person.dailyRate, true)}</div>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-1 text-[11px] font-semibold">
-                          {(['Hadir', 'Izin', 'Sakit', 'Alpha'] as AttendanceStatus[]).map((st) => (
-                            <button
-                              key={st}
-                              disabled={!person.isActive}
-                              onClick={() => handleUpdateStatus(person.id, st)}
-                              className={`py-1 rounded text-center transition-colors cursor-pointer border ${
-                                entry.status === st
-                                  ? st === 'Hadir'
-                                    ? 'bg-emerald-600 text-white border-emerald-700'
-                                    : 'bg-amber-600 text-white border-amber-700'
-                                  : 'bg-slate-50 text-slate-600 border-slate-200'
-                              }`}
-                            >
-                              {st}
-                            </button>
-                          ))}
+                        <div className="grid grid-cols-2 gap-1.5 text-xs font-semibold">
+                          {isHadir ? (
+                            <div className="col-span-2 py-2 px-3 bg-emerald-100 text-emerald-800 font-bold rounded-lg border border-emerald-300 flex items-center justify-center gap-1.5 text-center">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                              <span>HADIR (Terkunci)</span>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                disabled={!person.isActive}
+                                onClick={() => handleMarkHadirOnce(person.id)}
+                                className="py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                              >
+                                <UserCheck className="w-3.5 h-3.5" />
+                                <span>Hadir</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                disabled={!person.isActive}
+                                onClick={() => handleMarkIzin(person.id, 'Izin')}
+                                className="py-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs cursor-pointer"
+                              >
+                                Izin
+                              </button>
+                            </>
+                          )}
                         </div>
 
                         {isHadir && (
                           <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs font-mono">
-                            <div className="flex items-center gap-1.5">
-                              <input
-                                type="time"
-                                value={entry.checkIn}
-                                onChange={(e) => handleUpdateTime(person.id, 'checkIn', e.target.value)}
-                                className="bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 text-xs"
-                              />
-                              <span>-</span>
-                              <input
-                                type="time"
-                                value={entry.checkOut}
-                                onChange={(e) => handleUpdateTime(person.id, 'checkOut', e.target.value)}
-                                className="bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 text-xs"
-                              />
-                            </div>
+                            <span className="text-slate-600 font-medium">
+                              Shift: {entry.checkIn} - {entry.checkOut}
+                            </span>
                             <button
                               onClick={() => handleTogglePaid(person.id)}
                               className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${

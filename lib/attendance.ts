@@ -1,4 +1,4 @@
-export type AttendanceStatus = 'Hadir' | 'Izin' | 'Sakit' | 'Alpha' | 'Libur' | 'Nonaktif';
+export type AttendanceStatus = 'Belum Absen' | 'Hadir' | 'Izin' | 'Sakit' | 'Alpha' | 'Libur' | 'Nonaktif';
 import officialLedgerData from './officialAttendanceLedger.json';
 
 export interface VolunteerProfile {
@@ -39,7 +39,7 @@ export interface DayWorkInfo {
   isWeekend: boolean;
 }
 
-export const STATUS_ORDER: AttendanceStatus[] = ['Hadir', 'Izin', 'Sakit', 'Alpha', 'Libur', 'Nonaktif'];
+export const STATUS_ORDER: AttendanceStatus[] = ['Belum Absen', 'Hadir', 'Izin', 'Sakit', 'Alpha', 'Libur', 'Nonaktif'];
 
 export const DUTY_SECTIONS = [
   'Semua',
@@ -167,7 +167,7 @@ export function buildDailyEntries(
   const isSaturday = dayOfWeek === 6;
 
   return roster.map((person) => {
-    let status: AttendanceStatus = 'Hadir';
+    let status: AttendanceStatus = 'Belum Absen';
     let notes = '';
 
     if (!person.isActive) {
@@ -181,7 +181,7 @@ export function buildDailyEntries(
       notes = '';
     }
 
-    const isPresent = status === 'Hadir';
+    const isPresent = (status as string) === 'Hadir';
     return {
       id: `${date}:${person.id}`,
       volunteerId: person.id,
