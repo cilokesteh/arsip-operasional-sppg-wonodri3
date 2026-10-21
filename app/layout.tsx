@@ -21,7 +21,12 @@ export const metadata: Metadata = {
   description:
     'Portal transparansi operasional resmi SPPG Wonodri 3: arsip harian menu Makan Bergizi Gratis (MBG), angka kandungan gizi (AKG), dokumentasi dapur, dan data penerima manfaat.',
   icons: {
-    icon: '/logo.png',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/logo.png', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/logo.png',
   },
 };
 
