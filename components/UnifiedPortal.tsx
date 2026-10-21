@@ -323,52 +323,26 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       .sort((a, b) => a.no - b.no);
   }, [currentDayDraft, rosterMap]);
 
-  // 1-Click Hadir Lock (Hanya bisa dipencet 1x, tidak bisa reversal kembali ke Belum Absen)
-  const handleMarkHadirOnce = (volunteerId: string) => {
+  // Toggle Status Presensi Fleksibel (Hadir, Izin, Sakit, Alpha) - Bisa diklik ulang / reversal jika salah klik
+  const handleSelectStatus = (volunteerId: string, status: AttendanceStatus) => {
     const person = rosterMap.get(volunteerId);
     if (!person || !person.isActive) return;
 
     setCurrentDayDraft((prev) =>
       prev.map((entry) => {
         if (entry.volunteerId === volunteerId) {
-          // Jika sudah hadir, kunci (tidak bisa reversal)
-          if (entry.status === 'Hadir') return entry;
+          // Jika status yang sama diklik lagi, bisa uncheck kembali ke Belum Absen
+          const nextStatus = entry.status === status ? ('Belum Absen' as AttendanceStatus) : status;
+          const isPresent = nextStatus === 'Hadir';
 
           const raw = {
             ...entry,
-            status: 'Hadir' as AttendanceStatus,
-            checkIn: entry.checkIn || person.defaultCheckIn,
-            checkOut: entry.checkOut || person.defaultCheckOut,
-          };
-          return normalizeAttendanceEntry(raw, person);
-        }
-        return entry;
-      })
-    );
-    setIsDirty(true);
-  };
-
-  const handleMarkIzin = (volunteerId: string, status: 'Izin' | 'Sakit' | 'Alpha' = 'Izin') => {
-    const person = rosterMap.get(volunteerId);
-    if (!person || !person.isActive) return;
-
-    setCurrentDayDraft((prev) =>
-      prev.map((entry) => {
-        if (entry.volunteerId === volunteerId) {
-          // Jika sudah hadir, tidak bisa reversal!
-          if (entry.status === 'Hadir') {
-            alert('Presensi HADIR sudah terkunci dan tidak bisa di-reversal!');
-            return entry;
-          }
-
-          const raw = {
-            ...entry,
-            status,
-            checkIn: '',
-            checkOut: '',
-            earnedAmount: 0,
-            paid: false,
-            notes: status,
+            status: nextStatus,
+            checkIn: isPresent ? (entry.checkIn || person.defaultCheckIn) : '',
+            checkOut: isPresent ? (entry.checkOut || person.defaultCheckOut) : '',
+            earnedAmount: isPresent ? person.dailyRate : 0,
+            paid: isPresent ? entry.paid : false,
+            notes: nextStatus === 'Belum Absen' ? '' : (entry.notes || nextStatus),
           };
           return normalizeAttendanceEntry(raw, person);
         }
@@ -1449,34 +1423,63 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                 {person.dutySection}
                               </td>
 
-                              {/* 1-Click Hadir Lock (Hanya 1x pencet, tidak bisa reversal) */}
+                              {/* Tombol Reversal: Hadir, Izin, Sakit, Alpha (Bisa diklik ulang jika salah klik) */}
                               <td className="py-2.5 px-3 text-center">
                                 {isNonAktif ? (
                                   <span className="text-[10px] text-slate-400 font-mono font-medium">Nonaktif</span>
-                                ) : isHadir ? (
-                                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-lg border border-emerald-300">
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                    <span>HADIR (Terkunci)</span>
-                                  </span>
                                 ) : (
-                                  <div className="inline-flex items-center gap-1.5">
+                                  <div className="inline-flex items-center gap-1">
                                     <button
                                       type="button"
-                                      onClick={() => handleMarkHadirOnce(person.id)}
-                                      className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow-2xs transition-all cursor-pointer flex items-center gap-1 active:scale-95"
-                                      title="Pencet 1x untuk Hadir (Tidak bisa reversal)"
+                                      onClick={() => handleSelectStatus(person.id, 'Hadir')}
+                                      className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                                        entry.status === 'Hadir'
+                                          ? 'bg-emerald-600 text-white shadow-xs'
+                                          : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                                      }`}
+                                      title="Klik untuk Hadir (Klik lagi untuk uncheck)"
                                     >
-                                      <UserCheck className="w-3.5 h-3.5" />
+                                      {entry.status === 'Hadir' && <CheckCircle2 className="w-3.5 h-3.5" />}
                                       <span>Hadir</span>
                                     </button>
 
                                     <button
                                       type="button"
-                                      onClick={() => handleMarkIzin(person.id, 'Izin')}
-                                      className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold text-xs rounded-lg border border-amber-200 transition-colors cursor-pointer"
-                                      title="Tandai Izin"
+                                      onClick={() => handleSelectStatus(person.id, 'Izin')}
+                                      className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                                        entry.status === 'Izin'
+                                          ? 'bg-amber-600 text-white shadow-xs'
+                                          : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                                      }`}
+                                      title="Klik untuk Izin (Klik lagi untuk uncheck)"
                                     >
                                       Izin
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSelectStatus(person.id, 'Sakit')}
+                                      className={`px-2 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                                        entry.status === 'Sakit'
+                                          ? 'bg-purple-600 text-white shadow-xs'
+                                          : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                                      }`}
+                                      title="Klik untuk Sakit (Klik lagi untuk uncheck)"
+                                    >
+                                      Sakit
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSelectStatus(person.id, 'Alpha')}
+                                      className={`px-2 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                                        entry.status === 'Alpha'
+                                          ? 'bg-rose-600 text-white shadow-xs'
+                                          : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                                      }`}
+                                      title="Klik untuk Alpha (Klik lagi untuk uncheck)"
+                                    >
+                                      Alpha
                                     </button>
                                   </div>
                                 )}
@@ -1552,34 +1555,29 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                           <div>{isHadir ? renderSalary(entry.earnedAmount) : renderSalary(person.dailyRate, true)}</div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-1.5 text-xs font-semibold">
-                          {isHadir ? (
-                            <div className="col-span-2 py-2 px-3 bg-emerald-100 text-emerald-800 font-bold rounded-lg border border-emerald-300 flex items-center justify-center gap-1.5 text-center">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                              <span>HADIR (Terkunci)</span>
-                            </div>
-                          ) : (
-                            <>
-                              <button
-                                type="button"
-                                disabled={!person.isActive}
-                                onClick={() => handleMarkHadirOnce(person.id)}
-                                className="py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1 cursor-pointer active:scale-95"
-                              >
-                                <UserCheck className="w-3.5 h-3.5" />
-                                <span>Hadir</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                disabled={!person.isActive}
-                                onClick={() => handleMarkIzin(person.id, 'Izin')}
-                                className="py-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs cursor-pointer"
-                              >
-                                Izin
-                              </button>
-                            </>
-                          )}
+                        <div className="grid grid-cols-4 gap-1 text-[11px] font-semibold">
+                          {(['Hadir', 'Izin', 'Sakit', 'Alpha'] as AttendanceStatus[]).map((st) => (
+                            <button
+                              key={st}
+                              type="button"
+                              disabled={!person.isActive}
+                              onClick={() => handleSelectStatus(person.id, st)}
+                              className={`py-1.5 rounded-lg text-center transition-all cursor-pointer font-bold ${
+                                entry.status === st
+                                  ? st === 'Hadir'
+                                    ? 'bg-emerald-600 text-white shadow-xs'
+                                    : st === 'Izin'
+                                    ? 'bg-amber-600 text-white shadow-xs'
+                                    : st === 'Sakit'
+                                    ? 'bg-purple-600 text-white shadow-xs'
+                                    : 'bg-rose-600 text-white shadow-xs'
+                                  : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
+                              }`}
+                              title={`Klik untuk ${st} (Klik lagi untuk batal)`}
+                            >
+                              {st}
+                            </button>
+                          ))}
                         </div>
 
                         {isHadir && (
