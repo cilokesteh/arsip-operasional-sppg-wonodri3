@@ -33,6 +33,11 @@ import {
   UserCheck,
   Archive,
   Table as TableIcon,
+  Menu,
+  ArrowUpRight,
+  ExternalLink,
+  LayoutDashboard,
+  ClipboardList,
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
@@ -71,6 +76,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   // DUA KATEGORI UTAMA DALAM 1 PORTAL
   // -------------------------------------------------------------
   const [mainCategory, setMainCategory] = useState<MainCategory>(initialCategory);
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
   // =============================================================
   // KATEGORI 1: ARSIP OPERASIONAL MBG
@@ -547,7 +553,16 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40 no-print shadow-2xs">
         <div className="max-w-6xl mx-auto px-4 h-15 flex items-center justify-between gap-3">
           {/* Logo & Identity */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <button
+              onClick={() => setIsDrawerOpen(true)}
+              className="p-1.5 sm:p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer border border-slate-200 flex items-center justify-center shrink-0"
+              aria-label="Buka Menu Kontrol Panel"
+              title="Menu Kontrol Panel Portal"
+            >
+              <Menu className="w-4 h-4 text-slate-700" />
+            </button>
+
             <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 p-1 flex items-center justify-center shrink-0">
               <Image src="/logo.png" alt="Logo BGN" width={24} height={24} className="object-contain" priority />
             </div>
@@ -2053,6 +2068,222 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   </button>
                 );
               })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DRAWER KONTROL PANEL PORTAL (HAMBURGER) */}
+      {isDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex no-print">
+          <div
+            onClick={() => setIsDrawerOpen(false)}
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs transition-opacity animate-in fade-in"
+          />
+
+          <div className="relative ml-auto w-full max-w-xs sm:max-w-sm bg-slate-900 border-l border-slate-800 text-white h-full p-6 flex flex-col justify-between shadow-2xl z-10 animate-in slide-in-from-right duration-200">
+            <div className="space-y-6">
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-sm">
+                    <Image src="/logo.png" alt="Logo BGN" width={28} height={28} className="object-contain" />
+                  </div>
+                  <div>
+                    <strong className="text-sm text-white block">Portal SPPG Wonodri 3</strong>
+                    <span className="text-[10px] text-slate-400">Pusat Kontrol Operasional & SDM</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Navigation Modul Links */}
+              <div className="space-y-2 text-xs font-semibold">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
+                  Kategori 1: Dapur & MBG
+                </span>
+
+                <button
+                  onClick={() => {
+                    setMainCategory('arsip');
+                    setIsDrawerOpen(false);
+                  }}
+                  className={`w-full flex items-start gap-3 p-3 rounded-2xl transition-all cursor-pointer text-left ${
+                    mainCategory === 'arsip'
+                      ? 'bg-blue-600 text-white font-bold shadow-lg shadow-blue-900/40'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  }`}
+                >
+                  <Utensils className={`w-5 h-5 mt-0.5 shrink-0 ${mainCategory === 'arsip' ? 'text-white' : 'text-blue-400'}`} />
+                  <div>
+                    <div className="text-xs font-bold leading-tight">Arsip Operasional MBG</div>
+                    <div className={`text-[10px] pt-0.5 ${mainCategory === 'arsip' ? 'text-blue-100' : 'text-slate-400'}`}>
+                      Laporan Harian Menu, AKG, Foto 5 Tahap & 13 Sekolah
+                    </div>
+                  </div>
+                </button>
+
+                <Link
+                  href="/admin"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="w-full flex items-start gap-3 p-3 rounded-2xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-left"
+                >
+                  <FileSpreadsheet className="w-5 h-5 mt-0.5 shrink-0 text-purple-400" />
+                  <div>
+                    <div className="text-xs font-bold leading-tight">Panel Operator Admin</div>
+                    <div className="text-[10px] text-slate-400 pt-0.5">
+                      Input Menu Baru & Upload Dokumentasi Foto GDrive
+                    </div>
+                  </div>
+                </Link>
+
+                <div className="pt-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1 mb-1.5">
+                    Kategori 2: SDM & Presensi Relawan
+                  </span>
+
+                  <button
+                    onClick={() => {
+                      setMainCategory('absensi');
+                      setAbsensiSubTab('harian');
+                      setIsDrawerOpen(false);
+                    }}
+                    className={`w-full flex items-start gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
+                      mainCategory === 'absensi' && absensiSubTab === 'harian'
+                        ? 'bg-blue-600 text-white font-bold'
+                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    }`}
+                  >
+                    <CalendarIcon className="w-4 h-4 mt-0.5 shrink-0 text-emerald-400" />
+                    <div>
+                      <div className="text-xs font-bold">Presensi Harian</div>
+                      <div className="text-[10px] text-slate-400">Checklist Jam Masuk, Pulang & Lembur</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setMainCategory('absensi');
+                      setAbsensiSubTab('rekap');
+                      setRekapPeriod('mingguan');
+                      setIsDrawerOpen(false);
+                    }}
+                    className={`w-full flex items-start gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
+                      mainCategory === 'absensi' && absensiSubTab === 'rekap'
+                        ? 'bg-blue-600 text-white font-bold'
+                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    }`}
+                  >
+                    <TableIcon className="w-4 h-4 mt-0.5 shrink-0 text-amber-400" />
+                    <div>
+                      <div className="text-xs font-bold">Rekapitulasi (Senin-Minggu)</div>
+                      <div className="text-[10px] text-slate-400">Matrix 7 Hari Kalender & Buku Bulanan SPJ</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setMainCategory('absensi');
+                      setAbsensiSubTab('arsip');
+                      setIsDrawerOpen(false);
+                    }}
+                    className={`w-full flex items-start gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
+                      mainCategory === 'absensi' && absensiSubTab === 'arsip'
+                        ? 'bg-blue-600 text-white font-bold'
+                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    }`}
+                  >
+                    <Archive className="w-4 h-4 mt-0.5 shrink-0 text-sky-400" />
+                    <div>
+                      <div className="text-xs font-bold">Arsip Presensi (126 Hari)</div>
+                      <div className="text-[10px] text-slate-400">Riwayat Presensi Excel Asli Kantor</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setMainCategory('absensi');
+                      setAbsensiSubTab('roster');
+                      setIsDrawerOpen(false);
+                    }}
+                    className={`w-full flex items-start gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
+                      mainCategory === 'absensi' && absensiSubTab === 'roster'
+                        ? 'bg-blue-600 text-white font-bold'
+                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    }`}
+                  >
+                    <Users className="w-4 h-4 mt-0.5 shrink-0 text-pink-400" />
+                    <div>
+                      <div className="text-xs font-bold">Master Roster 40 Personel</div>
+                      <div className="text-[10px] text-slate-400">Shift 24 Jam & Tarif Upah Resmi</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Operation Actions */}
+              <div className="pt-3 border-t border-slate-800 space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
+                  Aksi Dokumen
+                </span>
+
+                <button
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    if (mainCategory === 'arsip') {
+                      handleOpenPrintModalMenu();
+                    } else {
+                      handleOpenPrintForDate(selectedDate);
+                    }
+                  }}
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Printer className="w-4 h-4 text-emerald-400" />
+                    <span>Cetak Dokumen Terpilih</span>
+                  </span>
+                  <Lock className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    handleExportCsv();
+                  }}
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Download className="w-4 h-4 text-slate-300" />
+                    <span>Unduh CSV Spreadsheet</span>
+                  </span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+              </div>
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-400 space-y-1">
+              <div className="flex items-center justify-between font-mono">
+                <span>Alokasi Porsi:</span>
+                <span className="text-white font-bold">{totalMaster} Porsi (100%)</span>
+              </div>
+              <div className="flex items-center justify-between font-mono">
+                <span>Plafon Upah Harian:</span>
+                <span className="text-white font-bold">{formatRupiah(5005000)}</span>
+              </div>
+              <div className="flex items-center justify-between font-mono">
+                <span>Rekening VA BNI:</span>
+                <span className="text-emerald-400 font-bold">9880-1556-2026-0003</span>
+              </div>
+              <p className="text-[10px] text-slate-500 pt-1">
+                Verifikasi: Arief Rahman Hakim (Aslap) & Salsabiila Zainima, S.Ak (Akuntan)
+              </p>
             </div>
           </div>
         </div>
