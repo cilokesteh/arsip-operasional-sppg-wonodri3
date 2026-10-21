@@ -7,7 +7,7 @@
   }
 
   body {
-    background-color: #f8fafc;
+    background-color: #f1f5f9;
     color: #0f172a;
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
@@ -16,6 +16,17 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  /* Hilangkan scrollbar horizontal pada nav strip (tetap bisa di-scroll) */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
 

@@ -610,8 +610,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
           {/* Center: DUA KATEGORI UTAMA (Desktop only, on mobile it lives in dedicated sub-bar below) */}
           <div className="hidden md:flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold">
-            <button
-              onClick={() => setMainCategory('arsip')}
+            <Link
+              href="/"
               className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 mainCategory === 'arsip'
                   ? 'bg-blue-600 text-white shadow-xs'
@@ -620,7 +620,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             >
               <Utensils className="w-3.5 h-3.5" />
               <span>Arsip Ops MBG</span>
-            </button>
+            </Link>
 
             <button
               onClick={() => setMainCategory('absensi')}
@@ -716,8 +716,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       {/* DEDICATED FULL-WIDTH MOBILE CATEGORY SWITCHER (MD:HIDDEN) */}
       <div className="md:hidden bg-white border-b border-slate-200 px-3 py-2 no-print w-full">
         <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold">
-          <button
-            onClick={() => setMainCategory('arsip')}
+          <Link
+            href="/"
             className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               mainCategory === 'arsip'
                 ? 'bg-blue-600 text-white shadow-xs'
@@ -725,8 +725,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             }`}
           >
             <Utensils className="w-3.5 h-3.5" />
-            <span>Arsip Ops MBG</span>
-          </button>
+            <span>Portal MBG</span>
+          </Link>
 
           <button
             onClick={() => setMainCategory('absensi')}
@@ -748,358 +748,24 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
         {/* KATEGORI 1: ARSIP OPERASIONAL MBG                              */}
         {/* ============================================================== */}
         {mainCategory === 'arsip' && (
-          <div className="report-sheet bg-white rounded-2xl border border-slate-300 shadow-sm p-4 sm:p-8 md:p-10 space-y-6 sm:space-y-7 animate-in fade-in">
-            {/* KOP RESMI LAPORAN */}
-            <div className="border-b-2 border-slate-800 pb-4 sm:pb-5">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
-                <div className="flex items-start gap-3">
-                  <Image
-                    src="/logo.png"
-                    alt="Logo BGN"
-                    width={48}
-                    height={48}
-                    className="object-contain shrink-0 mt-0.5 w-10 h-10 sm:w-14 sm:h-14"
-                    priority
-                  />
-                  <div className="space-y-0.5">
-                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500 block">
-                      Badan Gizi Nasional (BGN) Republik Indonesia
-                    </span>
-                    <h1 className="text-sm sm:text-lg md:text-xl font-black uppercase text-slate-900 tracking-tight leading-snug">
-                      SPPG Wonodri 3 Kota Semarang
-                    </h1>
-                    <p className="text-[11px] sm:text-xs text-slate-600 leading-tight">
-                      Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan
-                    </p>
-                    <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
-                      Program Makan Bergizi Gratis (MBG) • Semarang Selatan
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 sm:bg-transparent p-2.5 sm:p-0 rounded-lg sm:text-right border sm:border-0 border-slate-200 text-xs text-slate-600 shrink-0 space-y-1">
-                  <div className="inline-block px-2 py-0.5 bg-blue-100 text-blue-900 rounded text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
-                    Laporan Operasional Resmi
-                  </div>
-                  <div className="text-[11px] sm:text-xs">
-                    Tanggal: <strong className="text-slate-900">{formatTanggalIndo(selectedDate)}</strong>
-                  </div>
-                  <div className="text-[11px] sm:text-xs">
-                    Alokasi: <strong className="text-slate-900">{totalMaster} Porsi (100%)</strong>
-                  </div>
-                </div>
-              </div>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 sm:p-12 text-center space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center mx-auto">
+              <Utensils className="w-6 h-6" />
             </div>
-
-            {!currentMenu ? (
-              <div className="p-8 sm:p-12 text-center space-y-4 border-2 border-dashed border-slate-200 rounded-2xl">
-                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
-                  <Clock className="w-6 h-6 text-blue-600" />
-                </div>
-                <div className="space-y-1 max-w-md mx-auto">
-                  <h3 className="font-extrabold text-base text-slate-900">
-                    Laporan Belum Diterbitkan untuk Tanggal {formatTanggalIndo(selectedDate)}
-                  </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Operasional dimulai pada tanggal 01 Oktober 2026. Operator dapat mengisi rincian menu dan foto melalui panel admin.
-                  </p>
-                </div>
-                <Link
-                  href="/admin"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs"
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  <span>Input Laporan di Panel Admin</span>
-                </Link>
-              </div>
-            ) : (
-              <>
-                {/* 1. MENU MAKANAN */}
-                <section className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
-                    <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                      1. Menu Makanan & Komposisi Porsi
-                    </h2>
-                    <span className="text-[10px] text-slate-500 font-semibold">Menu #{currentMenu.menuNumber || 1}</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 items-start">
-                    {/* Foto Menu */}
-                    <div className="md:col-span-5 bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200 space-y-2">
-                      <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden bg-slate-200 border border-slate-300">
-                        {currentMenu.menuPhotoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={currentMenu.menuPhotoUrl}
-                            alt={currentMenu.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-4 text-center">
-                            <span className="text-xs">Foto Menu Belum Tersedia</span>
-                          </div>
-                        )}
-                        <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/70 backdrop-blur-xs text-white text-[9px] font-bold rounded">
-                          Sajian {formatTanggalIndo(selectedDate)}
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <strong className="text-xs sm:text-sm text-slate-900 block leading-tight font-heading font-black">
-                          {currentMenu.title}
-                        </strong>
-                      </div>
-                    </div>
-
-                    {/* Rincian Komponen Bahan */}
-                    <div className="md:col-span-7 overflow-x-auto">
-                      <table className="w-full text-left text-xs border border-slate-300">
-                        <thead className="bg-slate-100 text-slate-700 font-black text-[11px] border-b border-slate-300">
-                          <tr>
-                            <th className="p-2 border-r border-slate-300 w-32">Komponen Bahan</th>
-                            <th className="p-2 border-r border-slate-300">Uraian Masakan</th>
-                            <th className="p-2 w-32">Fungsi Gizi</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                          <tr>
-                            <td className="p-2 font-bold text-slate-800 border-r border-slate-200">1. Karbohidrat</td>
-                            <td className="p-2 text-slate-900 border-r border-slate-200">{currentMenu.components?.karbohidrat || '-'}</td>
-                            <td className="p-2 text-slate-600 font-medium">Sumber Energi</td>
-                          </tr>
-                          <tr>
-                            <td className="p-2 font-bold text-slate-800 border-r border-slate-200">2. Lauk Hewani</td>
-                            <td className="p-2 text-slate-900 border-r border-slate-200">{currentMenu.components?.laukHewani || '-'}</td>
-                            <td className="p-2 text-slate-600 font-medium">Protein Hewani</td>
-                          </tr>
-                          <tr>
-                            <td className="p-2 font-bold text-slate-800 border-r border-slate-200">3. Lauk Nabati</td>
-                            <td className="p-2 text-slate-900 border-r border-slate-200">{currentMenu.components?.laukNabati || '-'}</td>
-                            <td className="p-2 text-slate-600 font-medium">Protein Nabati</td>
-                          </tr>
-                          <tr>
-                            <td className="p-2 font-bold text-slate-800 border-r border-slate-200">4. Sayuran</td>
-                            <td className="p-2 text-slate-900 border-r border-slate-200">{currentMenu.components?.sayur || '-'}</td>
-                            <td className="p-2 text-slate-600 font-medium">Serat & Vitamin</td>
-                          </tr>
-                          <tr>
-                            <td className="p-2 font-bold text-slate-800 border-r border-slate-200">5. Buah Segar</td>
-                            <td className="p-2 text-slate-900 border-r border-slate-200">{currentMenu.components?.buah || '-'}</td>
-                            <td className="p-2 text-slate-600 font-medium">Mikronutrien</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </section>
-
-                {/* 2. AKG 5 KELOMPOK */}
-                <section className="space-y-2 sm:space-y-3 pt-2">
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
-                    <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                      2. Angka Kandungan Gizi (AKG) 5 Kelompok
-                    </h2>
-                    <span className="text-[10px] text-slate-500 font-semibold">Standar BGN</span>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border border-slate-300 font-sans">
-                      <thead className="bg-slate-100 text-slate-800 font-black text-[11px] border-b border-slate-300">
-                        <tr>
-                          <th className="p-2 border-r border-slate-300">Kelompok</th>
-                          <th className="p-2 border-r border-slate-300">Sasaran Penerima</th>
-                          <th className="p-2 border-r border-slate-300 text-right">Energi</th>
-                          <th className="p-2 border-r border-slate-300 text-right">Protein</th>
-                          <th className="p-2 border-r border-slate-300 text-right">Lemak</th>
-                          <th className="p-2 border-r border-slate-300 text-right">Karbohidrat</th>
-                          <th className="p-2 text-right">Serat</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200 font-mono text-xs">
-                        {(currentMenu.nutritionCards || STANDARD_AKG_REFERENCE).map((item, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50">
-                            <td className="p-2 font-bold text-slate-900 border-r border-slate-200 font-sans">
-                              {item.groupName}
-                            </td>
-                            <td className="p-2 text-slate-600 border-r border-slate-200 font-sans text-[11px]">
-                              {item.targetCategory}
-                            </td>
-                            <td className="p-2 text-right border-r border-slate-200 font-bold text-slate-900">
-                              {item.energyKcal.toFixed(1)} Kkal
-                            </td>
-                            <td className="p-2 text-right border-r border-slate-200 font-medium text-slate-800">
-                              {item.proteinG.toFixed(1)} g
-                            </td>
-                            <td className="p-2 text-right border-r border-slate-200 text-slate-700">
-                              {item.fatG.toFixed(1)} g
-                            </td>
-                            <td className="p-2 text-right border-r border-slate-200 text-slate-700">
-                              {item.carbsG.toFixed(1)} g
-                            </td>
-                            <td className="p-2 text-right text-slate-700">
-                              {item.fiberG.toFixed(1)} g
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
-
-                {/* 3. DOKUMENTASI ALUR DAPUR (5 TAHAP LENGKAP) */}
-                <section className="space-y-3 pt-2">
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
-                    <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                      3. Dokumentasi Alur Dapur & Distribusi (5 Tahap Lengkap)
-                    </h2>
-                    <span className="text-[10px] text-emerald-800 font-bold">Verifikasi Lapangan</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-3">
-                    {currentMenu.photos.map((photo, idx) => (
-                      <div key={idx} className="bg-slate-50 border border-slate-200 rounded-lg p-2 space-y-1.5">
-                        <div className="relative aspect-[4/3] w-full rounded overflow-hidden bg-slate-200 border border-slate-300">
-                          {photo.imageUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={photo.imageUrl}
-                              alt={photo.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-400 text-[10px]">
-                              Menunggu Foto
-                            </div>
-                          )}
-                          <span className="absolute bottom-1 left-1 px-1.5 py-0.2 bg-black/70 text-white text-[8px] font-mono rounded">
-                            {photo.step || `${idx + 1}`}
-                          </span>
-                        </div>
-                        <div>
-                          <strong className="text-[11px] text-slate-900 block leading-tight font-heading">
-                            {idx + 1}. {photo.title}
-                          </strong>
-                          <p className="text-[10px] text-slate-500 leading-tight mt-0.5">{photo.description}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                {/* 4. ALOKASI PENERIMA MANFAAT */}
-                <section className="space-y-2 pt-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-200 pb-1.5">
-                    <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                      4. Alokasi Penerima Manfaat ({totalMaster} Porsi)
-                    </h2>
-                    <div className="relative w-full sm:w-48 no-print">
-                      <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Cari sekolah..."
-                        value={searchBeneficiary}
-                        onChange={(e) => setSearchBeneficiary(e.target.value)}
-                        className="w-full pl-7 pr-2 py-1 text-[11px] border border-slate-300 rounded focus:outline-none focus:border-blue-600"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="overflow-x-auto max-h-72 overflow-y-auto border border-slate-300 rounded">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-100 text-slate-700 font-bold text-[11px] sticky top-0 z-10 border-b border-slate-300">
-                        <tr>
-                          <th className="p-2 border-r border-slate-300 w-10 text-center">No</th>
-                          <th className="p-2 border-r border-slate-300">Nama Sekolah / Lembaga</th>
-                          <th className="p-2 border-r border-slate-300 w-24">Kategori</th>
-                          <th className="p-2 border-r border-slate-300 text-right w-24">Jumlah Porsi</th>
-                          <th className="p-2 w-28 text-center">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200 font-sans text-[11px]">
-                        {filteredBeneficiaries.map((item, idx) => {
-                          const isLibur = item.masterCount === 0;
-                          return (
-                            <tr key={idx} className={isLibur ? 'bg-slate-50 opacity-60' : 'hover:bg-slate-50'}>
-                              <td className="p-2 text-center text-slate-400 border-r border-slate-200 font-mono">
-                                {idx + 1}
-                              </td>
-                              <td className="p-2 font-bold text-slate-900 border-r border-slate-200">
-                                {item.name}
-                              </td>
-                              <td className="p-2 text-slate-600 border-r border-slate-200 uppercase font-mono text-[10px]">
-                                {item.type}
-                              </td>
-                              <td className="p-2 text-right border-r border-slate-200 font-bold font-mono text-slate-900">
-                                {item.masterCount}
-                              </td>
-                              <td className="p-2 text-center">
-                                <span
-                                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                    !isLibur
-                                      ? 'bg-emerald-100 text-emerald-800'
-                                      : 'bg-slate-200 text-slate-600'
-                                  }`}
-                                >
-                                  {!isLibur ? 'Tersalurkan' : `Libur (0 Porsi)`}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
-
-                {/* 5. URAIAN KEGIATAN & KESIMPULAN */}
-                <section className="space-y-2 pt-2">
-                  <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1.5">
-                    5. Uraian Kegiatan Operasional Dapur & Distribusi
-                  </h2>
-                  <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200 text-xs text-slate-700 leading-relaxed font-mono whitespace-pre-line">
-                    {currentMenu.uraianPekerjaan ||
-                      `1. Sterilisasi area dapur dan persiapan bahan baku.\n2. Sortasi dan pencucian bahan segar.\n3. Proses memasak dengan pemantauan suhu inti masakan >85°C.\n4. Pemorsian standar gramasi BGN.\n5. Serah terima ke armada distribusi untuk pengiriman tepat waktu.`}
-                  </div>
-                </section>
-
-                {/* 6. SIGN-OFF RESMI 3 PIHAK */}
-                <section className="pt-6 border-t-2 border-slate-800">
-                  <div className="grid grid-cols-3 gap-4 text-center text-xs">
-                    <div className="space-y-12">
-                      <div>
-                        <span className="text-[11px] text-slate-500 block">Penanggung Jawab Gizi</span>
-                        <strong className="text-slate-900 font-heading">Ahli Gizi SPPG</strong>
-                      </div>
-                      <div>
-                        <div className="font-bold underline text-slate-900">Sintia Mariam, A.Md.Gz</div>
-                        <span className="text-[10px] text-slate-500">Ahli Gizi SPPG Wonodri 3</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-12">
-                      <div>
-                        <span className="text-[11px] text-slate-500 block">Penanggung Jawab Ops</span>
-                        <strong className="text-slate-900 font-heading">Asisten Lapangan</strong>
-                      </div>
-                      <div>
-                        <div className="font-bold underline text-slate-900">Arief Rahman Hakim</div>
-                        <span className="text-[10px] text-slate-500">Aslap SPPG Wonodri 3</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-12">
-                      <div>
-                        <span className="text-[11px] text-slate-500 block">Menyetujui,</span>
-                        <strong className="text-slate-900 font-heading">Kepala SPPG</strong>
-                      </div>
-                      <div>
-                        <div className="font-bold underline text-slate-900">Dicky Yusuf Mulyadi, S.M.</div>
-                        <span className="text-[10px] text-slate-500">Ka. SPPG Wonodri 3</span>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </>
-            )}
+            <div className="space-y-1.5 max-w-md mx-auto">
+              <h3 className="font-extrabold text-base text-slate-900">Arsip Operasional Pindah ke Portal Dashboard</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Modul arsip harian kini disajikan sebagai portal dashboard interaktif
+                (ringkasan eksekutif, menu, AKG, timeline dapur, dan direktori titik layanan).
+              </p>
+            </div>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
+            >
+              <Utensils className="w-4 h-4" />
+              <span>Buka Portal Dashboard</span>
+            </Link>
           </div>
         )}
 
@@ -2294,25 +1960,25 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   Kategori 1: Dapur & MBG
                 </span>
 
-                <button
-                  onClick={() => {
-                    setMainCategory('arsip');
-                    setIsDrawerOpen(false);
-                  }}
-                  className={`w-full flex items-start gap-3 p-3 rounded-2xl transition-all cursor-pointer text-left ${
-                    mainCategory === 'arsip'
-                      ? 'bg-blue-600 text-white font-bold shadow-lg shadow-blue-900/40'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                >
-                  <Utensils className={`w-5 h-5 mt-0.5 shrink-0 ${mainCategory === 'arsip' ? 'text-white' : 'text-blue-400'}`} />
-                  <div>
-                    <div className="text-xs font-bold leading-tight">Arsip Operasional MBG</div>
-                    <div className={`text-[10px] pt-0.5 ${mainCategory === 'arsip' ? 'text-blue-100' : 'text-slate-400'}`}>
-                      Laporan Harian Menu, AKG, Foto 5 Tahap & 13 Sekolah
-                    </div>
-                  </div>
-                </button>
+          <button
+            onClick={() => {
+              setMainCategory('arsip');
+              setIsDrawerOpen(false);
+            }}
+            className={`w-full flex items-start gap-3 p-3 rounded-2xl transition-all cursor-pointer text-left ${
+              mainCategory === 'arsip'
+                ? 'bg-blue-600 text-white font-bold shadow-lg shadow-blue-900/40'
+                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+            }`}
+          >
+            <Utensils className={`w-5 h-5 mt-0.5 shrink-0 ${mainCategory === 'arsip' ? 'text-white' : 'text-blue-400'}`} />
+            <div>
+              <div className="text-xs font-bold leading-tight">Portal Dashboard MBG</div>
+              <div className={`text-[10px] pt-0.5 ${mainCategory === 'arsip' ? 'text-blue-100' : 'text-slate-400'}`}>
+                Ringkasan Eksekutif, Menu, AKG, Timeline Dapur &amp; Direktori 13 Titik Layanan
+              </div>
+            </div>
+          </button>
 
                 <Link
                   href="/admin"
