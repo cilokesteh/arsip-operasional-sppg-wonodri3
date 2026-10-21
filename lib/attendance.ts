@@ -123,8 +123,8 @@ export const DEFAULT_ROSTER_40: VolunteerProfile[] = [
   { id: 'v-40', no: 40, name: 'BAMBANG JOYO WARSO', dutySection: 'Security Malam', dailyRate: 125000, isActive: true, defaultCheckIn: '19:00', defaultCheckOut: '07:00' },
 ];
 
-export const ARSIP_ATTENDANCE_ROSTER_KEY = 'sppg_arsip_attendance_roster_v2';
-export const ARSIP_ATTENDANCE_LEDGER_KEY = 'sppg_arsip_attendance_ledger_v2';
+export const ARSIP_ATTENDANCE_ROSTER_KEY = 'sppg_arsip_attendance_roster_v3';
+export const ARSIP_ATTENDANCE_LEDGER_KEY = 'sppg_arsip_attendance_ledger_v3';
 
 export function formatRupiah(amount: number): string {
   return 'Rp ' + Math.round(amount).toLocaleString('id-ID');
@@ -337,77 +337,9 @@ export function getWeekDays(selectedDate: string): DayWorkInfo[] {
   return days;
 }
 
-// Baseline sample data for Oct 15 - 21 so weekly & monthly screens have live data immediately
-export function seedSampleHistory(roster: VolunteerProfile[]): AttendanceEntry[] {
-  const sampleDates = ['2026-10-15', '2026-10-16', '2026-10-17', '2026-10-19', '2026-10-20', '2026-10-21'];
-  const entries: AttendanceEntry[] = [];
-
-  for (const date of sampleDates) {
-    const isToday = date === '2026-10-21';
-    for (const person of roster) {
-      if (!person.isActive) {
-        entries.push({
-          id: `${date}:${person.id}`,
-          volunteerId: person.id,
-          date,
-          status: 'Nonaktif',
-          checkIn: '',
-          checkOut: '',
-          scheduledIn: person.defaultCheckIn,
-          scheduledOut: person.defaultCheckOut,
-          lateMinutes: 0,
-          overtimeMinutes: 0,
-          earnedAmount: 0,
-          notes: 'Personel Nonaktif / Resigned',
-          paid: false,
-          recordedAt: `${date}T04:00:00.000Z`,
-          recordedBy: 'Admin SPPG',
-        });
-        continue;
-      }
-
-      let status: AttendanceStatus = 'Hadir';
-      const checkIn = person.defaultCheckIn;
-      const checkOut = person.defaultCheckOut;
-      let notes = '';
-      const isPaid = !isToday; // past days already paid, today pending
-
-      if (person.id === 'v-33' && (date === '2026-10-19' || date === '2026-10-20')) {
-        status = 'Izin';
-        notes = 'Izin tidak hadir';
-      } else if (person.id === 'v-35' && (date === '2026-10-20' || date === '2026-10-21')) {
-        status = 'Izin';
-        notes = 'Izin urusan keluarga';
-      } else if (person.id === 'v-5' && date === '2026-10-17') {
-        status = 'Sakit';
-        notes = 'Surat dokter istirahat';
-      }
-
-      const isPresent = status === 'Hadir';
-      const lateMinutes = isPresent ? calculateMinutesLate(checkIn, person.defaultCheckIn) : 0;
-      const overtimeMinutes = isPresent ? calculateOvertimeMinutes(checkOut, person.defaultCheckOut) : 0;
-
-      entries.push({
-        id: `${date}:${person.id}`,
-        volunteerId: person.id,
-        date,
-        status,
-        checkIn: isPresent ? checkIn : '',
-        checkOut: isPresent ? checkOut : '',
-        scheduledIn: person.defaultCheckIn,
-        scheduledOut: person.defaultCheckOut,
-        lateMinutes,
-        overtimeMinutes,
-        earnedAmount: isPresent ? person.dailyRate : 0,
-        notes,
-        paid: isPresent ? isPaid : false,
-        recordedAt: `${date}T04:30:00.000Z`,
-        recordedBy: 'Admin SPPG',
-      });
-    }
-  }
-
-  return entries;
+// Clean baseline: kosongkan seluruh riwayat dummy agar data murni dari input riil operator
+export function seedSampleHistory(_roster: VolunteerProfile[]): AttendanceEntry[] {
+  return [];
 }
 
 // Client Storage Accessors (Safe for SSR)
@@ -433,21 +365,18 @@ export function saveRosterToStorage(roster: VolunteerProfile[]): void {
   }
 }
 
-export function loadLedgerFromStorage(roster: VolunteerProfile[]): AttendanceEntry[] {
-  if (typeof window === 'undefined') return seedSampleHistory(roster);
+export function loadLedgerFromStorage(_roster: VolunteerProfile[]): AttendanceEntry[] {
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(ARSIP_ATTENDANCE_LEDGER_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) return parsed;
     }
-    const sample = seedSampleHistory(roster);
-    saveLedgerToStorage(sample);
-    return sample;
   } catch (err) {
     console.error('Failed to load attendance ledger from localStorage:', err);
   }
-  return seedSampleHistory(roster);
+  return [];
 }
 
 export function saveLedgerToStorage(ledger: AttendanceEntry[]): void {
