@@ -277,16 +277,32 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     }
   }, []);
 
+  const todayDateStr = useMemo(() => toIsoDateLocal(new Date()), []);
+
   useEffect(() => {
     const dayEntries = ledger.filter((entry) => entry.date === selectedDate);
     if (dayEntries.length > 0) {
       setCurrentDayDraft(dayEntries);
     } else {
+      // Jika tanggal hari ini atau masa lalu: inisialisasi draft kerja.
+      // Jika tanggal masa depan: jangan auto-hadirkan, biarkan kosong/status future
       const fresh = buildDailyEntries(roster, selectedDate);
-      setCurrentDayDraft(fresh);
+      if (selectedDate > todayDateStr) {
+        // Tanggal masa depan: default status belum operasional (kosongkan upah)
+        const futureClean = fresh.map((e) => ({
+          ...e,
+          status: 'Libur' as AttendanceStatus,
+          earnedAmount: 0,
+          paid: false,
+          notes: 'Belum Terlewati',
+        }));
+        setCurrentDayDraft(futureClean);
+      } else {
+        setCurrentDayDraft(fresh);
+      }
     }
     setIsDirty(false);
-  }, [selectedDate, ledger, roster]);
+  }, [selectedDate, ledger, roster, todayDateStr]);
 
   const rosterMap = useMemo(() => new Map<string, VolunteerProfile>(roster.map((v) => [v.id, v])), [roster]);
 
@@ -502,34 +518,44 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   const dailySummary = useMemo(() => calculatePeriodSummary(currentDayDraft), [currentDayDraft]);
   const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
 
+  // Summaries: HANYA rekap data yang benar-benar tersimpan di ledger dan tidak melampaui hari ini / tanggal aktif
   const weeklyLedgerMap = useMemo(() => {
     const map = new Map<string, AttendanceStatus>();
     const start = weekDays[0].date;
     const end = weekDays[weekDays.length - 1].date;
     ledger
-      .filter((e) => e.date >= start && e.date <= end)
+      .filter((e) => e.date >= start && e.date <= end && e.date <= todayDateStr)
       .forEach((e) => map.set(`${e.volunteerId}:${e.date}`, e.status));
     return map;
-  }, [ledger, weekDays]);
+  }, [ledger, weekDays, todayDateStr]);
 
   const weeklySummary = useMemo(() => {
     const start = weekDays[0].date;
     const end = weekDays[weekDays.length - 1].date;
-    const entries = ledger.filter((e) => e.date >= start && e.date <= end);
+    const entries = ledger.filter((e) => e.date >= start && e.date <= end && e.date <= todayDateStr);
     return calculatePeriodSummary(entries);
-  }, [ledger, weekDays]);
+  }, [ledger, weekDays, todayDateStr]);
 
-  const monthlyEntries = useMemo(() => ledger.filter((e) => e.date.startsWith(selectedMonth)), [ledger, selectedMonth]);
+  const monthlyEntries = useMemo(() => {
+    return ledger.filter((e) => e.date.startsWith(selectedMonth) && e.date <= todayDateStr);
+  }, [ledger, selectedMonth, todayDateStr]);
+
   const monthlySummary = useMemo(() => calculatePeriodSummary(monthlyEntries), [monthlyEntries]);
 
   const archivedDatesList = useMemo(() => {
     const dateSet = new Set<string>();
-    ledger.forEach((e) => dateSet.add(e.date));
-    dateSet.add(selectedDate);
+    ledger.forEach((e) => {
+      if (e.date <= todayDateStr) {
+        dateSet.add(e.date);
+      }
+    });
+    if (selectedDate <= todayDateStr) {
+      dateSet.add(selectedDate);
+    }
     const list = Array.from(dateSet).sort((a, b) => b.localeCompare(a));
     if (!searchArsip.trim()) return list;
     return list.filter((d) => d.includes(searchArsip) || formatIndoDate(d).toLowerCase().includes(searchArsip.toLowerCase()));
-  }, [ledger, selectedDate, searchArsip]);
+  }, [ledger, selectedDate, searchArsip, todayDateStr]);
 
   const filteredDailyDraft = useMemo(() => {
     return currentDayDraft.filter((entry) => {
@@ -1684,6 +1710,10 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                         {roster.map((person) => {
                           let hadirCount = 0;
                           const weekStatuses = weekDays.map((d) => {
+                            // Tanggal masa depan (belum terlewati) tidak boleh direkap/diisi hadir
+                            if (d.date > todayDateStr) {
+                              return 'FUTURE';
+                            }
                             const st = weeklyLedgerMap.get(`${person.id}:${d.date}`) || (person.isActive ? 'Hadir' : 'Nonaktif');
                             if (st === 'Hadir') hadirCount += 1;
                             return st;
@@ -1703,6 +1733,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                     <span className="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded text-[10px]">I</span>
                                   ) : st === 'Sakit' ? (
                                     <span className="text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded text-[10px]">S</span>
+                                  ) : st === 'FUTURE' ? (
+                                    <span className="text-slate-300 font-normal">·</span>
                                   ) : (
                                     <span className="text-slate-300">-</span>
                                   )}
