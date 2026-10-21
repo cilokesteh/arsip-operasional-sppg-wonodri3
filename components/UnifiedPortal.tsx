@@ -1979,11 +1979,11 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 <h2 className="text-base font-black uppercase tracking-wider">
                   SATUAN PELAYANAN PROGRAM GIZI (SPPG) WONODRI 3
                 </h2>
-                <h3 className="text-xs font-bold uppercase text-slate-700">
+                <h3 className="text-xs sm:text-sm font-bold uppercase text-slate-700">
                   BERITA ACARA & REKAPITULASI AMPRAH UPAH RELAWAN DAPUR
                 </h3>
                 <p className="text-[11px] text-slate-500">
-                  Jl. Erlangga Raya No 38, Semarang Selatan • VA BNI: 9880-1556-2026-0003
+                  Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang
                 </p>
                 <div className="text-xs font-mono font-bold text-slate-800 pt-0.5">
                   Tanggal: {formatIndoDate(printDateTarget)}
@@ -2258,7 +2258,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
         </div>
       )}
 
-      {/* DRAWER KONTROL PANEL PORTAL (HAMBURGER) */}
+      {/* DRAWER KONTROL PANEL PORTAL (HAMBURGER - SLIDE DARI KIRI) */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 flex no-print">
           <div
@@ -2266,7 +2266,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs transition-opacity animate-in fade-in"
           />
 
-          <div className="relative ml-auto w-full max-w-xs sm:max-w-sm bg-slate-900 border-l border-slate-800 text-white h-full p-6 flex flex-col justify-between shadow-2xl z-10 animate-in slide-in-from-right duration-200">
+          <div className="relative mr-auto w-full max-w-xs sm:max-w-sm bg-slate-900 border-r border-slate-800 text-white h-full p-6 flex flex-col justify-between shadow-2xl z-10 animate-in slide-in-from-left duration-200">
             <div className="space-y-6">
               {/* Drawer Header */}
               <div className="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -2462,12 +2462,6 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 <span>Plafon Upah Harian:</span>
                 <span className="text-white font-bold">
                   {isSalaryUnlocked ? formatRupiah(5005000) : '••••••••'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between font-mono">
-                <span>Rekening VA BNI:</span>
-                <span className="text-emerald-400 font-bold">
-                  {isSalaryUnlocked ? '9880-1556-2026-0003' : '••••-••••-••••-0003'}
                 </span>
               </div>
               <p className="text-[10px] text-slate-500 pt-1">
