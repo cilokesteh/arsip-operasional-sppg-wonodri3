@@ -20,6 +20,10 @@ import {
   UserCheck,
   ArrowLeft,
   AlertTriangle,
+  Lock,
+  Unlock,
+  KeyRound,
+  ShieldAlert,
 } from 'lucide-react';
 import {
   AttendanceEntry,
@@ -67,10 +71,18 @@ export default function AbsensiPage() {
   const [filterSection, setFilterSection] = useState<string>('Semua');
   const [filterStatus, setFilterStatus] = useState<string>('Semua');
 
-  // 7. Modals
+  // 7. Modals & Security Gate
   const [editingVolunteer, setEditingVolunteer] = useState<VolunteerProfile | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+
+  // 8. Proteksi Keamanan Upah & Gaji Sensitif (Wajib PIN)
+  const [isSalaryUnlocked, setIsSalaryUnlocked] = useState<boolean>(false);
+  const [showPinModal, setShowPinModal] = useState<boolean>(false);
+  const [pinInput, setPinInput] = useState<string>('');
+  const [pinError, setPinError] = useState<string>('');
+  const [pinPendingAction, setPinPendingAction] = useState<'unlock' | 'print' | 'export' | null>(null);
+  const OFFICIAL_SALARY_PIN = '91206';
 
   // Form states for Add Personel
   const [newPersonName, setNewPersonName] = useState<string>('');
@@ -93,6 +105,13 @@ export default function AbsensiPage() {
     const loadedLedger = loadLedgerFromStorage(loadedRoster);
     setRoster(loadedRoster);
     setLedger(loadedLedger);
+
+    try {
+      const isUnlocked = sessionStorage.getItem('sppg_salary_unlocked') === 'true';
+      setIsSalaryUnlocked(isUnlocked);
+    } catch {
+      // ignore
+    }
   }, []);
 
   // When selected date or ledger changes, sync currentDayDraft
@@ -110,6 +129,24 @@ export default function AbsensiPage() {
   const rosterMap = useMemo(() => {
     return new Map<string, VolunteerProfile>(roster.map((v) => [v.id, v]));
   }, [roster]);
+
+  // Daftar nama personel yang tidak hadir (Izin / Sakit / Alpha)
+  const absentPersonnel = useMemo(() => {
+    return currentDayDraft
+      .filter((entry) => entry.status === 'Izin' || entry.status === 'Sakit' || entry.status === 'Alpha')
+      .map((entry) => {
+        const person = rosterMap.get(entry.volunteerId);
+        return {
+          id: entry.volunteerId,
+          no: person?.no ?? 0,
+          name: person?.name || entry.volunteerId,
+          status: entry.status,
+          section: person?.dutySection || '',
+          notes: entry.notes,
+        };
+      })
+      .sort((a, b) => a.no - b.no);
+  }, [currentDayDraft, rosterMap]);
 
   // Draft manipulation handlers
   const handleUpdateStatus = (volunteerId: string, nextStatus: AttendanceStatus) => {
@@ -334,7 +371,77 @@ export default function AbsensiPage() {
     setTimeout(() => setSaveToast(null), 3000);
   };
 
+  // Handler Proteksi PIN Gaji
+  const handleOpenPinModal = (action: 'unlock' | 'print' | 'export' = 'unlock') => {
+    setPinPendingAction(action);
+    setPinInput('');
+    setPinError('');
+    setShowPinModal(true);
+  };
+
+  const handleVerifySalaryPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pinInput.trim() === OFFICIAL_SALARY_PIN) {
+      setIsSalaryUnlocked(true);
+      try {
+        sessionStorage.setItem('sppg_salary_unlocked', 'true');
+      } catch {
+        // ignore
+      }
+      setShowPinModal(false);
+      setPinInput('');
+      setPinError('');
+
+      if (pinPendingAction === 'print') {
+        setShowPrintModal(true);
+      } else if (pinPendingAction === 'export') {
+        executeExportCsv();
+      }
+      setPinPendingAction(null);
+    } else {
+      setPinError('PIN verifikasi salah! Akses khusus pimpinan / operator resmi.');
+    }
+  };
+
+  const handleLockSalary = () => {
+    setIsSalaryUnlocked(false);
+    try {
+      sessionStorage.removeItem('sppg_salary_unlocked');
+    } catch {
+      // ignore
+    }
+  };
+
+  const renderSalary = (amount: number, isStrikethrough = false) => {
+    if (!isSalaryUnlocked) {
+      return (
+        <button
+          type="button"
+          onClick={() => handleOpenPinModal('unlock')}
+          className="inline-flex items-center gap-1 font-mono text-[10px] text-slate-400 bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded cursor-pointer border border-slate-200 transition-colors"
+          title="Klik untuk membuka proteksi PIN upah"
+        >
+          <Lock className="w-2.5 h-2.5 text-slate-400" />
+          <span>••••••</span>
+        </button>
+      );
+    }
+    return (
+      <span className={isStrikethrough ? 'line-through text-slate-400 font-mono' : 'text-blue-900 font-mono font-bold'}>
+        {formatRupiah(amount)}
+      </span>
+    );
+  };
+
   const handleExportCsv = () => {
+    if (!isSalaryUnlocked) {
+      handleOpenPinModal('export');
+      return;
+    }
+    executeExportCsv();
+  };
+
+  const executeExportCsv = () => {
     let exportEntries: AttendanceEntry[] = [];
     let fileSuffix = selectedDate;
 
@@ -430,6 +537,29 @@ export default function AbsensiPage() {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {isSalaryUnlocked ? (
+              <button
+                type="button"
+                onClick={handleLockSalary}
+                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/80 flex items-center gap-1 cursor-pointer transition-colors"
+                title="Kunci kembali proteksi upah/gaji"
+              >
+                <Unlock className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden sm:inline">Upah Terbuka</span>
+                <span className="sm:hidden">Kunci</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleOpenPinModal('unlock')}
+                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-amber-300 bg-amber-950/80 hover:bg-amber-900 border border-amber-700/80 flex items-center gap-1 cursor-pointer transition-colors"
+                title="Buka tampilan upah dengan PIN resmi"
+              >
+                <Lock className="w-3.5 h-3.5 text-amber-400" />
+                <span>Buka Upah (PIN)</span>
+              </button>
+            )}
+
             <button
               onClick={handleExportCsv}
               className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1 cursor-pointer transition-colors"
@@ -439,7 +569,13 @@ export default function AbsensiPage() {
             </button>
 
             <button
-              onClick={() => setShowPrintModal(true)}
+              onClick={() => {
+                if (!isSalaryUnlocked) {
+                  handleOpenPinModal('print');
+                } else {
+                  setShowPrintModal(true);
+                }
+              }}
               className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center gap-1 cursor-pointer shadow-xs transition-colors"
             >
               <Printer className="w-3.5 h-3.5" />
@@ -621,22 +757,46 @@ export default function AbsensiPage() {
             </span>
           </div>
 
-          <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-xs space-y-1">
+          <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-xs space-y-1.5">
             <span className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider block">
               Izin / Sakit / Alpha
             </span>
-            <div className="text-xl sm:text-2xl font-black text-amber-600 font-mono">
-              {periodMode === 'harian'
-                ? `${dailySummary.statusCounts.Izin + dailySummary.statusCounts.Sakit + dailySummary.statusCounts.Alpha} Kasus`
-                : periodMode === 'mingguan'
-                ? `${weeklySummary.statusCounts.Izin + weeklySummary.statusCounts.Sakit + weeklySummary.statusCounts.Alpha} Kasus`
-                : `${monthlySummary.statusCounts.Izin + monthlySummary.statusCounts.Sakit + monthlySummary.statusCounts.Alpha} Kasus`}
-            </div>
-            <span className="text-[11px] text-slate-400">
-              {periodMode === 'harian'
-                ? `I:${dailySummary.statusCounts.Izin} S:${dailySummary.statusCounts.Sakit} A:${dailySummary.statusCounts.Alpha}`
-                : 'Insentif Terpotong'}
-            </span>
+            {periodMode === 'harian' ? (
+              absentPersonnel.length === 0 ? (
+                <div>
+                  <div className="text-base font-extrabold text-emerald-600">Nihil (Semua Hadir)</div>
+                  <span className="text-[11px] text-slate-400">100% Personel Aktif Masuk</span>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <div className="text-xs font-black text-amber-800">
+                    {absentPersonnel.length} Personel Tidak Hadir:
+                  </div>
+                  <div className="space-y-1 max-h-24 overflow-y-auto pr-0.5">
+                    {absentPersonnel.map((p) => (
+                      <div
+                        key={p.id}
+                        className="text-[11px] font-bold text-slate-800 flex items-center justify-between gap-1.5 bg-amber-50 px-2 py-0.5 rounded border border-amber-200"
+                      >
+                        <span className="truncate">{p.name}</span>
+                        <span className="text-[9px] px-1.5 py-0.2 rounded font-mono uppercase bg-amber-200 text-amber-900 shrink-0">
+                          {p.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            ) : (
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-amber-600 font-mono">
+                  {periodMode === 'mingguan'
+                    ? `${weeklySummary.statusCounts.Izin + weeklySummary.statusCounts.Sakit + weeklySummary.statusCounts.Alpha} Kasus`
+                    : `${monthlySummary.statusCounts.Izin + monthlySummary.statusCounts.Sakit + monthlySummary.statusCounts.Alpha} Kasus`}
+                </div>
+                <span className="text-[11px] text-slate-400">Insentif Terpotong</span>
+              </div>
+            )}
           </div>
 
           <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-xs space-y-1">
@@ -652,21 +812,47 @@ export default function AbsensiPage() {
           </div>
 
           <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-xs space-y-1 col-span-2 lg:col-span-1">
-            <span className="text-[10px] font-semibold text-blue-700 uppercase tracking-wider block">
-              {periodMode === 'harian' ? 'Beban Upah Hari Ini' : periodMode === 'mingguan' ? 'Total Amprah Pekan Ini' : 'Total Amprah Bulanan'}
-            </span>
-            <div className="text-xl sm:text-2xl font-black text-blue-900 font-mono">
-              {formatRupiah(
-                periodMode === 'harian'
-                  ? dailySummary.totalEarned
-                  : periodMode === 'mingguan'
-                  ? weeklySummary.totalEarned
-                  : monthlySummary.totalEarned
-              )}
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold text-blue-700 uppercase tracking-wider block">
+                {periodMode === 'harian' ? 'Beban Upah Hari Ini' : periodMode === 'mingguan' ? 'Total Amprah Pekan Ini' : 'Total Amprah Bulanan'}
+              </span>
+              {!isSalaryUnlocked && <Lock className="w-3 h-3 text-slate-400" />}
             </div>
-            <span className="text-[11px] text-slate-500">
-              {periodMode === 'harian' ? 'Plafon Rp 5.005.000' : 'Kas Penyalur BNI'}
-            </span>
+
+            {isSalaryUnlocked ? (
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-blue-900 font-mono">
+                  {formatRupiah(
+                    periodMode === 'harian'
+                      ? dailySummary.totalEarned
+                      : periodMode === 'mingguan'
+                      ? weeklySummary.totalEarned
+                      : monthlySummary.totalEarned
+                  )}
+                </div>
+                <span className="text-[11px] text-slate-500">
+                  {periodMode === 'harian' ? 'Plafon Rp 5.005.000' : 'Kas Penyalur BNI'}
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-1 pt-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-lg sm:text-xl font-black text-slate-400 tracking-widest">
+                    ••••••••
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPinModal('unlock')}
+                    className="px-2 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-[10px] font-bold rounded-md border border-amber-300 transition-colors cursor-pointer"
+                  >
+                    Buka PIN
+                  </button>
+                </div>
+                <span className="text-[10px] text-slate-400 block">
+                  Proteksi Data Finansial SPPG
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -913,13 +1099,9 @@ export default function AbsensiPage() {
 
                           {/* Upah */}
                           <td className="p-2.5 text-right font-mono font-bold whitespace-nowrap">
-                            {isHadir ? (
-                              <span className="text-blue-900">{formatRupiah(entry.earnedAmount)}</span>
-                            ) : (
-                              <span className="text-slate-400 line-through">
-                                {formatRupiah(person.dailyRate)}
-                              </span>
-                            )}
+                            {isHadir
+                              ? renderSalary(entry.earnedAmount)
+                              : renderSalary(person.dailyRate, true)}
                           </td>
 
                           {/* Status Cair */}
@@ -959,8 +1141,8 @@ export default function AbsensiPage() {
                       <td colSpan={7} className="p-3 text-right uppercase text-[11px] text-slate-500">
                         Total Upah Hari Ini ({dailySummary.statusCounts.Hadir} Orang Hadir):
                       </td>
-                      <td className="p-3 text-right font-mono text-sm text-blue-900">
-                        {formatRupiah(dailySummary.totalEarned)}
+                      <td className="p-3 text-right font-mono text-sm text-blue-900 whitespace-nowrap">
+                        {renderSalary(dailySummary.totalEarned)}
                       </td>
                       <td colSpan={2} className="p-3 text-left text-[11px] text-slate-500 font-normal">
                         *{dailySummary.statusCounts.Izin + dailySummary.statusCounts.Sakit + dailySummary.statusCounts.Alpha} Personel Tidak Masuk (Upah Rp 0)
@@ -998,7 +1180,7 @@ export default function AbsensiPage() {
                           <h4 className="font-bold text-sm text-slate-900">{person.name}</h4>
                         </div>
                         <span className="text-[11px] text-slate-500 font-medium">
-                          {person.dutySection} • Shift {person.defaultCheckIn}-{person.defaultCheckOut} • {formatRupiah(person.dailyRate)}
+                          {person.dutySection} • Shift {person.defaultCheckIn}-{person.defaultCheckOut} • {renderSalary(person.dailyRate)}
                         </span>
                       </div>
 
@@ -1064,7 +1246,7 @@ export default function AbsensiPage() {
 
                         <div className="flex items-center justify-between pt-1 border-t border-slate-200">
                           <span className="font-mono text-xs font-bold text-blue-900">
-                            Hak Upah: {formatRupiah(entry.earnedAmount)}
+                            Hak Upah: {renderSalary(entry.earnedAmount)}
                           </span>
                           <button
                             onClick={() => handleTogglePaid(person.id)}
@@ -1192,7 +1374,7 @@ export default function AbsensiPage() {
                           </span>
                         </td>
                         <td className="p-2.5 text-slate-600 font-medium">{person.dutySection}</td>
-                        <td className="p-2.5 text-right font-mono">{formatRupiah(person.dailyRate)}</td>
+                        <td className="p-2.5 text-right font-mono whitespace-nowrap">{renderSalary(person.dailyRate)}</td>
 
                         {weekStatuses.map((st, idx) => (
                           <td key={idx} className="p-2 text-center font-mono font-bold">
@@ -1213,8 +1395,8 @@ export default function AbsensiPage() {
                         <td className="p-2.5 text-center font-mono font-bold text-slate-900">
                           {person.isActive ? `${hadirCount} Hari` : '-'}
                         </td>
-                        <td className="p-2.5 text-right font-mono font-bold text-blue-900">
-                          {person.isActive ? formatRupiah(totalEarnedWeek) : '-'}
+                        <td className="p-2.5 text-right font-mono font-bold text-blue-900 whitespace-nowrap">
+                          {person.isActive ? renderSalary(totalEarnedWeek) : '-'}
                         </td>
                       </tr>
                     );
@@ -1225,8 +1407,8 @@ export default function AbsensiPage() {
                     <td colSpan={10} className="p-3 text-right uppercase text-[11px] text-slate-500">
                       Total Amprah Mingguan:
                     </td>
-                    <td className="p-3 text-right font-mono text-sm text-blue-900">
-                      {formatRupiah(weeklySummary.totalEarned)}
+                    <td className="p-3 text-right font-mono text-sm text-blue-900 whitespace-nowrap">
+                      {renderSalary(weeklySummary.totalEarned)}
                     </td>
                   </tr>
                 </tfoot>
@@ -1281,15 +1463,15 @@ export default function AbsensiPage() {
                           </span>
                         </td>
                         <td className="p-2.5 text-slate-600 font-medium">{person.dutySection}</td>
-                        <td className="p-2.5 text-right font-mono">{formatRupiah(person.dailyRate)}</td>
+                        <td className="p-2.5 text-right font-mono whitespace-nowrap">{renderSalary(person.dailyRate)}</td>
                         <td className="p-2.5 text-center font-mono font-bold text-emerald-700">
                           {person.isActive ? `${hadirCount} Hari` : '-'}
                         </td>
                         <td className="p-2.5 text-center font-mono text-amber-700 font-bold">
                           {person.isActive ? `${izinCount} Hari` : '-'}
                         </td>
-                        <td className="p-2.5 text-right font-mono font-bold text-blue-900">
-                          {person.isActive ? formatRupiah(totalEarned) : '-'}
+                        <td className="p-2.5 text-right font-mono font-bold text-blue-900 whitespace-nowrap">
+                          {person.isActive ? renderSalary(totalEarned) : '-'}
                         </td>
                         <td className="p-2.5 text-center">
                           {person.isActive ? (
@@ -1309,8 +1491,8 @@ export default function AbsensiPage() {
                     <td colSpan={6} className="p-3 text-right uppercase text-[11px] text-slate-500">
                       Grand Total Upah Bulan {selectedMonth}:
                     </td>
-                    <td className="p-3 text-right font-mono text-base text-blue-900">
-                      {formatRupiah(monthlySummary.totalEarned)}
+                    <td className="p-3 text-right font-mono text-base text-blue-900 whitespace-nowrap">
+                      {renderSalary(monthlySummary.totalEarned)}
                     </td>
                     <td className="p-3 text-center text-[10px] text-slate-500 font-normal">
                       Lolos Audit SPJ BGN
@@ -1381,7 +1563,7 @@ export default function AbsensiPage() {
                     <div>
                       <span className="text-slate-400 block">Upah Harian:</span>
                       <span className="font-mono font-bold text-slate-800">
-                        {formatRupiah(person.dailyRate)}
+                        {renderSalary(person.dailyRate)}
                       </span>
                     </div>
                     <div>
@@ -1767,6 +1949,73 @@ export default function AbsensiPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {/* ============================================================== */}
+      {/* MODAL PROTEKSI PIN GAJI & INSENTIF SENSIFITAS TINGGI           */}
+      {/* ============================================================== */}
+      {showPinModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto shadow-inner">
+                <KeyRound className="w-6 h-6 text-amber-700" />
+              </div>
+              <div>
+                <h3 className="font-heading font-black text-base text-slate-900">
+                  Proteksi Data Finansial SPPG
+                </h3>
+                <p className="text-xs text-slate-500 pt-0.5">
+                  Informasi tarif upah dan insentif relawan bersifat sensitif. Masukkan PIN otoritas resmi untuk membuka.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleVerifySalaryPin} className="space-y-3.5 pt-1">
+              <div>
+                <input
+                  type="password"
+                  maxLength={6}
+                  autoFocus
+                  value={pinInput}
+                  onChange={(e) => {
+                    setPinInput(e.target.value);
+                    setPinError('');
+                  }}
+                  placeholder="Masukkan PIN Otoritas..."
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-center text-lg font-mono font-black tracking-widest text-slate-900 placeholder:text-slate-400 placeholder:tracking-normal placeholder:text-xs focus:outline-none focus:border-blue-600 focus:bg-white"
+                />
+                {pinError && (
+                  <p className="text-[11px] font-bold text-rose-600 flex items-center justify-center gap-1 mt-1.5 animate-in fade-in">
+                    <ShieldAlert className="w-3.5 h-3.5" />
+                    {pinError}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPinModal(false);
+                    setPinInput('');
+                    setPinError('');
+                    setPinPendingAction(null);
+                  }}
+                  className="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Unlock className="w-3.5 h-3.5" />
+                  <span>Buka Akses</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
