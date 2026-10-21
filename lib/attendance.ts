@@ -161,8 +161,26 @@ export function buildDailyEntries(
   date: string,
   recordedBy = 'Admin SPPG'
 ): AttendanceEntry[] {
+  const d = new Date(`${date}T12:00:00`);
+  const dayOfWeek = d.getDay(); // 0 = Sun, 6 = Sat
+  const isSunday = dayOfWeek === 0;
+  const isSaturday = dayOfWeek === 6;
+
   return roster.map((person) => {
-    const status: AttendanceStatus = person.isActive ? 'Hadir' : 'Nonaktif';
+    let status: AttendanceStatus = 'Hadir';
+    let notes = '';
+
+    if (!person.isActive) {
+      status = 'Nonaktif';
+      notes = 'Personel Nonaktif / Resigned';
+    } else if (isSunday) {
+      status = 'Libur';
+      notes = 'Libur Rutin Mingguan';
+    } else if (isSaturday) {
+      status = 'Libur';
+      notes = 'Libur Akhir Pekan (Masuk hanya jika General Cleaning)';
+    }
+
     const isPresent = status === 'Hadir';
     return {
       id: `${date}:${person.id}`,
@@ -176,7 +194,7 @@ export function buildDailyEntries(
       lateMinutes: 0,
       overtimeMinutes: 0,
       earnedAmount: isPresent ? person.dailyRate : 0,
-      notes: person.isActive ? '' : 'Personel Nonaktif',
+      notes,
       paid: false,
       recordedAt: new Date().toISOString(),
       recordedBy,
