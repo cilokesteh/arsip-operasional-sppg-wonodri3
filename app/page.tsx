@@ -198,19 +198,19 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f1f5f9] text-[#1e293b] flex flex-col font-sans w-full overflow-x-hidden">
+    <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] flex flex-col font-sans w-full overflow-x-hidden">
       {/* 1. Top Bar Navigasi Sistem */}
-      <header className="bg-[#0f172a] text-white border-b border-slate-800 sticky top-0 z-40 no-print">
+      <header className="bg-white text-[#0f172a] border-b border-slate-200 sticky top-0 z-40 no-print shadow-sm">
         <div className="max-w-5xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="w-8 h-8 rounded bg-white p-0.5 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded bg-[#0f172a] p-0.5 flex items-center justify-center shrink-0">
               <Image src="/logo.png" alt="Logo BGN" width={24} height={24} className="object-contain" priority />
             </div>
             <div className="min-w-0">
-              <span className="font-extrabold text-xs sm:text-sm text-white block leading-tight tracking-tight truncate">
+              <span className="font-extrabold text-xs sm:text-sm text-[#0f172a] block leading-tight tracking-tight truncate">
                 SPPG Wonodri 3
               </span>
-              <span className="text-[10px] text-slate-400 font-medium block truncate">
+              <span className="text-[10px] text-slate-500 font-medium block truncate">
                 Laporan Harian MBG
               </span>
             </div>
@@ -219,32 +219,32 @@ export default function HomePage() {
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <Link
               href="/absensi"
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1.5 cursor-pointer transition-colors"
+              className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center gap-1.5 cursor-pointer transition-colors"
               title="Absensi Relawan"
             >
-              <Users className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <Users className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
               <span>Absensi Relawan</span>
             </Link>
 
             <button
               onClick={() => setShowCalendarModal(true)}
-              className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1 cursor-pointer"
+              className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center gap-1 cursor-pointer"
             >
-              <CalendarIcon className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <CalendarIcon className="w-3.5 h-3.5 text-blue-600 shrink-0" />
               <span className="text-[11px] sm:text-xs">{formatTanggalIndo(selectedDate)}</span>
             </button>
             <button
               onClick={handleOpenPrintModal}
               title="Cetak Dokumen Resmi (Wajib PIN)"
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center gap-1 cursor-pointer shadow-xs"
+              className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-[#0f172a] hover:bg-[#1e293b] flex items-center gap-1 cursor-pointer shadow-sm"
             >
-              <Lock className="w-3 h-3 text-blue-200 shrink-0" />
+              <Lock className="w-3 h-3 text-blue-300 shrink-0" />
               <Printer className="w-3.5 h-3.5 shrink-0" />
               <span className="text-[11px] sm:text-xs">Cetak</span>
             </button>
             <Link
               href="/admin"
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100"
               title="Panel Operator"
             >
               <FileSpreadsheet className="w-4 h-4" />
@@ -255,7 +255,7 @@ export default function HomePage() {
 
       {/* 2. DOKUMEN LAPORAN RESMI */}
       <main className="max-w-5xl mx-auto w-full px-2.5 sm:px-6 py-4 sm:py-8 flex-1">
-        <div className="report-sheet bg-white rounded-xl border border-slate-300 shadow-sm p-4 sm:p-8 md:p-10 space-y-6 sm:space-y-7">
+        <div className="report-sheet bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-8 md:p-10 space-y-6 sm:space-y-7">
           
           {/* KOP RESMI LAPORAN */}
           <div className="border-b-2 border-slate-800 pb-4 sm:pb-5">
