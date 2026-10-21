@@ -332,7 +332,7 @@ export function formatIndoDate(dateStr: string): string {
   return `${INDO_DAYS[d.getDay()]}, ${d.getDate()} ${INDO_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-// 6 Hari Kerja SPPG: Senin s/d Sabtu
+// 7 Hari Kalender Penuh: Senin s/d Minggu (Format Excel Resmi SPPG)
 export function getWeekDays(selectedDate: string): DayWorkInfo[] {
   const selected = new Date(`${selectedDate}T12:00:00`);
   const dayOfWeek = selected.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
@@ -342,7 +342,7 @@ export function getWeekDays(selectedDate: string): DayWorkInfo[] {
   monday.setDate(selected.getDate() + mondayOffset);
 
   const days: DayWorkInfo[] = [];
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     const cur = new Date(monday);
     cur.setDate(monday.getDate() + i);
     const dateStr = toIsoDateLocal(cur);
@@ -350,7 +350,7 @@ export function getWeekDays(selectedDate: string): DayWorkInfo[] {
       date: dateStr,
       label: INDO_DAYS[cur.getDay()],
       formatted: `${cur.getDate()} ${INDO_MONTHS[cur.getMonth()]}`,
-      isWeekend: false,
+      isWeekend: cur.getDay() === 0 || cur.getDay() === 6,
     });
   }
   return days;

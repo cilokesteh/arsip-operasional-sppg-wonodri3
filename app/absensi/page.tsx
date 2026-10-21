@@ -968,7 +968,7 @@ export default function AbsensiPortalPage() {
               <div className="overflow-x-auto">
                 <div className="p-3.5 border-b border-slate-200 flex items-center justify-between text-xs">
                   <span className="font-bold text-slate-800">
-                    Matrix Kehadiran Pekan: {weekDays[0].formatted} – {weekDays[weekDays.length - 1].formatted}
+                    Matrix Kehadiran Mingguan (Senin s/d Minggu: {weekDays[0].formatted} – {weekDays[weekDays.length - 1].formatted})
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-slate-400">Total Amprah Pekan Ini:</span>
@@ -983,8 +983,17 @@ export default function AbsensiPortalPage() {
                       <th className="py-2.5 px-3 min-w-[170px]">NAMA RELAWAN</th>
                       <th className="py-2.5 px-3">DIVISI</th>
                       {weekDays.map((d) => (
-                        <th key={d.date} className="py-2 px-2 text-center w-12 bg-slate-100/60 font-mono">
-                          {d.label.slice(0, 3)}
+                        <th
+                          key={d.date}
+                          className={`py-2 px-2 text-center w-12 font-mono ${
+                            d.label === 'Minggu'
+                              ? 'bg-rose-50 text-rose-700 font-bold'
+                              : d.label === 'Sabtu'
+                              ? 'bg-slate-100 text-slate-700 font-bold'
+                              : 'bg-slate-100/60'
+                          }`}
+                        >
+                          <span className="uppercase">{d.label.slice(0, 3)}</span>
                         </th>
                       ))}
                       <th className="py-2.5 px-3 text-center">HADIR</th>
