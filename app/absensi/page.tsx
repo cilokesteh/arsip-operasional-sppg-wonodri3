@@ -32,6 +32,7 @@ import {
   Clock,
   ArrowUpRight,
   ExternalLink,
+  Utensils,
 } from 'lucide-react';
 import {
   AttendanceEntry,
@@ -765,6 +766,15 @@ export default function AbsensiPortalPage() {
         {/* Navigation Tabs Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-300 shadow-2xs">
           <div className="flex items-center gap-1 overflow-x-auto text-xs font-bold p-0.5">
+            <Link
+              href="/"
+              className="px-3 py-2 rounded-xl text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap font-bold shrink-0"
+              title="Kembali ke Laporan Arsip Operasional Harian MBG"
+            >
+              <Utensils className="w-3.5 h-3.5 text-blue-700" />
+              <span>Arsip Ops MBG</span>
+            </Link>
+
             {[
               { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
               { id: 'checklist', label: 'Presensi Harian', icon: ClipboardList },

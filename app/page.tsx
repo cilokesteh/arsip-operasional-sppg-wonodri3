@@ -23,6 +23,11 @@ import {
   KeyRound,
   ShieldAlert,
   Users,
+  Menu,
+  ClipboardList,
+  LayoutDashboard,
+  Utensils,
+  ExternalLink,
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
@@ -37,6 +42,7 @@ export default function HomePage() {
   );
   const [showCalendarModal, setShowCalendarModal] = useState<boolean>(false);
   const [searchBeneficiary, setSearchBeneficiary] = useState<string>('');
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
   const [calendarMonth, setCalendarMonth] = useState<number>(9);
   const [calendarYear, setCalendarYear] = useState<number>(2026);
@@ -203,6 +209,15 @@ export default function HomePage() {
       <header className="bg-[#0f172a] text-white border-b border-slate-800 sticky top-0 z-40 no-print">
         <div className="max-w-5xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button
+              onClick={() => setIsDrawerOpen(true)}
+              className="p-1.5 sm:p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-colors cursor-pointer border border-slate-700 flex items-center justify-center shrink-0 mr-0.5"
+              aria-label="Buka Menu Portal"
+              title="Menu Kontrol Panel Portal"
+            >
+              <Menu className="w-4 h-4 text-blue-400" />
+            </button>
+
             <div className="w-8 h-8 rounded bg-white p-0.5 flex items-center justify-center shrink-0">
               <Image src="/logo.png" alt="Logo BGN" width={24} height={24} className="object-contain" priority />
             </div>
@@ -840,6 +855,159 @@ export default function HomePage() {
                   </button>
                 );
               })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DRAWER MENU PORTAL (HAMBURGER) */}
+      {isDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex no-print">
+          <div
+            onClick={() => setIsDrawerOpen(false)}
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs transition-opacity animate-in fade-in"
+          />
+
+          <div className="relative ml-auto w-full max-w-xs sm:max-w-sm bg-slate-900 border-l border-slate-800 text-white h-full p-6 flex flex-col justify-between shadow-2xl z-10 animate-in slide-in-from-right duration-200">
+            <div className="space-y-6">
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-sm">
+                    <Image src="/logo.png" alt="Logo BGN" width={28} height={28} className="object-contain" />
+                  </div>
+                  <div>
+                    <strong className="text-sm text-white block">Portal SPPG Wonodri 3</strong>
+                    <span className="text-[10px] text-slate-400">Pusat Operasional MBG & SDM</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Navigation Modul Links */}
+              <div className="space-y-1.5 text-xs font-semibold">
+                <div className="w-full flex items-start gap-3 p-3 rounded-2xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-900/40 text-left">
+                  <Utensils className="w-5 h-5 mt-0.5 shrink-0 text-white" />
+                  <div>
+                    <div className="text-xs font-bold leading-tight">Arsip Operasional MBG</div>
+                    <div className="text-[10px] text-blue-100 pt-0.5">
+                      Menu, AKG, Foto 5 Tahap & Alokasi (Halaman Ini)
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  href="/absensi"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="w-full flex items-start gap-3 p-3 rounded-2xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-left"
+                >
+                  <LayoutDashboard className="w-5 h-5 mt-0.5 shrink-0 text-blue-400" />
+                  <div>
+                    <div className="text-xs font-bold leading-tight">Dashboard Presensi & Upah</div>
+                    <div className="text-[10px] text-slate-400 pt-0.5">
+                      Rekap Harian, Mingguan & Bulanan Kas BNI
+                    </div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/absensi"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="w-full flex items-start gap-3 p-3 rounded-2xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-left"
+                >
+                  <ClipboardList className="w-5 h-5 mt-0.5 shrink-0 text-emerald-400" />
+                  <div>
+                    <div className="text-xs font-bold leading-tight">Checklist Presensi Harian</div>
+                    <div className="text-[10px] text-slate-400 pt-0.5">
+                      Jam Masuk, Pulang, Telat & Lembur Relawan
+                    </div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/absensi"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="w-full flex items-start gap-3 p-3 rounded-2xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-left"
+                >
+                  <Users className="w-5 h-5 mt-0.5 shrink-0 text-amber-400" />
+                  <div>
+                    <div className="text-xs font-bold leading-tight">Master Roster 40 Personel</div>
+                    <div className="text-[10px] text-slate-400 pt-0.5">
+                      Shift Default 24 Jam & Tarif Upah
+                    </div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/admin"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="w-full flex items-start gap-3 p-3 rounded-2xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-left"
+                >
+                  <FileSpreadsheet className="w-5 h-5 mt-0.5 shrink-0 text-purple-400" />
+                  <div>
+                    <div className="text-xs font-bold leading-tight">Panel Operator Admin</div>
+                    <div className="text-[10px] text-slate-400 pt-0.5">
+                      Input Menu Baru & Upload Dokumentasi Foto
+                    </div>
+                  </div>
+                </Link>
+              </div>
+
+              {/* Quick Operation Actions */}
+              <div className="pt-4 border-t border-slate-800 space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
+                  Aksi Dokumen
+                </span>
+
+                <button
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    setShowCalendarModal(true);
+                  }}
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4 text-blue-400" />
+                    Pilih Tanggal Arsip ({formatTanggalIndo(selectedDate)})
+                  </span>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    handleOpenPrintModal();
+                  }}
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Printer className="w-4 h-4 text-emerald-400" />
+                    Cetak Laporan Menu Harian (PIN 91206)
+                  </span>
+                  <Lock className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+              </div>
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-400 space-y-1">
+              <div className="flex items-center justify-between font-mono">
+                <span>Alokasi Porsi Harian:</span>
+                <span className="text-white font-bold">{totalMaster} Porsi (100%)</span>
+              </div>
+              <div className="flex items-center justify-between font-mono">
+                <span>Titik Distribusi:</span>
+                <span className="text-emerald-400 font-bold">13 Sekolah & Posyandu</span>
+              </div>
+              <p className="text-[10px] text-slate-500 pt-1">
+                SPPG Wonodri 3 • Badan Gizi Nasional (BGN) RI
+              </p>
             </div>
           </div>
         </div>
