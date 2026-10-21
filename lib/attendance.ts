@@ -175,10 +175,10 @@ export function buildDailyEntries(
       notes = 'Personel Nonaktif / Resigned';
     } else if (isSunday) {
       status = 'Libur';
-      notes = 'Libur Rutin Mingguan';
+      notes = 'Libur Rutin';
     } else if (isSaturday) {
       status = 'Libur';
-      notes = 'Libur Akhir Pekan (Masuk hanya jika General Cleaning)';
+      notes = '';
     }
 
     const isPresent = status === 'Hadir';
