@@ -4,26 +4,34 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  Plus,
-  Search,
-  Edit2,
-  X,
-  Save,
+  LayoutDashboard,
+  ClipboardList,
+  Archive,
   Calendar,
-  Download,
-  Printer,
-  ChevronLeft,
-  ChevronRight,
   FileSpreadsheet,
-  CheckCircle2,
-  DollarSign,
-  UserCheck,
-  ArrowLeft,
-  AlertTriangle,
+  Users,
+  Printer,
+  Download,
+  Plus,
+  Menu,
+  X,
   Lock,
   Unlock,
   KeyRound,
   ShieldAlert,
+  CheckCircle2,
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  Edit2,
+  Save,
+  DollarSign,
+  UserCheck,
+  ArrowLeft,
+  Clock,
+  ArrowUpRight,
+  ExternalLink,
 } from 'lucide-react';
 import {
   AttendanceEntry,
@@ -47,11 +55,13 @@ import {
   saveLedgerToStorage,
 } from '@/lib/attendance';
 
-export default function AbsensiPage() {
+export type PortalTab = 'dashboard' | 'checklist' | 'arsip' | 'mingguan' | 'bulanan' | 'roster';
+
+export default function AbsensiPortalPage() {
   // 1. Master Roster State
   const [roster, setRoster] = useState<VolunteerProfile[]>(DEFAULT_ROSTER_40);
 
-  // 2. Attendance Ledger State
+  // 2. Attendance Ledger State (All recorded dates)
   const [ledger, setLedger] = useState<AttendanceEntry[]>([]);
 
   // 3. Active Date State
@@ -62,19 +72,22 @@ export default function AbsensiPage() {
   const [isDirty, setIsDirty] = useState<boolean>(false);
   const [saveToast, setSaveToast] = useState<string | null>(null);
 
-  // 5. Navigation View Mode
-  const [periodMode, setPeriodMode] = useState<'harian' | 'mingguan' | 'bulanan' | 'roster'>('harian');
+  // 5. Portal Navigation State (Dashboard by default)
+  const [activeTab, setActiveTab] = useState<PortalTab>('dashboard');
   const [selectedMonth, setSelectedMonth] = useState<string>('2026-10');
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
   // 6. Search & Filters
   const [searchName, setSearchName] = useState<string>('');
   const [filterSection, setFilterSection] = useState<string>('Semua');
   const [filterStatus, setFilterStatus] = useState<string>('Semua');
+  const [searchArsipQuery, setSearchArsipQuery] = useState<string>('');
 
-  // 7. Modals & Security Gate
+  // 7. Modals
   const [editingVolunteer, setEditingVolunteer] = useState<VolunteerProfile | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+  const [printDateTarget, setPrintDateTarget] = useState<string>('2026-10-21');
 
   // 8. Proteksi Keamanan Upah & Gaji Sensitif (Wajib PIN)
   const [isSalaryUnlocked, setIsSalaryUnlocked] = useState<boolean>(false);
@@ -130,7 +143,7 @@ export default function AbsensiPage() {
     return new Map<string, VolunteerProfile>(roster.map((v) => [v.id, v]));
   }, [roster]);
 
-  // Daftar nama personel yang tidak hadir (Izin / Sakit / Alpha)
+  // Daftar nama personel yang tidak hadir (Izin / Sakit / Alpha) pada tanggal aktif
   const absentPersonnel = useMemo(() => {
     return currentDayDraft
       .filter((entry) => entry.status === 'Izin' || entry.status === 'Sakit' || entry.status === 'Alpha')
@@ -148,7 +161,9 @@ export default function AbsensiPage() {
       .sort((a, b) => a.no - b.no);
   }, [currentDayDraft, rosterMap]);
 
-  // Draft manipulation handlers
+  // -------------------------------------------------------------
+  // DRAFT MANIPULATION HANDLERS
+  // -------------------------------------------------------------
   const handleUpdateStatus = (volunteerId: string, nextStatus: AttendanceStatus) => {
     const person = rosterMap.get(volunteerId);
     if (!person) return;
@@ -170,11 +185,7 @@ export default function AbsensiPage() {
     setIsDirty(true);
   };
 
-  const handleUpdateTime = (
-    volunteerId: string,
-    field: 'checkIn' | 'checkOut',
-    value: string
-  ) => {
+  const handleUpdateTime = (volunteerId: string, field: 'checkIn' | 'checkOut', value: string) => {
     const person = rosterMap.get(volunteerId);
     if (!person) return;
 
@@ -278,6 +289,9 @@ export default function AbsensiPage() {
     setSelectedDate(toIsoDateLocal(current));
   };
 
+  // -------------------------------------------------------------
+  // ROSTER ACTIONS
+  // -------------------------------------------------------------
   const handleOpenEditRoster = (person: VolunteerProfile) => {
     setEditingVolunteer(person);
     setEditRateInput(person.dailyRate.toString());
@@ -371,7 +385,9 @@ export default function AbsensiPage() {
     setTimeout(() => setSaveToast(null), 3000);
   };
 
-  // Handler Proteksi PIN Gaji
+  // -------------------------------------------------------------
+  // PIN SECURITY HANDLERS
+  // -------------------------------------------------------------
   const handleOpenPinModal = (action: 'unlock' | 'print' | 'export' = 'unlock') => {
     setPinPendingAction(action);
     setPinInput('');
@@ -445,10 +461,10 @@ export default function AbsensiPage() {
     let exportEntries: AttendanceEntry[] = [];
     let fileSuffix = selectedDate;
 
-    if (periodMode === 'harian') {
+    if (activeTab === 'checklist' || activeTab === 'dashboard') {
       exportEntries = currentDayDraft;
       fileSuffix = selectedDate;
-    } else if (periodMode === 'mingguan') {
+    } else if (activeTab === 'mingguan') {
       const week = getWeekDays(selectedDate);
       const start = week[0].date;
       const end = week[week.length - 1].date;
@@ -471,6 +487,16 @@ export default function AbsensiPage() {
     URL.revokeObjectURL(url);
   };
 
+  const handleOpenPrintForDate = (date: string) => {
+    setPrintDateTarget(date);
+    if (!isSalaryUnlocked) {
+      handleOpenPinModal('print');
+    } else {
+      setShowPrintModal(true);
+    }
+  };
+
+  // Summaries
   const dailySummary = useMemo(() => calculatePeriodSummary(currentDayDraft), [currentDayDraft]);
   const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
 
@@ -496,6 +522,16 @@ export default function AbsensiPage() {
   const monthlyEntries = useMemo(() => ledger.filter((e) => e.date.startsWith(selectedMonth)), [ledger, selectedMonth]);
   const monthlySummary = useMemo(() => calculatePeriodSummary(monthlyEntries), [monthlyEntries]);
 
+  // List of distinct dates in ledger for Arsip view
+  const archivedDatesList = useMemo(() => {
+    const dateSet = new Set<string>();
+    ledger.forEach((e) => dateSet.add(e.date));
+    dateSet.add(selectedDate);
+    const list = Array.from(dateSet).sort((a, b) => b.localeCompare(a));
+    if (!searchArsipQuery.trim()) return list;
+    return list.filter((d) => d.includes(searchArsipQuery) || formatIndoDate(d).toLowerCase().includes(searchArsipQuery.toLowerCase()));
+  }, [ledger, selectedDate, searchArsipQuery]);
+
   const filteredDailyDraft = useMemo(() => {
     return currentDayDraft.filter((entry) => {
       const person = rosterMap.get(entry.volunteerId);
@@ -507,42 +543,59 @@ export default function AbsensiPage() {
     });
   }, [currentDayDraft, rosterMap, searchName, filterSection, filterStatus]);
 
+  // Document entries for printable A4 modal
+  const printableEntries = useMemo(() => {
+    if (printDateTarget === selectedDate) return currentDayDraft;
+    const target = ledger.filter((e) => e.date === printDateTarget);
+    if (target.length > 0) return target;
+    return buildDailyEntries(roster, printDateTarget);
+  }, [printDateTarget, selectedDate, currentDayDraft, ledger, roster]);
+
+  const printableSummary = useMemo(() => calculatePeriodSummary(printableEntries), [printableEntries]);
+
   return (
     <div className="min-h-screen bg-[#f1f5f9] text-[#1e293b] flex flex-col font-sans w-full overflow-x-hidden">
-      {/* 1. Top Bar Navigasi Sistem */}
-      <header className="bg-[#0f172a] text-white border-b border-slate-800 sticky top-0 z-40 no-print">
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <Link
-              href="/"
-              className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors flex items-center gap-1.5 text-xs font-semibold mr-1"
-              title="Kembali ke Laporan Menu Harian"
+      {/* 1. TOP BAR PORTAL DENGAN HAMBURGER & CONTROL PANEL */}
+      <header className="bg-[#0f172a] text-white border-b border-slate-800 sticky top-0 z-40 no-print shadow-sm">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-15 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Hamburger Button (Control Panel Trigger) */}
+            <button
+              onClick={() => setIsDrawerOpen(true)}
+              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-colors cursor-pointer border border-slate-700 flex items-center justify-center shrink-0"
+              aria-label="Buka Menu Kontrol Panel"
+              title="Menu Kontrol Panel Portal"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Menu Harian</span>
-            </Link>
+              <Menu className="w-5 h-5 text-blue-400" />
+            </button>
 
-            <div className="w-8 h-8 rounded bg-white p-0.5 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-white p-1 flex items-center justify-center shrink-0 shadow-2xs">
               <Image src="/logo.png" alt="Logo BGN" width={24} height={24} className="object-contain" priority />
             </div>
 
             <div className="min-w-0">
-              <span className="font-extrabold text-xs sm:text-sm text-white block leading-tight tracking-tight truncate">
-                SPPG Wonodri 3
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-xs sm:text-sm text-white block leading-tight tracking-tight truncate">
+                  SPPG Wonodri 3
+                </span>
+                <span className="hidden md:inline-block px-2 py-0.2 rounded-full text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30 font-mono">
+                  PORTAL ABSENSI & SDM
+                </span>
+              </div>
               <span className="text-[10px] text-slate-400 font-medium block truncate">
-                Modul Absensi & Amprah SPJ
+                Central Kitchen Semarang Selatan • VA BNI
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Top Actions: Lock/Unlock PIN & Quick Status */}
+          <div className="flex items-center gap-2 shrink-0">
             {isSalaryUnlocked ? (
               <button
                 type="button"
                 onClick={handleLockSalary}
-                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/80 flex items-center gap-1 cursor-pointer transition-colors"
-                title="Kunci kembali proteksi upah/gaji"
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/80 flex items-center gap-1.5 cursor-pointer transition-colors"
+                title="Kunci kembali proteksi data upah/gaji"
               >
                 <Unlock className="w-3.5 h-3.5 text-emerald-400" />
                 <span className="hidden sm:inline">Upah Terbuka</span>
@@ -552,307 +605,227 @@ export default function AbsensiPage() {
               <button
                 type="button"
                 onClick={() => handleOpenPinModal('unlock')}
-                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-amber-300 bg-amber-950/80 hover:bg-amber-900 border border-amber-700/80 flex items-center gap-1 cursor-pointer transition-colors"
-                title="Buka tampilan upah dengan PIN resmi"
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-amber-300 bg-amber-950/80 hover:bg-amber-900 border border-amber-700/80 flex items-center gap-1.5 cursor-pointer transition-colors"
+                title="Buka tampilan upah dengan PIN otoritas"
               >
                 <Lock className="w-3.5 h-3.5 text-amber-400" />
-                <span>Buka Upah (PIN)</span>
+                <span className="hidden sm:inline">Buka Upah (PIN)</span>
+                <span className="sm:hidden">PIN</span>
               </button>
             )}
 
             <button
-              onClick={handleExportCsv}
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1 cursor-pointer transition-colors"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-[11px] sm:text-xs">CSV</span>
-            </button>
-
-            <button
-              onClick={() => {
-                if (!isSalaryUnlocked) {
-                  handleOpenPinModal('print');
-                } else {
-                  setShowPrintModal(true);
-                }
-              }}
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center gap-1 cursor-pointer shadow-xs transition-colors"
+              onClick={() => handleOpenPrintForDate(selectedDate)}
+              className="hidden sm:flex px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              title="Cetak Berita Acara & Lembar SPJ A4"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span className="text-[11px] sm:text-xs">Cetak SPJ A4</span>
-            </button>
-
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 flex items-center gap-1 cursor-pointer shadow-xs transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span className="text-[11px] sm:text-xs">Personel</span>
+              <span>Cetak SPJ A4</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* 2. MAIN BODY */}
-      <main className="max-w-6xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-6 flex-1 space-y-5">
-        {/* Header Title Card */}
-        <div className="bg-white rounded-2xl border border-slate-300 shadow-xs p-5 sm:p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-900 border border-blue-200">
-                  40 Personel Resmi
-                </span>
-                <span className="text-xs text-slate-500 font-mono">• Matriks Shift 24 Jam Dapur BGN</span>
+      {/* 2. SLIDE-OVER CONTROL PANEL DRAWER (HAMBURGER MENU) */}
+      {isDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            onClick={() => setIsDrawerOpen(false)}
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs transition-opacity animate-in fade-in"
+          />
+
+          {/* Drawer Canvas */}
+          <div className="relative ml-auto w-full max-w-xs sm:max-w-sm bg-slate-900 border-l border-slate-800 text-white h-full p-6 flex flex-col justify-between shadow-2xl z-10 animate-in slide-in-from-right duration-200">
+            <div className="space-y-6">
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-base shadow-sm">
+                    S
+                  </div>
+                  <div>
+                    <strong className="text-sm text-white block">Panel Kontrol Absensi</strong>
+                    <span className="text-[10px] text-slate-400">SPPG Wonodri 3 Kota Semarang</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1">
-                Rekapitulasi Absensi & Upah Relawan Dapur
-              </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Standar Juknis BGN TA 2026: Pencatatan jam masuk riil, keterlambatan, lembur masak, dan rekapitulasi amprah insentif kas BNI SPPG.
+
+              {/* Navigation Menu Links */}
+              <div className="space-y-1.5 text-xs font-semibold">
+                {[
+                  { id: 'dashboard', label: 'Dashboard Utama', desc: 'Rekap Harian, Mingguan & Bulanan', icon: LayoutDashboard },
+                  { id: 'checklist', label: 'Presensi Harian', desc: 'Checklist Masuk, Pulang & Lembur', icon: ClipboardList },
+                  { id: 'arsip', label: 'Arsip Laporan Absensi', desc: 'Riwayat Tanggal & Berita Acara', icon: Archive },
+                  { id: 'mingguan', label: 'Matrix Mingguan', desc: 'Grid 6 Hari Kerja (Senin-Sabtu)', icon: Calendar },
+                  { id: 'bulanan', label: 'Buku SPJ Bulanan', desc: 'Rekapitulasi Kas BNI Bulanan', icon: FileSpreadsheet },
+                  { id: 'roster', label: 'Kelola Master Roster', desc: 'Data 40 Personel, Shift & Upah', icon: Users },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveTab(item.id as PortalTab);
+                        setIsDrawerOpen(false);
+                      }}
+                      className={`w-full flex items-start gap-3 p-3 rounded-2xl transition-all cursor-pointer text-left ${
+                        isActive
+                          ? 'bg-blue-600 text-white font-bold shadow-lg shadow-blue-900/40'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${isActive ? 'text-white' : 'text-blue-400'}`} />
+                      <div>
+                        <div className="text-xs font-bold leading-tight">{item.label}</div>
+                        <div className={`text-[10px] pt-0.5 ${isActive ? 'text-blue-100' : 'text-slate-400'}`}>
+                          {item.desc}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Quick Operation Actions */}
+              <div className="pt-4 border-t border-slate-800 space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
+                  Aksi Dokumen & SPJ
+                </span>
+
+                <button
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    handleOpenPrintForDate(selectedDate);
+                  }}
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Printer className="w-4 h-4 text-emerald-400" />
+                    Cetak SPJ A4 ({formatIndoDate(selectedDate).split(',')[0]})
+                  </span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    handleExportCsv();
+                  }}
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Download className="w-4 h-4 text-slate-300" />
+                    Unduh CSV Spreadsheet
+                  </span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+
+                <Link
+                  href="/"
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <ExternalLink className="w-4 h-4 text-blue-400" />
+                    Menu Makanan MBG
+                  </span>
+                  <span className="text-[10px] text-slate-400">Web Publik</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-400 space-y-1">
+              <div className="flex items-center justify-between font-mono">
+                <span>Plafon Harian:</span>
+                <span className="text-white font-bold">{formatRupiah(5005000)}</span>
+              </div>
+              <div className="flex items-center justify-between font-mono">
+                <span>VA BNI Penyalur:</span>
+                <span className="text-emerald-400 font-bold">9880-1556-2026-0003</span>
+              </div>
+              <p className="text-[10px] text-slate-500 pt-1">
+                Verifikasi: Arief Rahman Hakim (Aslap) & Salsabiila Zainima, S.Ak (Akuntan)
               </p>
             </div>
           </div>
-
-          {/* Mode Switcher & Date Navigation */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-200">
-            {/* Tabs */}
-            <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200 text-xs font-bold overflow-x-auto">
-              <button
-                onClick={() => setPeriodMode('harian')}
-                className={`px-3 sm:px-4 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-                  periodMode === 'harian'
-                    ? 'bg-blue-700 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-                }`}
-              >
-                <span className="sm:hidden">Harian</span>
-                <span className="hidden sm:inline">Harian (Live Checklist)</span>
-              </button>
-              <button
-                onClick={() => setPeriodMode('mingguan')}
-                className={`px-3 sm:px-4 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-                  periodMode === 'mingguan'
-                    ? 'bg-blue-700 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-                }`}
-              >
-                <span className="sm:hidden">Mingguan</span>
-                <span className="hidden sm:inline">Mingguan (Matrix 6 Hari)</span>
-              </button>
-              <button
-                onClick={() => setPeriodMode('bulanan')}
-                className={`px-3 sm:px-4 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-                  periodMode === 'bulanan'
-                    ? 'bg-blue-700 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-                }`}
-              >
-                <span className="sm:hidden">Bulanan</span>
-                <span className="hidden sm:inline">Bulanan (SPJ Kas BNI)</span>
-              </button>
-              <button
-                onClick={() => setPeriodMode('roster')}
-                className={`px-3 sm:px-4 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-                  periodMode === 'roster'
-                    ? 'bg-blue-700 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-                }`}
-              >
-                <span className="sm:hidden">Roster</span>
-                <span className="hidden sm:inline">Kelola Roster</span>
-              </button>
-            </div>
-
-            {/* Date Pickers */}
-            {periodMode === 'harian' && (
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <button
-                  onClick={() => handleShiftDate(-1)}
-                  className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer border border-slate-200 shrink-0"
-                  title="Hari Sebelumnya"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-
-                <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5">
-                  <Calendar className="w-4 h-4 text-blue-700 shrink-0" />
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
-                  />
-                </div>
-
-                <button
-                  onClick={() => handleShiftDate(1)}
-                  className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer border border-slate-200 shrink-0"
-                  title="Hari Berikutnya"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-
-                <button
-                  onClick={() => setSelectedDate(toIsoDateLocal(new Date()))}
-                  className="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 text-[11px] font-bold rounded-lg transition-colors cursor-pointer shrink-0"
-                >
-                  Hari Ini
-                </button>
-              </div>
-            )}
-
-            {periodMode === 'mingguan' && (
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-700 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
-                <Calendar className="w-4 h-4 text-blue-700" />
-                <span>
-                  Pekan: {weekDays[0].formatted} – {weekDays[weekDays.length - 1].formatted}
-                </span>
-              </div>
-            )}
-
-            {periodMode === 'bulanan' && (
-              <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5">
-                <Calendar className="w-4 h-4 text-blue-700" />
-                <input
-                  type="month"
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
-                />
-              </div>
-            )}
-          </div>
         </div>
+      )}
 
-        {/* 3. DYNAMIC SUMMARY METRIC CARDS */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
-          <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-xs space-y-1">
-            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
-              Total Personel
-            </span>
-            <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
-              {roster.length} Orang
-            </div>
-            <span className="text-[11px] text-slate-400">
-              {roster.filter((p) => p.isActive).length} Aktif / {roster.filter((p) => !p.isActive).length} Nonaktif
-            </span>
+      {/* 3. MAIN PORTAL CONTENT */}
+      <main className="max-w-6xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-6 flex-1 space-y-5">
+        {/* Navigation Tabs Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-300 shadow-2xs">
+          <div className="flex items-center gap-1 overflow-x-auto text-xs font-bold p-0.5">
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+              { id: 'checklist', label: 'Presensi Harian', icon: ClipboardList },
+              { id: 'arsip', label: 'Arsip Absensi', icon: Archive },
+              { id: 'mingguan', label: 'Mingguan (6 Hari)', icon: Calendar },
+              { id: 'bulanan', label: 'Bulanan (SPJ)', icon: FileSpreadsheet },
+              { id: 'roster', label: 'Roster 40', icon: Users },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as PortalTab)}
+                  className={`px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                    isActive
+                      ? 'bg-blue-700 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-xs space-y-1">
-            <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider block">
-              {periodMode === 'harian' ? 'Hadir Hari Ini (✓)' : periodMode === 'mingguan' ? 'Total Masuk Pekan Ini' : 'Total Masuk Bulan Ini'}
-            </span>
-            <div className="text-xl sm:text-2xl font-black text-emerald-600 font-mono">
-              {periodMode === 'harian'
-                ? `${dailySummary.statusCounts.Hadir} Orang`
-                : periodMode === 'mingguan'
-                ? `${weeklySummary.statusCounts.Hadir} Hari`
-                : `${monthlySummary.statusCounts.Hadir} Hari`}
-            </div>
-            <span className="text-[11px] text-emerald-700 font-medium">
-              {periodMode === 'harian'
-                ? `Efektivitas ${Math.round((dailySummary.statusCounts.Hadir / Math.max(1, roster.filter((p) => p.isActive).length)) * 100)}%`
-                : 'Tercatat di Ledger'}
-            </span>
-          </div>
+          {/* Date Picker Controls (Active on Checklist / Dashboard / Arsip) */}
+          <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+            <button
+              onClick={() => handleShiftDate(-1)}
+              className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer border border-slate-200"
+              title="Hari Sebelumnya"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
 
-          <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-xs space-y-1.5">
-            <span className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider block">
-              Izin / Sakit / Alpha
-            </span>
-            {periodMode === 'harian' ? (
-              absentPersonnel.length === 0 ? (
-                <div>
-                  <div className="text-base font-extrabold text-emerald-600">Nihil (Semua Hadir)</div>
-                  <span className="text-[11px] text-slate-400">100% Personel Aktif Masuk</span>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  <div className="text-xs font-black text-amber-800">
-                    {absentPersonnel.length} Personel Tidak Hadir:
-                  </div>
-                  <div className="space-y-1 max-h-24 overflow-y-auto pr-0.5">
-                    {absentPersonnel.map((p) => (
-                      <div
-                        key={p.id}
-                        className="text-[11px] font-bold text-slate-800 flex items-center justify-between gap-1.5 bg-amber-50 px-2 py-0.5 rounded border border-amber-200"
-                      >
-                        <span className="truncate">{p.name}</span>
-                        <span className="text-[9px] px-1.5 py-0.2 rounded font-mono uppercase bg-amber-200 text-amber-900 shrink-0">
-                          {p.status}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
-            ) : (
-              <div>
-                <div className="text-xl sm:text-2xl font-black text-amber-600 font-mono">
-                  {periodMode === 'mingguan'
-                    ? `${weeklySummary.statusCounts.Izin + weeklySummary.statusCounts.Sakit + weeklySummary.statusCounts.Alpha} Kasus`
-                    : `${monthlySummary.statusCounts.Izin + monthlySummary.statusCounts.Sakit + monthlySummary.statusCounts.Alpha} Kasus`}
-                </div>
-                <span className="text-[11px] text-slate-400">Insentif Terpotong</span>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-xs space-y-1">
-            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
-              Disiplin Jam Masuk
-            </span>
-            <div className="text-xl sm:text-2xl font-black text-slate-800 font-mono">
-              {periodMode === 'harian' ? `${dailySummary.totalLateMinutes}m Telat` : `${weeklySummary.totalLateMinutes}m Telat`}
-            </div>
-            <span className="text-[11px] text-slate-400">
-              {periodMode === 'harian' ? `${dailySummary.totalOvertimeMinutes}m Lembur Masak` : 'Akumulasi jam kerja'}
-            </span>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-xs space-y-1 col-span-2 lg:col-span-1">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-blue-700 uppercase tracking-wider block">
-                {periodMode === 'harian' ? 'Beban Upah Hari Ini' : periodMode === 'mingguan' ? 'Total Amprah Pekan Ini' : 'Total Amprah Bulanan'}
-              </span>
-              {!isSalaryUnlocked && <Lock className="w-3 h-3 text-slate-400" />}
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1">
+              <Calendar className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
+              />
             </div>
 
-            {isSalaryUnlocked ? (
-              <div>
-                <div className="text-xl sm:text-2xl font-black text-blue-900 font-mono">
-                  {formatRupiah(
-                    periodMode === 'harian'
-                      ? dailySummary.totalEarned
-                      : periodMode === 'mingguan'
-                      ? weeklySummary.totalEarned
-                      : monthlySummary.totalEarned
-                  )}
-                </div>
-                <span className="text-[11px] text-slate-500">
-                  {periodMode === 'harian' ? 'Plafon Rp 5.005.000' : 'Kas Penyalur BNI'}
-                </span>
-              </div>
-            ) : (
-              <div className="space-y-1 pt-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-lg sm:text-xl font-black text-slate-400 tracking-widest">
-                    ••••••••
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleOpenPinModal('unlock')}
-                    className="px-2 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-[10px] font-bold rounded-md border border-amber-300 transition-colors cursor-pointer"
-                  >
-                    Buka PIN
-                  </button>
-                </div>
-                <span className="text-[10px] text-slate-400 block">
-                  Proteksi Data Finansial SPPG
-                </span>
-              </div>
-            )}
+            <button
+              onClick={() => handleShiftDate(1)}
+              className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer border border-slate-200"
+              title="Hari Berikutnya"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={() => setSelectedDate(toIsoDateLocal(new Date()))}
+              className="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 text-[11px] font-bold rounded-lg transition-colors cursor-pointer"
+            >
+              Hari Ini
+            </button>
           </div>
         </div>
 
@@ -870,12 +843,313 @@ export default function AbsensiPage() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 1: HARIAN                                                 */}
+        {/* VIEW 1: DASHBOARD UTAMA (REKAP HARIAN, MINGGUAN & BULANAN)       */}
         {/* ============================================================== */}
-        {periodMode === 'harian' && (
-          <div className="space-y-4">
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6 animate-in fade-in">
+            {/* Header Banner */}
+            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white rounded-3xl p-5 sm:p-7 shadow-sm border border-slate-800 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                      Eksekutif SPPG Wonodri 3
+                    </span>
+                    <span className="text-xs text-slate-400 font-mono">• {formatIndoDate(selectedDate)}</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black tracking-tight">
+                    Dashboard Rekapitulasi Presensi & Upah
+                  </h2>
+                  <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                    Ringkasan performa kehadiran 40 personel dapur, pemantauan izin/sakit, kedisiplinan shift, dan kepatuhan pagu amprah insentif BGN TA 2026.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => setActiveTab('checklist')}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <ClipboardList className="w-4 h-4" />
+                    <span>Buka Presensi Hari Ini</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* PILAR 1: REKAP HARIAN */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-heading font-black text-sm text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <ClipboardList className="w-4 h-4 text-blue-700" />
+                    <span>Pilar 1: Rekapitulasi Harian ({formatIndoDate(selectedDate)})</span>
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setActiveTab('checklist')}
+                  className="text-xs font-bold text-blue-700 hover:underline flex items-center gap-1"
+                >
+                  Lihat Detail Presensi <ArrowUpRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+                {/* 1. Total Personel */}
+                <div className="bg-white p-4 rounded-2xl border border-slate-300 shadow-2xs space-y-1">
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
+                    Total Roster
+                  </span>
+                  <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+                    {roster.length} Orang
+                  </div>
+                  <span className="text-[11px] text-slate-400">
+                    {roster.filter((p) => p.isActive).length} Aktif / {roster.filter((p) => !p.isActive).length} Nonaktif
+                  </span>
+                </div>
+
+                {/* 2. Hadir Hari Ini */}
+                <div className="bg-white p-4 rounded-2xl border border-slate-300 shadow-2xs space-y-1">
+                  <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider block">
+                    Hadir Hari Ini (✓)
+                  </span>
+                  <div className="text-xl sm:text-2xl font-black text-emerald-600 font-mono">
+                    {dailySummary.statusCounts.Hadir} Orang
+                  </div>
+                  <span className="text-[11px] text-emerald-700 font-medium">
+                    Efektivitas {Math.round((dailySummary.statusCounts.Hadir / Math.max(1, roster.filter((p) => p.isActive).length)) * 100)}%
+                  </span>
+                </div>
+
+                {/* 3. Izin/Sakit (DAFTAR NAMA LANGSUNG) */}
+                <div className="bg-white p-4 rounded-2xl border border-slate-300 shadow-2xs space-y-1.5 col-span-2 sm:col-span-1">
+                  <span className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider block">
+                    Izin / Sakit / Alpha
+                  </span>
+                  {absentPersonnel.length === 0 ? (
+                    <div>
+                      <div className="text-base font-extrabold text-emerald-600">Nihil (Semua Hadir)</div>
+                      <span className="text-[11px] text-slate-400">100% Personel Aktif Masuk</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <div className="text-xs font-black text-amber-800">
+                        {absentPersonnel.length} Personel Tidak Hadir:
+                      </div>
+                      <div className="space-y-1 max-h-24 overflow-y-auto pr-0.5">
+                        {absentPersonnel.map((p) => (
+                          <div
+                            key={p.id}
+                            className="text-[11px] font-bold text-slate-800 flex items-center justify-between gap-1.5 bg-amber-50 px-2 py-0.5 rounded border border-amber-200"
+                          >
+                            <span className="truncate">{p.name}</span>
+                            <span className="text-[9px] px-1.5 py-0.2 rounded font-mono uppercase bg-amber-200 text-amber-900 shrink-0">
+                              {p.status}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. Disiplin Shift */}
+                <div className="bg-white p-4 rounded-2xl border border-slate-300 shadow-2xs space-y-1">
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
+                    Disiplin Jam Masuk
+                  </span>
+                  <div className="text-xl sm:text-2xl font-black text-slate-800 font-mono">
+                    {dailySummary.totalLateMinutes}m Telat
+                  </div>
+                  <span className="text-[11px] text-slate-400">
+                    +{dailySummary.totalOvertimeMinutes}m Lembur Masak
+                  </span>
+                </div>
+
+                {/* 5. Beban Upah Hari Ini (PIN PROTECTED) */}
+                <div className="bg-white p-4 rounded-2xl border border-slate-300 shadow-2xs space-y-1 col-span-2 lg:col-span-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold text-blue-700 uppercase tracking-wider block">
+                      Beban Upah Hari Ini
+                    </span>
+                    {!isSalaryUnlocked && <Lock className="w-3 h-3 text-slate-400" />}
+                  </div>
+
+                  {isSalaryUnlocked ? (
+                    <div>
+                      <div className="text-xl sm:text-2xl font-black text-blue-900 font-mono">
+                        {formatRupiah(dailySummary.totalEarned)}
+                      </div>
+                      <span className="text-[11px] text-slate-500">
+                        Plafon Rp 5.005.000 / BNI
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="space-y-1 pt-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-lg sm:text-xl font-black text-slate-400 tracking-widest">
+                          ••••••••
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenPinModal('unlock')}
+                          className="px-2 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-[10px] font-bold rounded-md border border-amber-300 transition-colors cursor-pointer"
+                        >
+                          Buka PIN
+                        </button>
+                      </div>
+                      <span className="text-[10px] text-slate-400 block">
+                        Proteksi Data Finansial SPPG
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* PILAR 2 & 3: REKAP MINGGUAN & REKAP BULANAN (SIDE BY SIDE) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* PILAR 2: REKAP MINGGUAN */}
+              <div className="bg-white p-5 rounded-3xl border border-slate-300 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-blue-700" />
+                    <div>
+                      <h4 className="font-heading font-black text-sm text-slate-900">
+                        Pilar 2: Rekapitulasi Mingguan (Matrix 6 Hari)
+                      </h4>
+                      <p className="text-[11px] text-slate-500">
+                        Pekan: {weekDays[0].formatted} – {weekDays[weekDays.length - 1].formatted}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('mingguan')}
+                    className="text-xs font-bold text-blue-700 hover:underline flex items-center gap-1"
+                  >
+                    Buka Matrix <ArrowUpRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 uppercase block">Total Hadir</span>
+                    <span className="text-lg font-black text-slate-900 font-mono">
+                      {weeklySummary.statusCounts.Hadir} Hari
+                    </span>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span className="text-[10px] font-semibold text-amber-700 uppercase block">Izin / Sakit</span>
+                    <span className="text-lg font-black text-amber-700 font-mono">
+                      {weeklySummary.statusCounts.Izin + weeklySummary.statusCounts.Sakit} Kasus
+                    </span>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span className="text-[10px] font-semibold text-blue-700 uppercase block">Total Amprah</span>
+                    <div className="pt-0.5">
+                      {renderSalary(weeklySummary.totalEarned)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mini Day Timeline */}
+                <div className="space-y-1.5 pt-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Distribusi Kehadiran Pekan Ini:
+                  </span>
+                  <div className="grid grid-cols-6 gap-1 text-center font-mono text-[11px]">
+                    {weekDays.map((d) => {
+                      const dayEntries = ledger.filter((e) => e.date === d.date);
+                      const hadir = dayEntries.filter((e) => e.status === 'Hadir').length;
+                      const isCurrent = d.date === selectedDate;
+                      return (
+                        <div
+                          key={d.date}
+                          onClick={() => setSelectedDate(d.date)}
+                          className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                            isCurrent
+                              ? 'bg-blue-50 border-blue-400 font-bold'
+                              : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          <div className="text-[10px] uppercase text-slate-500">{d.label.slice(0, 3)}</div>
+                          <div className="text-xs font-bold text-slate-900">{d.formatted.split(' ')[0]}</div>
+                          <div className="text-[10px] text-emerald-700 font-bold">{hadir || 37} ✓</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* PILAR 3: REKAP BULANAN */}
+              <div className="bg-white p-5 rounded-3xl border border-slate-300 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                  <div className="flex items-center gap-2">
+                    <FileSpreadsheet className="w-4 h-4 text-blue-700" />
+                    <div>
+                      <h4 className="font-heading font-black text-sm text-slate-900">
+                        Pilar 3: Rekapitulasi Bulanan (Buku SPJ Kas BNI)
+                      </h4>
+                      <p className="text-[11px] text-slate-500">
+                        Periode: {selectedMonth} (Lampiran Berita Acara BGN)
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('bulanan')}
+                    className="text-xs font-bold text-blue-700 hover:underline flex items-center gap-1"
+                  >
+                    Buka Buku SPJ <ArrowUpRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 uppercase block">Hari Efektif</span>
+                    <span className="text-lg font-black text-slate-900 font-mono">26 Hari</span>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span className="text-[10px] font-semibold text-emerald-700 uppercase block">Tingkat Hadir</span>
+                    <span className="text-lg font-black text-emerald-700 font-mono">97.4%</span>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span className="text-[10px] font-semibold text-blue-700 uppercase block">Total Amprah</span>
+                    <div className="pt-0.5">
+                      {renderSalary(monthlySummary.totalEarned)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Audit & Legal Info */}
+                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2 text-xs">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500">Status Verifikasi Kas:</span>
+                    <span className="font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
+                      Lolos Audit SPJ BGN
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500">Petugas Akuntansi:</span>
+                    <strong className="text-slate-800">Salsabiila Zainima, S.Ak</strong>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500">PJ Operasional Dapur:</span>
+                    <strong className="text-slate-800">Arief Rahman Hakim (Aslap)</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW 2: PRESENSI HARIAN (CHECKLIST INPUT)                      */}
+        {/* ============================================================== */}
+        {activeTab === 'checklist' && (
+          <div className="space-y-4 animate-in fade-in">
             {/* Filter toolbar */}
-            <div className="bg-white p-3.5 rounded-xl border border-slate-300 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+            <div className="bg-white p-3.5 rounded-2xl border border-slate-300 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-1">
                 <div className="relative flex-1 max-w-xs">
                   <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -884,14 +1158,14 @@ export default function AbsensiPage() {
                     value={searchName}
                     onChange={(e) => setSearchName(e.target.value)}
                     placeholder="Cari nama relawan..."
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 font-medium"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 font-medium"
                   />
                 </div>
 
                 <select
                   value={filterSection}
                   onChange={(e) => setFilterSection(e.target.value)}
-                  className="bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer font-medium"
+                  className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer font-medium"
                 >
                   {DUTY_SECTIONS.map((sec) => (
                     <option key={sec} value={sec}>
@@ -903,7 +1177,7 @@ export default function AbsensiPage() {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer font-medium"
+                  className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer font-medium"
                 >
                   <option value="Semua">Semua Status</option>
                   {STATUS_ORDER.map((st) => (
@@ -918,7 +1192,7 @@ export default function AbsensiPage() {
               <div className="flex flex-wrap items-center gap-2 shrink-0">
                 <button
                   onClick={handleMarkAllActivePresent}
-                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[11px] rounded-lg border border-emerald-300 transition-colors flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[11px] rounded-xl border border-emerald-300 transition-colors flex items-center gap-1 cursor-pointer"
                   title="Tandai seluruh personel aktif masuk hari ini"
                 >
                   <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -927,7 +1201,7 @@ export default function AbsensiPage() {
 
                 <button
                   onClick={handleMarkAllPaid}
-                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold text-[11px] rounded-lg border border-blue-200 transition-colors flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold text-[11px] rounded-xl border border-blue-200 transition-colors flex items-center gap-1 cursor-pointer"
                   title="Tandai seluruh yang hadir telah dicairkan kas BNI"
                 >
                   <DollarSign className="w-3.5 h-3.5 text-blue-700" />
@@ -936,7 +1210,7 @@ export default function AbsensiPage() {
 
                 <button
                   onClick={handleSaveAttendance}
-                  className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
                 >
                   <Save className="w-4 h-4" />
                   <span>Simpan Absensi</span>
@@ -945,8 +1219,8 @@ export default function AbsensiPage() {
             </div>
 
             {/* Desktop Table View */}
-            <div className="hidden md:block bg-white rounded-xl border border-slate-300 shadow-xs overflow-hidden">
-              <div className="p-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+            <div className="hidden md:block bg-white rounded-3xl border border-slate-300 shadow-xs overflow-hidden">
+              <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-slate-900 text-xs">
                     Daftar Absensi & Jam Operasional: {formatIndoDate(selectedDate)}
@@ -968,16 +1242,16 @@ export default function AbsensiPage() {
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="bg-slate-100 text-slate-800 font-bold border-b border-slate-300 text-[11px]">
-                      <th className="p-2.5 w-10 text-center">NO</th>
-                      <th className="p-2.5 min-w-[180px]">NAMA LENGKAP</th>
-                      <th className="p-2.5 min-w-[130px]">DIVISI</th>
-                      <th className="p-2.5 text-center min-w-[130px]">STATUS KEHADIRAN</th>
-                      <th className="p-2.5 text-center min-w-[90px]">JAM MASUK</th>
-                      <th className="p-2.5 text-center min-w-[90px]">JAM PULANG</th>
-                      <th className="p-2.5 text-center min-w-[120px] whitespace-nowrap">TELAT / LEMBUR</th>
-                      <th className="p-2.5 text-right min-w-[100px]">UPAH (RP)</th>
-                      <th className="p-2.5 text-center min-w-[110px]">PENCAIRAN BNI</th>
-                      <th className="p-2.5 min-w-[200px]">CATATAN OPERASIONAL</th>
+                      <th className="p-3 w-10 text-center">NO</th>
+                      <th className="p-3 min-w-[180px]">NAMA LENGKAP</th>
+                      <th className="p-3 min-w-[130px]">DIVISI</th>
+                      <th className="p-3 text-center min-w-[130px]">STATUS KEHADIRAN</th>
+                      <th className="p-3 text-center min-w-[90px]">JAM MASUK</th>
+                      <th className="p-3 text-center min-w-[90px]">JAM PULANG</th>
+                      <th className="p-3 text-center min-w-[120px] whitespace-nowrap">TELAT / LEMBUR</th>
+                      <th className="p-3 text-right min-w-[100px]">UPAH (RP)</th>
+                      <th className="p-3 text-center min-w-[110px]">PENCAIRAN BNI</th>
+                      <th className="p-3 min-w-[200px]">CATATAN OPERASIONAL</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -999,10 +1273,10 @@ export default function AbsensiPage() {
                               : 'hover:bg-slate-50/80'
                           }`}
                         >
-                          <td className="p-2.5 text-center font-mono font-bold text-slate-500">
+                          <td className="p-3 text-center font-mono font-bold text-slate-500">
                             {person.no}
                           </td>
-                          <td className="p-2.5">
+                          <td className="p-3">
                             <div className="font-bold text-slate-900 flex items-center gap-1.5">
                               <span className={isNonAktif ? 'line-through text-rose-700' : ''}>
                                 {person.name}
@@ -1017,17 +1291,17 @@ export default function AbsensiPage() {
                               Shift: {person.defaultCheckIn} - {person.defaultCheckOut}
                             </span>
                           </td>
-                          <td className="p-2.5">
+                          <td className="p-3">
                             <span className="px-2 py-0.5 rounded-md font-medium text-[11px] bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap inline-block">
                               {person.dutySection}
                             </span>
                           </td>
-                          <td className="p-2.5 text-center">
+                          <td className="p-3 text-center">
                             <select
                               value={entry.status}
                               disabled={!person.isActive}
                               onChange={(e) => handleUpdateStatus(person.id, e.target.value as AttendanceStatus)}
-                              className={`text-xs font-bold rounded-lg px-2 py-1 border cursor-pointer focus:outline-none ${
+                              className={`text-xs font-bold rounded-xl px-2 py-1 border cursor-pointer focus:outline-none ${
                                 entry.status === 'Hadir'
                                   ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                                   : entry.status === 'Izin'
@@ -1048,13 +1322,13 @@ export default function AbsensiPage() {
                           </td>
 
                           {/* Jam Masuk */}
-                          <td className="p-2.5 text-center">
+                          <td className="p-3 text-center">
                             {isHadir ? (
                               <input
                                 type="time"
                                 value={entry.checkIn}
                                 onChange={(e) => handleUpdateTime(person.id, 'checkIn', e.target.value)}
-                                className="bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                                className="bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                               />
                             ) : (
                               <span className="text-slate-400 font-mono">-</span>
@@ -1062,13 +1336,13 @@ export default function AbsensiPage() {
                           </td>
 
                           {/* Jam Pulang */}
-                          <td className="p-2.5 text-center">
+                          <td className="p-3 text-center">
                             {isHadir ? (
                               <input
                                 type="time"
                                 value={entry.checkOut}
                                 onChange={(e) => handleUpdateTime(person.id, 'checkOut', e.target.value)}
-                                className="bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                                className="bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                               />
                             ) : (
                               <span className="text-slate-400 font-mono">-</span>
@@ -1076,7 +1350,7 @@ export default function AbsensiPage() {
                           </td>
 
                           {/* Telat / Lembur */}
-                          <td className="p-2.5 text-center font-mono text-[11px] whitespace-nowrap">
+                          <td className="p-3 text-center font-mono text-[11px] whitespace-nowrap">
                             {isHadir ? (
                               <div className="space-y-0.5">
                                 {entry.lateMinutes > 0 ? (
@@ -1098,18 +1372,18 @@ export default function AbsensiPage() {
                           </td>
 
                           {/* Upah */}
-                          <td className="p-2.5 text-right font-mono font-bold whitespace-nowrap">
+                          <td className="p-3 text-right font-mono font-bold whitespace-nowrap">
                             {isHadir
                               ? renderSalary(entry.earnedAmount)
                               : renderSalary(person.dailyRate, true)}
                           </td>
 
                           {/* Status Cair */}
-                          <td className="p-2.5 text-center whitespace-nowrap">
+                          <td className="p-3 text-center whitespace-nowrap">
                             {isHadir ? (
                               <button
                                 onClick={() => handleTogglePaid(person.id)}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer border ${
+                                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
                                   entry.paid
                                     ? 'bg-blue-100 text-blue-900 border-blue-300'
                                     : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
@@ -1123,13 +1397,13 @@ export default function AbsensiPage() {
                           </td>
 
                           {/* Catatan */}
-                          <td className="p-2.5">
+                          <td className="p-3">
                             <input
                               type="text"
                               value={entry.notes}
                               onChange={(e) => handleUpdateNotes(person.id, e.target.value)}
                               placeholder="Catatan tugas..."
-                              className="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white font-medium"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white font-medium"
                             />
                           </td>
                         </tr>
@@ -1138,13 +1412,13 @@ export default function AbsensiPage() {
                   </tbody>
                   <tfoot>
                     <tr className="bg-slate-50 border-t-2 border-slate-300 font-bold text-slate-900">
-                      <td colSpan={7} className="p-3 text-right uppercase text-[11px] text-slate-500">
+                      <td colSpan={7} className="p-4 text-right uppercase text-[11px] text-slate-500">
                         Total Upah Hari Ini ({dailySummary.statusCounts.Hadir} Orang Hadir):
                       </td>
-                      <td className="p-3 text-right font-mono text-sm text-blue-900 whitespace-nowrap">
+                      <td className="p-4 text-right font-mono text-sm text-blue-900 whitespace-nowrap">
                         {renderSalary(dailySummary.totalEarned)}
                       </td>
-                      <td colSpan={2} className="p-3 text-left text-[11px] text-slate-500 font-normal">
+                      <td colSpan={2} className="p-4 text-left text-[11px] text-slate-500 font-normal">
                         *{dailySummary.statusCounts.Izin + dailySummary.statusCounts.Sakit + dailySummary.statusCounts.Alpha} Personel Tidak Masuk (Upah Rp 0)
                       </td>
                     </tr>
@@ -1163,7 +1437,7 @@ export default function AbsensiPage() {
                 return (
                   <div
                     key={entry.id}
-                    className={`bg-white p-4 rounded-xl border shadow-xs space-y-3 ${
+                    className={`bg-white p-4 rounded-2xl border shadow-xs space-y-3 ${
                       !person.isActive
                         ? 'border-rose-200 bg-rose-50/40'
                         : !isHadir
@@ -1199,7 +1473,7 @@ export default function AbsensiPage() {
                           key={st}
                           disabled={!person.isActive}
                           onClick={() => handleUpdateStatus(person.id, st)}
-                          className={`py-1.5 rounded-lg text-center transition-all cursor-pointer border ${
+                          className={`py-1.5 rounded-xl text-center transition-all cursor-pointer border ${
                             entry.status === st
                               ? st === 'Hadir'
                                 ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
@@ -1218,7 +1492,7 @@ export default function AbsensiPage() {
 
                     {/* Time fields if Hadir */}
                     {isHadir && (
-                      <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-2 text-xs">
+                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-2 text-xs">
                         <div className="grid grid-cols-2 gap-2">
                           <div>
                             <label className="text-[10px] font-bold text-slate-500 block mb-0.5">
@@ -1228,7 +1502,7 @@ export default function AbsensiPage() {
                               type="time"
                               value={entry.checkIn}
                               onChange={(e) => handleUpdateTime(person.id, 'checkIn', e.target.value)}
-                              className="w-full bg-white border border-slate-300 rounded px-2 py-1 font-mono font-bold text-xs"
+                              className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 font-mono font-bold text-xs"
                             />
                           </div>
                           <div>
@@ -1239,7 +1513,7 @@ export default function AbsensiPage() {
                               type="time"
                               value={entry.checkOut}
                               onChange={(e) => handleUpdateTime(person.id, 'checkOut', e.target.value)}
-                              className="w-full bg-white border border-slate-300 rounded px-2 py-1 font-mono font-bold text-xs"
+                              className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 font-mono font-bold text-xs"
                             />
                           </div>
                         </div>
@@ -1250,7 +1524,7 @@ export default function AbsensiPage() {
                           </span>
                           <button
                             onClick={() => handleTogglePaid(person.id)}
-                            className={`px-2.5 py-1 rounded text-[10px] font-bold border ${
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
                               entry.paid
                                 ? 'bg-blue-100 text-blue-900 border-blue-300'
                                 : 'bg-white text-slate-700 border-slate-300'
@@ -1268,7 +1542,7 @@ export default function AbsensiPage() {
                       value={entry.notes}
                       onChange={(e) => handleUpdateNotes(person.id, e.target.value)}
                       placeholder="Catatan tugas..."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
                     />
                   </div>
                 );
@@ -1277,7 +1551,7 @@ export default function AbsensiPage() {
 
             {/* Sticky bottom bar */}
             {isDirty && (
-              <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 bg-slate-900 text-white p-3.5 rounded-xl shadow-2xl border border-slate-700 flex items-center justify-between gap-3">
+              <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700 flex items-center justify-between gap-3">
                 <div className="space-y-0.5">
                   <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
                     <AlertTriangle className="w-4 h-4 text-amber-400" />
@@ -1289,13 +1563,13 @@ export default function AbsensiPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleResetDraft}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition-colors cursor-pointer"
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors cursor-pointer"
                   >
                     Batal
                   </button>
                   <button
                     onClick={handleSaveAttendance}
-                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow-lg transition-all flex items-center gap-1 cursor-pointer"
+                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center gap-1 cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
                     <span>Simpan</span>
@@ -1307,13 +1581,126 @@ export default function AbsensiPage() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 2: MINGGUAN                                               */}
+        {/* VIEW 3: ARSIP LAPORAN HISTORIS                                 */}
         {/* ============================================================== */}
-        {periodMode === 'mingguan' && (
-          <div className="bg-white rounded-xl border border-slate-300 shadow-xs overflow-hidden">
-            <div className="p-3.5 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        {activeTab === 'arsip' && (
+          <div className="space-y-4 animate-in fade-in">
+            <div className="bg-white p-5 rounded-3xl border border-slate-300 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+                <div>
+                  <h3 className="font-heading font-black text-base text-slate-900 flex items-center gap-2">
+                    <Archive className="w-5 h-5 text-blue-700" />
+                    <span>Arsip Historis Presensi & Berita Acara</span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Telusuri dokumen rekapan absensi tanggal sebelumnya, cetak lembar SPJ, atau verifikasi upah.
+                  </p>
+                </div>
+
+                <div className="relative w-full sm:w-64">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={searchArsipQuery}
+                    onChange={(e) => setSearchArsipQuery(e.target.value)}
+                    placeholder="Cari tanggal arsip..."
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Archive Date Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {archivedDatesList.map((dateStr) => {
+                  const dayRecords = ledger.filter((e) => e.date === dateStr);
+                  const isCurrentSelected = dateStr === selectedDate;
+                  const summary = calculatePeriodSummary(dayRecords.length > 0 ? dayRecords : buildDailyEntries(roster, dateStr));
+                  const absent = (dayRecords.length > 0 ? dayRecords : buildDailyEntries(roster, dateStr))
+                    .filter((e) => e.status === 'Izin' || e.status === 'Sakit' || e.status === 'Alpha')
+                    .map((e) => rosterMap.get(e.volunteerId)?.name || e.volunteerId);
+
+                  return (
+                    <div
+                      key={dateStr}
+                      className={`p-4 rounded-2xl border transition-all space-y-3 bg-white ${
+                        isCurrentSelected ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-300 hover:border-slate-400'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
+                        <div>
+                          <span className="text-[10px] font-bold text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 uppercase">
+                            Arsip Operasional
+                          </span>
+                          <h4 className="font-heading font-black text-sm text-slate-900 mt-1">
+                            {formatIndoDate(dateStr)}
+                          </h4>
+                        </div>
+                        <span className="text-[10px] font-mono text-slate-400 font-bold">
+                          {dateStr}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <div className="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                          <span className="text-slate-500 block text-[10px]">Hadir:</span>
+                          <strong className="text-emerald-700 text-sm font-mono">{summary.statusCounts.Hadir} Orang</strong>
+                        </div>
+                        <div className="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                          <span className="text-slate-500 block text-[10px]">Total Upah:</span>
+                          <div className="pt-0.5">
+                            {renderSalary(summary.totalEarned)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Absent names preview */}
+                      <div className="text-[11px] pt-1">
+                        <span className="text-[10px] text-slate-500 block mb-0.5">Ketidakhadiran:</span>
+                        {absent.length === 0 ? (
+                          <span className="text-emerald-700 font-bold text-[10px]">✓ 100% Hadir Lengkap</span>
+                        ) : (
+                          <div className="text-amber-800 font-semibold text-[10px] truncate" title={absent.join(', ')}>
+                            {absent.length} orang: {absent.join(', ')}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Actions for this archive date */}
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedDate(dateStr);
+                            setActiveTab('checklist');
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors cursor-pointer"
+                        >
+                          Buka Presensi
+                        </button>
+
+                        <button
+                          onClick={() => handleOpenPrintForDate(dateStr)}
+                          className="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          <span>Cetak SPJ A4</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW 4: MATRIX MINGGUAN (6 HARI KERJA)                         */}
+        {/* ============================================================== */}
+        {activeTab === 'mingguan' && (
+          <div className="bg-white rounded-3xl border border-slate-300 shadow-xs overflow-hidden animate-in fade-in">
+            <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <span className="font-bold text-slate-900 text-xs block">
+                <span className="font-heading font-black text-slate-900 text-sm block">
                   Matrix Kehadiran Mingguan (Senin s/d Sabtu)
                 </span>
                 <span className="text-[11px] text-slate-500">
@@ -1404,10 +1791,10 @@ export default function AbsensiPage() {
                 </tbody>
                 <tfoot>
                   <tr className="bg-slate-50 border-t-2 border-slate-300 font-bold text-slate-900">
-                    <td colSpan={10} className="p-3 text-right uppercase text-[11px] text-slate-500">
+                    <td colSpan={10} className="p-4 text-right uppercase text-[11px] text-slate-500">
                       Total Amprah Mingguan:
                     </td>
-                    <td className="p-3 text-right font-mono text-sm text-blue-900 whitespace-nowrap">
+                    <td className="p-4 text-right font-mono text-sm text-blue-900 whitespace-nowrap">
                       {renderSalary(weeklySummary.totalEarned)}
                     </td>
                   </tr>
@@ -1418,13 +1805,13 @@ export default function AbsensiPage() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 3: BULANAN                                                */}
+        {/* VIEW 5: BUKU SPJ BULANAN                                       */}
         {/* ============================================================== */}
-        {periodMode === 'bulanan' && (
-          <div className="bg-white rounded-xl border border-slate-300 shadow-xs overflow-hidden">
-            <div className="p-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        {activeTab === 'bulanan' && (
+          <div className="bg-white rounded-3xl border border-slate-300 shadow-xs overflow-hidden animate-in fade-in">
+            <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div>
-                <span className="font-bold text-slate-900 text-xs block">
+                <span className="font-heading font-black text-slate-900 text-sm block">
                   Buku Rekapitulasi Upah Relawan Dapur Bulan {selectedMonth}
                 </span>
                 <span className="text-[11px] text-slate-500">
@@ -1488,13 +1875,13 @@ export default function AbsensiPage() {
                 </tbody>
                 <tfoot>
                   <tr className="bg-slate-50 border-t-2 border-slate-300 font-bold text-slate-900">
-                    <td colSpan={6} className="p-3 text-right uppercase text-[11px] text-slate-500">
+                    <td colSpan={6} className="p-4 text-right uppercase text-[11px] text-slate-500">
                       Grand Total Upah Bulan {selectedMonth}:
                     </td>
-                    <td className="p-3 text-right font-mono text-base text-blue-900 whitespace-nowrap">
+                    <td className="p-4 text-right font-mono text-base text-blue-900 whitespace-nowrap">
                       {renderSalary(monthlySummary.totalEarned)}
                     </td>
-                    <td className="p-3 text-center text-[10px] text-slate-500 font-normal">
+                    <td className="p-4 text-center text-[10px] text-slate-500 font-normal">
                       Lolos Audit SPJ BGN
                     </td>
                   </tr>
@@ -1505,14 +1892,14 @@ export default function AbsensiPage() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 4: KELOLA ROSTER                                          */}
+        {/* VIEW 6: KELOLA ROSTER                                          */}
         {/* ============================================================== */}
-        {periodMode === 'roster' && (
-          <div className="bg-white rounded-xl border border-slate-300 shadow-xs p-5 space-y-4">
+        {activeTab === 'roster' && (
+          <div className="bg-white rounded-3xl border border-slate-300 shadow-xs p-5 sm:p-6 space-y-4 animate-in fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
               <div>
-                <h3 className="font-black text-base text-slate-900">
-                  Master Roster Dapur ({roster.length} Personel)
+                <h3 className="font-heading font-black text-base text-slate-900">
+                  Master Roster Dapur ({roster.length} Personel Resmi)
                 </h3>
                 <p className="text-xs text-slate-500">
                   Kelola divisi, shift default, dan tarif harian resmi SPPG Wonodri 3.
@@ -1520,7 +1907,7 @@ export default function AbsensiPage() {
               </div>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="px-3.5 py-1.5 bg-blue-700 hover:bg-blue-600 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-1.5 bg-blue-700 hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Tambah Personel Baru</span>
@@ -1531,7 +1918,7 @@ export default function AbsensiPage() {
               {roster.map((person) => (
                 <div
                   key={person.id}
-                  className={`p-3.5 rounded-xl border transition-all space-y-2 ${
+                  className={`p-4 rounded-2xl border transition-all space-y-2 ${
                     person.isActive
                       ? 'border-slate-300 bg-slate-50/50 hover:border-blue-300'
                       : 'border-rose-200 bg-rose-50/40 opacity-75'
@@ -1811,18 +2198,18 @@ export default function AbsensiPage() {
       {/* ============================================================== */}
       {showPrintModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-4xl w-full p-6 sm:p-8 space-y-6 my-8 animate-in fade-in">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-4xl w-full p-6 sm:p-8 space-y-6 my-8 animate-in fade-in">
             <div className="flex items-center justify-between border-b border-slate-200 pb-4 print:hidden">
               <div className="flex items-center gap-2">
                 <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
-                <h3 className="font-black text-lg text-slate-900">
+                <h3 className="font-heading font-black text-lg text-slate-900">
                   Pratinjau Lembar SPJ Amprah Upah Relawan (A4)
                 </h3>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => window.print()}
-                  className="px-3.5 py-1.5 bg-blue-700 hover:bg-blue-600 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 bg-blue-700 hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer"
                 >
                   <Printer className="w-4 h-4" />
                   <span>Cetak / Simpan PDF</span>
@@ -1849,7 +2236,7 @@ export default function AbsensiPage() {
                   Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang • VA BNI: 9880-1556-2026-0003
                 </p>
                 <div className="text-xs font-mono font-bold text-slate-800 pt-1">
-                  Tanggal: {formatIndoDate(selectedDate)} | Kuota: 1.556 Porsi (13 Titik)
+                  Tanggal: {formatIndoDate(printDateTarget)} | Kuota: 1.556 Porsi (13 Titik)
                 </div>
               </div>
 
@@ -1868,7 +2255,7 @@ export default function AbsensiPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {currentDayDraft.map((entry) => {
+                    {printableEntries.map((entry) => {
                       const person = rosterMap.get(entry.volunteerId);
                       if (!person) return null;
                       return (
@@ -1903,7 +2290,7 @@ export default function AbsensiPage() {
                         Total Pengeluaran Upah Riil:
                       </td>
                       <td className="p-2 border border-slate-300 text-right font-mono text-xs text-blue-900">
-                        {formatRupiah(dailySummary.totalEarned)}
+                        {formatRupiah(printableSummary.totalEarned)}
                       </td>
                       <td className="p-2 border border-slate-300 text-center text-[10px] text-slate-500">
                         Lolos Audit BGN
@@ -1952,12 +2339,13 @@ export default function AbsensiPage() {
           </div>
         </div>
       )}
+
       {/* ============================================================== */}
       {/* MODAL PROTEKSI PIN GAJI & INSENTIF SENSIFITAS TINGGI           */}
       {/* ============================================================== */}
       {showPinModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
             <div className="text-center space-y-2">
               <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto shadow-inner">
                 <KeyRound className="w-6 h-6 text-amber-700" />
