@@ -256,6 +256,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   const [newPersonCheckIn, setNewPersonCheckIn] = useState<string>('04:00');
   const [newPersonCheckOut, setNewPersonCheckOut] = useState<string>('12:00');
 
+  const [editNameInput, setEditNameInput] = useState<string>('');
   const [editRateInput, setEditRateInput] = useState<string>('');
   const [editSectionInput, setEditSectionInput] = useState<string>('');
   const [editCheckInInput, setEditCheckInInput] = useState<string>('');
@@ -402,6 +403,94 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     const current = new Date(`${selectedDate}T12:00:00`);
     current.setDate(current.getDate() + daysOffset);
     setSelectedDate(toIsoDateLocal(current));
+  };
+
+  // Roster Management (Edit & Tambah Relawan)
+  const handleSaveEditRoster = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingVolunteer) return;
+
+    const rateNum = parseFloat(editRateInput) || 0;
+    const updatedName = editNameInput.trim().toUpperCase() || editingVolunteer.name;
+    const updatedRoster = roster.map((p) => {
+      if (p.id === editingVolunteer.id) {
+        return {
+          ...p,
+          name: updatedName,
+          dailyRate: rateNum,
+          dutySection: editSectionInput,
+          defaultCheckIn: editCheckInInput,
+          defaultCheckOut: editCheckOutInput,
+          isActive: editIsActiveInput,
+          notes: editNotesInput,
+        };
+      }
+      return p;
+    });
+
+    setRoster(updatedRoster);
+    saveRosterToStorage(updatedRoster);
+
+    const updatedPerson = updatedRoster.find((p) => p.id === editingVolunteer.id);
+    if (updatedPerson) {
+      setCurrentDayDraft((prev) =>
+        prev.map((entry) => (entry.volunteerId === updatedPerson.id ? normalizeAttendanceEntry(entry, updatedPerson) : entry))
+      );
+      setIsDirty(true);
+    }
+
+    setEditingVolunteer(null);
+    setSaveToast(`✓ Data relawan ${updatedName} berhasil diperbarui.`);
+    setTimeout(() => setSaveToast(null), 3000);
+  };
+
+  const handleAddPersonSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPersonName.trim()) return;
+
+    const nextNo = roster.length + 1;
+    const newId = `v-${Date.now()}`;
+    const newName = newPersonName.trim().toUpperCase();
+    const newPerson: VolunteerProfile = {
+      id: newId,
+      no: nextNo,
+      name: newName,
+      dutySection: newPersonSection,
+      dailyRate: parseFloat(newPersonRate) || 125000,
+      isActive: true,
+      defaultCheckIn: newPersonCheckIn,
+      defaultCheckOut: newPersonCheckOut,
+    };
+
+    const updatedRoster = [...roster, newPerson];
+    setRoster(updatedRoster);
+    saveRosterToStorage(updatedRoster);
+
+    const newEntry: AttendanceEntry = {
+      id: `${selectedDate}:${newId}`,
+      volunteerId: newId,
+      date: selectedDate,
+      status: 'Belum Absen',
+      checkIn: '',
+      checkOut: '',
+      scheduledIn: newPersonCheckIn,
+      scheduledOut: newPersonCheckOut,
+      lateMinutes: 0,
+      overtimeMinutes: 0,
+      earnedAmount: 0,
+      notes: '',
+      paid: false,
+      recordedAt: new Date().toISOString(),
+      recordedBy: 'Admin SPPG',
+    };
+
+    setCurrentDayDraft((prev) => [...prev, newEntry]);
+    setIsDirty(true);
+
+    setNewPersonName('');
+    setShowAddModal(false);
+    setSaveToast(`✓ Relawan baru ${newName} berhasil ditambahkan.`);
+    setTimeout(() => setSaveToast(null), 3000);
   };
 
   // PIN security actions
@@ -1594,8 +1683,10 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                       </div>
 
                       <button
+                        type="button"
                         onClick={() => {
                           setEditingVolunteer(person);
+                          setEditNameInput(person.name);
                           setEditRateInput(person.dailyRate.toString());
                           setEditSectionInput(person.dutySection);
                           setEditCheckInInput(person.defaultCheckIn);
@@ -1604,6 +1695,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                           setEditNotesInput(person.notes || '');
                         }}
                         className="p-1.5 text-slate-400 hover:text-blue-600 bg-slate-50 rounded-lg border border-slate-200 cursor-pointer"
+                        title={`Edit ${person.name}`}
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
@@ -1615,6 +1707,245 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
           </div>
         )}
       </main>
+
+      {/* MODAL EDIT RELAWAN */}
+      {editingVolunteer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto no-print">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-5 sm:p-6 space-y-4 my-auto animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <h3 className="font-bold text-base text-slate-900">
+                  Edit Data & Jadwal Relawan
+                </h3>
+                <span className="text-xs text-blue-700 font-bold block">
+                  #{editingVolunteer.no} - {editingVolunteer.name}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingVolunteer(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditRoster} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">
+                  Nama Lengkap Relawan
+                </label>
+                <input
+                  type="text"
+                  value={editNameInput}
+                  onChange={(e) => setEditNameInput(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-bold focus:outline-none focus:border-blue-600 uppercase"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Peran / Divisi</label>
+                <select
+                  value={editSectionInput}
+                  onChange={(e) => setEditSectionInput(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer font-medium"
+                >
+                  {DUTY_SECTIONS.filter((s) => s !== 'Semua').map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">
+                  Tarif Insentif Harian (Rp)
+                </label>
+                <input
+                  type="number"
+                  value={editRateInput}
+                  onChange={(e) => setEditRateInput(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-mono font-bold focus:outline-none focus:border-blue-600"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">Jam Masuk Default</label>
+                  <input
+                    type="time"
+                    value={editCheckInInput}
+                    onChange={(e) => setEditCheckInInput(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 font-mono focus:outline-none focus:border-blue-600"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">Jam Pulang Default</label>
+                  <input
+                    type="time"
+                    value={editCheckOutInput}
+                    onChange={(e) => setEditCheckOutInput(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 font-mono focus:outline-none focus:border-blue-600"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="isActiveCheck"
+                  checked={editIsActiveInput}
+                  onChange={(e) => setEditIsActiveInput(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded border-slate-300 cursor-pointer"
+                />
+                <label htmlFor="isActiveCheck" className="text-slate-800 font-bold cursor-pointer">
+                  Status Personel Aktif (Terjadwal harian)
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Catatan Tambahan</label>
+                <input
+                  type="text"
+                  value={editNotesInput}
+                  onChange={(e) => setEditNotesInput(e.target.value)}
+                  placeholder="Misal: Non-aktif / pengganti..."
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-600"
+                />
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingVolunteer(null)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Simpan Perubahan</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL TAMBAH RELAWAN BARU */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto no-print">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-5 sm:p-6 space-y-4 my-auto animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <h3 className="font-bold text-base text-slate-900">
+                  Tambah Relawan Dapur Baru
+                </h3>
+                <span className="text-xs text-slate-500">
+                  Relawan akan ditambahkan ke master roster & jadwal harian
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddPersonSubmit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Nama Lengkap</label>
+                <input
+                  type="text"
+                  value={newPersonName}
+                  onChange={(e) => setNewPersonName(e.target.value)}
+                  placeholder="Contoh: AHMAD FAUZI"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 font-bold focus:outline-none focus:border-blue-600 uppercase"
+                  required
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Peran / Divisi</label>
+                <select
+                  value={newPersonSection}
+                  onChange={(e) => setNewPersonSection(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer font-medium"
+                >
+                  {DUTY_SECTIONS.filter((s) => s !== 'Semua').map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Insentif Harian (Rp)</label>
+                <input
+                  type="number"
+                  value={newPersonRate}
+                  onChange={(e) => setNewPersonRate(e.target.value)}
+                  placeholder="125000"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 font-mono font-bold focus:outline-none focus:border-blue-600"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">Jam Masuk Shift</label>
+                  <input
+                    type="time"
+                    value={newPersonCheckIn}
+                    onChange={(e) => setNewPersonCheckIn(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 font-mono focus:outline-none focus:border-blue-600"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">Jam Pulang Shift</label>
+                  <input
+                    type="time"
+                    value={newPersonCheckOut}
+                    onChange={(e) => setNewPersonCheckOut(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 font-mono focus:outline-none focus:border-blue-600"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tambah Relawan</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* MODAL PRINT SPJ A4 ABSENSI */}
       {showPrintModalAbsensi && (
