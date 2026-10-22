@@ -946,12 +946,16 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   </div>
                 ) : (
                   <div className="space-y-0.5">
-                    <div className="text-xs sm:text-sm font-black text-amber-700 truncate">
+                    <div className="text-xs sm:text-sm font-black text-amber-700">
                       {absentPersonnel.length} Orang Izin:
                     </div>
-                    <div className="text-[10px] sm:text-[11px] font-medium text-slate-700 truncate" title={absentPersonnel.map((p) => p.name).join(', ')}>
-                      {absentPersonnel.map((p) => p.name).join(', ')}
-                    </div>
+                    <ul className="space-y-0.5">
+                      {absentPersonnel.map((p) => (
+                        <li key={p.id} className="text-[10px] sm:text-[11px] font-medium text-slate-700 leading-tight break-words">
+                          <span className="text-amber-600 font-semibold">•</span> {p.name}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </div>
