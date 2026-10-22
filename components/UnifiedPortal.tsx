@@ -42,6 +42,7 @@ import {
 import { formatTanggalIndo } from '@/lib/dateUtils';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
 import staticMenusData from '@/lib/staticMenus.json';
+import ThemeToggle from '@/components/ThemeToggle';
 import {
   AttendanceEntry,
   AttendanceStatus,
@@ -798,6 +799,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 </button>
               </>
             )}
+
+            <ThemeToggle />
           </div>
         </div>
       </header>

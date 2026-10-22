@@ -29,6 +29,7 @@ import {
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
 import { DailyMenuRecord, getBeneficiariesForDate } from '@/lib/data';
 import { fetchMenusFromCloud, saveSingleMenuToCloud, saveMenusToCloud } from '@/lib/cloudSync';
+import ThemeToggle from '@/components/ThemeToggle';
 
 interface AKGInputRaw {
   groupName: string;
@@ -742,6 +743,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
             >
               Web Publik
             </Link>
+            <ThemeToggle />
             <button
               onClick={handleLogout}
               className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 transition-colors flex items-center gap-1 cursor-pointer"

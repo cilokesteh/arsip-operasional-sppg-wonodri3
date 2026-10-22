@@ -36,8 +36,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={`${lexend.variable} ${sourceSans.variable}`}>
-      <body className="min-h-screen bg-slate-50 text-[#0d1b2e] antialiased selection:bg-[#1759ab] selection:text-white font-sans">
+    <html lang="id" className={`${lexend.variable} ${sourceSans.variable}`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const t = localStorage.getItem('sppg_theme');
+                if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-screen bg-slate-50 dark:bg-slate-950 text-[#0d1b2e] dark:text-slate-100 antialiased selection:bg-[#1759ab] selection:text-white font-sans transition-colors duration-200">
         {children}
       </body>
     </html>
