@@ -58,7 +58,6 @@ import { formatTanggalIndo } from '@/lib/dateUtils';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
 import staticMenusData from '@/lib/staticMenus.json';
 import OfficialReport from '@/components/OfficialReport';
-import ThemeToggle from '@/components/ThemeToggle';
 
 type WorkspaceTab = 'overview' | 'menu' | 'akg' | 'dapur' | 'distribusi' | 'dokumen';
 
@@ -412,8 +411,6 @@ export default function PortalHome() {
                 <span className="hidden sm:inline">Cetak Resmi</span>
                 <Printer className="w-3.5 h-3.5 sm:hidden" />
               </button>
-
-              <ThemeToggle />
 
               <Link
                 href="/admin"
