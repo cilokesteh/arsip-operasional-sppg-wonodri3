@@ -25,6 +25,7 @@ import {
   Edit,
   RotateCcw,
   X,
+  Archive,
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
 import { DailyMenuRecord, getBeneficiariesForDate } from '@/lib/data';
@@ -720,6 +721,14 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <Link
+              href="/arsip"
+              className="hidden sm:flex px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors items-center gap-1"
+              title="Katalog Arsip Operasional"
+            >
+              <Archive className="w-3.5 h-3.5 text-blue-600" />
+              <span>Arsip</span>
+            </Link>
             <Link
               href="/absensi"
               className="hidden sm:flex px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors items-center gap-1"

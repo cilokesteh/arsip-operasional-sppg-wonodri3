@@ -53,6 +53,7 @@ import {
   Sparkles,
   Flame,
   Download,
+  Archive,
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
@@ -108,6 +109,14 @@ export default function PortalHome() {
   const OFFICIAL_PRINT_PIN = '91206';
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const qDate = params.get('date');
+        if (qDate) setSelectedDate(qDate);
+      } catch {}
+    }
+
     try {
       // MIGRASI v1 -> v2: data lama (mis. draft 15/16 Okt yang belum ke-push cloud)
       // dibawa masuk ke cache baru lalu cache v1 ditandai sudah dimigrasi.
@@ -433,6 +442,13 @@ export default function PortalHome() {
               >
                 <LayoutDashboard className="w-3.5 h-3.5" />
                 Portal
+              </Link>
+              <Link
+                href="/arsip"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
+              >
+                <Archive className="w-3.5 h-3.5" />
+                Arsip Operasional
               </Link>
               <Link
                 href="/absensi"

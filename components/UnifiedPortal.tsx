@@ -276,6 +276,14 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     } catch {
       // ignore
     }
+
+    if (typeof window !== 'undefined') {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const qDate = params.get('date');
+        if (qDate) setSelectedDate(qDate);
+      } catch {}
+    }
   }, []);
 
   const todayDateStr = useMemo(() => toIsoDateLocal(new Date()), []);
@@ -1582,21 +1590,31 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             {/* SUB-TAB 3: ARSIP LAPORAN */}
             {absensiSubTab === 'arsip' && (
               <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 animate-in fade-in shadow-2xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                   <div>
                     <h3 className="font-bold text-sm text-slate-900">Arsip Tanggal Operasional</h3>
                     <span className="text-xs text-slate-400">Total {archivedDatesList.length} tanggal tersimpan</span>
                   </div>
 
-                  <div className="relative w-full sm:w-56">
-                    <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      type="text"
-                      value={searchArsip}
-                      onChange={(e) => setSearchArsip(e.target.value)}
-                      placeholder="Cari tanggal..."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium"
-                    />
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Link
+                      href="/arsip"
+                      className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Buka Halaman Arsip Penuh (/arsip)</span>
+                    </Link>
+
+                    <div className="relative w-full sm:w-48">
+                      <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="text"
+                        value={searchArsip}
+                        onChange={(e) => setSearchArsip(e.target.value)}
+                        placeholder="Cari tanggal..."
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -2373,24 +2391,20 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     </div>
                   </button>
 
-                  <button
-                    onClick={() => {
-                      setMainCategory('absensi');
-                      setAbsensiSubTab('arsip');
-                      setIsDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-start gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
-                      mainCategory === 'absensi' && absensiSubTab === 'arsip'
-                        ? 'bg-blue-600 text-white font-bold'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                    }`}
+                  <Link
+                    href="/arsip"
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="w-full flex items-start gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left text-slate-300 hover:bg-slate-800 hover:text-white"
                   >
                     <Archive className="w-4 h-4 mt-0.5 shrink-0 text-sky-400" />
                     <div>
-                      <div className="text-xs font-bold">Arsip Presensi (126 Hari)</div>
-                      <div className="text-[10px] text-slate-400">Riwayat Presensi Excel Asli Kantor</div>
+                      <div className="text-xs font-bold flex items-center gap-1.5">
+                        <span>Arsip Operasional (/arsip)</span>
+                        <span className="text-[9px] bg-blue-500/30 text-blue-300 px-1.5 py-0.2 rounded font-mono">Rute Khusus</span>
+                      </div>
+                      <div className="text-[10px] text-slate-400">Katalog 126+ Hari Menu MBG &amp; SPJ Presensi</div>
                     </div>
-                  </button>
+                  </Link>
 
                   <button
                     onClick={() => {
