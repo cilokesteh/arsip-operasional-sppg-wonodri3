@@ -355,7 +355,7 @@ export default function ArsipPage() {
             </div>
             <div className="col-span-2 sm:col-span-1 bg-emerald-50/60 border border-emerald-200 rounded-xl p-3 text-center min-w-[110px]">
               <span className="text-[10px] uppercase font-bold text-emerald-700 block">Porsi / Hari</span>
-              <strong className="text-lg font-black text-emerald-900">1.492</strong>
+              <strong className="text-lg font-black text-emerald-900">1.553</strong>
             </div>
           </div>
         </div>
