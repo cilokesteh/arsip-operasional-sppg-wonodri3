@@ -23,6 +23,8 @@ import {
   Archive,
 } from 'lucide-react';
 import staticMenusData from '@/lib/staticMenus.json';
+import { fetchMenusFromCloud } from '@/lib/cloudSync';
+import { DailyMenuRecord } from '@/lib/data';
 import {
   DEFAULT_ROSTER_40,
   loadRosterFromStorage,
@@ -38,6 +40,9 @@ import {
 export default function ArsipPage() {
   const [roster, setRoster] = useState<VolunteerProfile[]>(DEFAULT_ROSTER_40);
   const [ledger, setLedger] = useState<AttendanceEntry[]>([]);
+  const [menuList, setMenuList] = useState<DailyMenuRecord[]>(
+    (staticMenusData as unknown as DailyMenuRecord[]) || []
+  );
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>('ALL');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<'ALL' | 'MENU' | 'WORKDAY' | 'WEEKEND'>('ALL');
@@ -63,26 +68,46 @@ export default function ArsipPage() {
       const unlocked = sessionStorage.getItem('sppg_salary_unlocked') === 'true';
       setIsSalaryUnlocked(unlocked);
     } catch {}
+
+    try {
+      const saved = localStorage.getItem('sppg_synced_menus_v2');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const byDate = new Map<string, DailyMenuRecord>();
+          (staticMenusData as unknown as DailyMenuRecord[]).forEach((s) => byDate.set(s.date, s));
+          parsed.forEach((p: DailyMenuRecord) => byDate.set(p.date, { ...(byDate.get(p.date) || {}), ...p }));
+          setMenuList(Array.from(byDate.values()).sort((a, b) => b.date.localeCompare(a.date)));
+        }
+      }
+    } catch {}
+
+    fetchMenusFromCloud().then((cloudMenus) => {
+      if (cloudMenus && cloudMenus.length > 0) {
+        setMenuList((prev) => {
+          const byDate = new Map<string, DailyMenuRecord>();
+          prev.forEach((item) => byDate.set(item.date, item));
+          cloudMenus.forEach((c) => byDate.set(c.date, { ...(byDate.get(c.date) || {}), ...c }));
+          return Array.from(byDate.values()).sort((a, b) => b.date.localeCompare(a.date));
+        });
+      }
+    });
   }, []);
 
   // Map menu by date
   const menuByDate = useMemo(() => {
-    const map = new Map<string, (typeof staticMenusData)[0]>();
-    if (Array.isArray(staticMenusData)) {
-      staticMenusData.forEach((m) => map.set(m.date, m));
-    }
+    const map = new Map<string, DailyMenuRecord>();
+    menuList.forEach((m) => map.set(m.date, m));
     return map;
-  }, []);
+  }, [menuList]);
 
   // Map all unique dates available in ledger and static menus
   const allUniqueDates = useMemo(() => {
     const dateSet = new Set<string>();
     ledger.forEach((e) => dateSet.add(e.date));
-    if (Array.isArray(staticMenusData)) {
-      staticMenusData.forEach((m) => dateSet.add(m.date));
-    }
+    menuList.forEach((m) => dateSet.add(m.date));
     return Array.from(dateSet).sort((a, b) => b.localeCompare(a));
-  }, [ledger]);
+  }, [ledger, menuList]);
 
   // Extract available months for dropdown
   const availableMonths = useMemo(() => {

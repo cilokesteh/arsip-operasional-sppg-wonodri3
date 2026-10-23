@@ -134,8 +134,24 @@ export default function PortalHome() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setMenuHistory(parsed);
-          setSelectedDate(parsed[0].date);
+          // Merge staticMenusData into parsed agar tanggal baru langsung terdeteksi
+          const byDate = new Map<string, DailyMenuRecord>();
+          (staticMenusData as unknown as DailyMenuRecord[]).forEach((s) => byDate.set(s.date, s));
+          parsed.forEach((p: DailyMenuRecord) => {
+            const existing = byDate.get(p.date);
+            if (!existing) {
+              byDate.set(p.date, p);
+            } else {
+              byDate.set(p.date, { ...existing, ...p });
+            }
+          });
+          const combined = Array.from(byDate.values()).sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+          setMenuHistory(combined);
+          if (typeof window !== 'undefined' && !window.location.search.includes('date=')) {
+            setSelectedDate(combined[0].date);
+          }
         }
       }
     } catch {
