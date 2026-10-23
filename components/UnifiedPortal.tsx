@@ -705,172 +705,79 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             </div>
           </div>
 
-          {/* Center: DUA KATEGORI UTAMA (Desktop only, on mobile it lives in dedicated sub-bar below) */}
-          <div className="hidden md:flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold">
+          {/* Center Links (Desktop) */}
+          <div className="hidden md:flex items-center gap-1.5 text-xs font-bold">
             <Link
               href="/"
-              className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                mainCategory === 'arsip'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition-colors"
             >
-              <Utensils className="w-3.5 h-3.5" />
-              <span>Arsip Ops MBG</span>
+              <Utensils className="w-3.5 h-3.5 text-slate-500" />
+              <span>Laporan MBG</span>
             </Link>
 
-            <button
-              onClick={() => setMainCategory('absensi')}
-              className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                mainCategory === 'absensi'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+            <Link
+              href="/arsip"
+              className="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition-colors"
             >
+              <Archive className="w-3.5 h-3.5 text-slate-500" />
+              <span>Katalog Arsip</span>
+            </Link>
+
+            <span className="px-3.5 py-1.5 rounded-lg bg-blue-600 text-white shadow-xs flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5" />
-              <span>Absensi Relawan</span>
-            </button>
+              <span>Presensi Relawan</span>
+            </span>
           </div>
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {mainCategory === 'arsip' ? (
-              <>
-                <button
-                  onClick={() => setShowCalendarModal(true)}
-                  className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center gap-1 cursor-pointer transition-colors"
-                >
-                  <CalendarIcon className="w-3.5 h-3.5 text-blue-700 shrink-0" />
-                  <span className="text-[11px] sm:text-xs hidden sm:inline">{formatTanggalIndo(selectedDate)}</span>
-                </button>
-
-                <button
-                  onClick={handleOpenPrintModalMenu}
-                  title="Cetak Dokumen Resmi (Wajib PIN)"
-                  className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center gap-1 cursor-pointer shadow-xs transition-colors"
-                >
-                  <Lock className="w-3 h-3 text-blue-200 shrink-0" />
-                  <Printer className="w-3.5 h-3.5 shrink-0" />
-                  <span className="text-[11px] sm:text-xs">Cetak</span>
-                </button>
-
-                <Link
-                  href="/admin"
-                  className="p-1.5 sm:p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
-                  title="Panel Operator Admin"
-                >
-                  <FileSpreadsheet className="w-4 h-4" />
-                </Link>
-              </>
+            {isSalaryUnlocked ? (
+              <button
+                type="button"
+                onClick={handleLockSalary}
+                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
+                title="Kunci kembali tampilan upah"
+              >
+                <Unlock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="hidden sm:inline">Upah Terbuka</span>
+                <span className="sm:hidden text-[11px]">Kunci</span>
+              </button>
             ) : (
-              <>
-                {isSalaryUnlocked ? (
-                  <button
-                    type="button"
-                    onClick={handleLockSalary}
-                    className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
-                    title="Kunci kembali tampilan upah"
-                  >
-                    <Unlock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span className="hidden sm:inline">Upah Terbuka</span>
-                    <span className="sm:hidden text-[11px]">Kunci</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleOpenPinModalSalary('unlock')}
-                    className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1 cursor-pointer transition-colors"
-                    title="Buka tampilan upah dengan PIN"
-                  >
-                    <Lock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                    <span className="hidden sm:inline">Buka Upah</span>
-                    <span className="sm:hidden text-[11px]">PIN</span>
-                  </button>
-                )}
-
-                <button
-                  onClick={handleExportCsv}
-                  className="hidden sm:flex p-1.5 sm:p-2 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 items-center gap-1 cursor-pointer transition-colors"
-                  title="Unduh Spreadsheet CSV"
-                >
-                  <Download className="w-3.5 h-3.5 text-slate-500" />
-                </button>
-
-                <button
-                  onClick={() => handleOpenPrintForDate(selectedDate)}
-                  className="hidden sm:flex px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 items-center gap-1 cursor-pointer shadow-xs transition-colors"
-                  title="Cetak Berita Acara & SPJ A4"
-                >
-                  <Printer className="w-3.5 h-3.5 shrink-0" />
-                  <span className="hidden sm:inline">SPJ</span>
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={() => handleOpenPinModalSalary('unlock')}
+                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1 cursor-pointer transition-colors"
+                title="Buka tampilan upah dengan PIN"
+              >
+                <Lock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                <span className="hidden sm:inline">Buka Upah</span>
+                <span className="sm:hidden text-[11px]">PIN</span>
+              </button>
             )}
+
+            <button
+              onClick={handleExportCsv}
+              className="hidden sm:flex p-1.5 sm:p-2 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 items-center gap-1 cursor-pointer transition-colors"
+              title="Unduh Spreadsheet CSV"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+            </button>
+
+            <button
+              onClick={() => handleOpenPrintForDate(selectedDate)}
+              className="hidden sm:flex px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 items-center gap-1 cursor-pointer shadow-xs transition-colors"
+              title="Cetak Berita Acara & SPJ A4"
+            >
+              <Printer className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline">SPJ</span>
+            </button>
           </div>
         </div>
       </header>
 
-      {/* DEDICATED FULL-WIDTH MOBILE CATEGORY SWITCHER (MD:HIDDEN) */}
-      <div className="md:hidden bg-white border-b border-slate-200 px-3 py-2 no-print w-full">
-        <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold">
-          <Link
-            href="/"
-            className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              mainCategory === 'arsip'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Utensils className="w-3.5 h-3.5" />
-            <span>Portal MBG</span>
-          </Link>
-
-          <button
-            onClick={() => setMainCategory('absensi')}
-            className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              mainCategory === 'absensi'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>Absensi Relawan</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 2. BODY KONTEN BERDASARKAN KATEGORI AKTIF */}
-      <main className="max-w-6xl mx-auto w-full px-4 py-5 flex-1">
-        {/* ============================================================== */}
-        {/* KATEGORI 1: ARSIP OPERASIONAL MBG                              */}
-        {/* ============================================================== */}
-        {mainCategory === 'arsip' && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 sm:p-12 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center mx-auto">
-              <Utensils className="w-6 h-6" />
-            </div>
-            <div className="space-y-1.5 max-w-md mx-auto">
-              <h3 className="font-extrabold text-base text-slate-900">Arsip Operasional Pindah ke Portal Dashboard</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Modul arsip harian kini disajikan sebagai portal dashboard interaktif
-                (ringkasan eksekutif, menu, AKG, timeline dapur, dan direktori titik layanan).
-              </p>
-            </div>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
-            >
-              <Utensils className="w-4 h-4" />
-              <span>Buka Portal Dashboard</span>
-            </Link>
-          </div>
-        )}
-
-        {/* ============================================================== */}
-        {/* KATEGORI 2: PRESENSI & SDM RELAWAN                            */}
-        {/* ============================================================== */}
-        {mainCategory === 'absensi' && (
-          <div className="space-y-4 animate-in fade-in">
+      {/* 2. BODY KONTEN PRESENSI & SDM RELAWAN */}
+      <main className="max-w-6xl mx-auto w-full px-3 sm:px-4 py-4 sm:py-5 flex-1">
+        <div className="space-y-4 animate-in fade-in">
             {/* Control Bar & Sub-Tabs */}
             <div className="bg-white rounded-2xl border border-slate-200 p-2 sm:p-2.5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
               {/* Segmented Sub-Tabs */}
@@ -1723,7 +1630,6 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               </div>
             )}
           </div>
-        )}
       </main>
 
       {/* MODAL EDIT RELAWAN */}
@@ -2310,56 +2216,49 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               {/* Navigation Modul Links */}
               <div className="space-y-2 text-xs font-semibold">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
-                  Kategori 1: Dapur & MBG
+                  Menu Utama Portal
                 </span>
 
-          <button
-            onClick={() => {
-              setMainCategory('arsip');
-              setIsDrawerOpen(false);
-            }}
-            className={`w-full flex items-start gap-3 p-3 rounded-2xl transition-all cursor-pointer text-left ${
-              mainCategory === 'arsip'
-                ? 'bg-blue-600 text-white font-bold shadow-lg shadow-blue-900/40'
-                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-            }`}
-          >
-            <Utensils className={`w-5 h-5 mt-0.5 shrink-0 ${mainCategory === 'arsip' ? 'text-white' : 'text-blue-400'}`} />
-            <div>
-              <div className="text-xs font-bold leading-tight">Portal Dashboard MBG</div>
-              <div className={`text-[10px] pt-0.5 ${mainCategory === 'arsip' ? 'text-blue-100' : 'text-slate-400'}`}>
-                Ringkasan Eksekutif, Menu, AKG, Timeline Dapur &amp; Direktori 13 Titik Layanan
-              </div>
-            </div>
-          </button>
+                <Link
+                  href="/"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="w-full flex items-start gap-3 p-3 rounded-2xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-left cursor-pointer"
+                >
+                  <Utensils className="w-5 h-5 mt-0.5 shrink-0 text-blue-400" />
+                  <div>
+                    <div className="text-xs font-bold leading-tight">Laporan Harian (MBG)</div>
+                    <div className="text-[10px] text-slate-400 pt-0.5">
+                      Menu harian, kandungan gizi AKG, foto bento tray & alokasi sekolah
+                    </div>
+                  </div>
+                </Link>
 
                 <Link
-                  href="/admin"
+                  href="/arsip"
                   onClick={() => setIsDrawerOpen(false)}
-                  className="w-full flex items-start gap-3 p-3 rounded-2xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-left"
+                  className="w-full flex items-start gap-3 p-3 rounded-2xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-left cursor-pointer"
                 >
-                  <FileSpreadsheet className="w-5 h-5 mt-0.5 shrink-0 text-purple-400" />
+                  <Archive className="w-5 h-5 mt-0.5 shrink-0 text-sky-400" />
                   <div>
-                    <div className="text-xs font-bold leading-tight">Panel Operator Admin</div>
+                    <div className="text-xs font-bold leading-tight">Katalog Arsip Operasional</div>
                     <div className="text-[10px] text-slate-400 pt-0.5">
-                      Input Menu Baru & Upload Dokumentasi Foto GDrive
+                      Direktori 126+ hari arsip historis berpaginasi
                     </div>
                   </div>
                 </Link>
 
                 <div className="pt-2">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1 mb-1.5">
-                    Kategori 2: SDM & Presensi Relawan
+                    Modul Presensi Relawan
                   </span>
 
                   <button
                     onClick={() => {
-                      setMainCategory('absensi');
                       setAbsensiSubTab('harian');
                       setIsDrawerOpen(false);
                     }}
                     className={`w-full flex items-start gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
-                      mainCategory === 'absensi' && absensiSubTab === 'harian'
+                      absensiSubTab === 'harian'
                         ? 'bg-blue-600 text-white font-bold'
                         : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                     }`}
@@ -2367,19 +2266,18 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     <CalendarIcon className="w-4 h-4 mt-0.5 shrink-0 text-emerald-400" />
                     <div>
                       <div className="text-xs font-bold">Presensi Harian</div>
-                      <div className="text-[10px] text-slate-400">Checklist Jam Masuk, Pulang & Lembur</div>
+                      <div className="text-[10px] text-slate-400">Checklist jam masuk & pulang personel</div>
                     </div>
                   </button>
 
                   <button
                     onClick={() => {
-                      setMainCategory('absensi');
                       setAbsensiSubTab('rekap');
                       setRekapPeriod('mingguan');
                       setIsDrawerOpen(false);
                     }}
                     className={`w-full flex items-start gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
-                      mainCategory === 'absensi' && absensiSubTab === 'rekap'
+                      absensiSubTab === 'rekap'
                         ? 'bg-blue-600 text-white font-bold'
                         : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                     }`}
@@ -2387,43 +2285,43 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     <TableIcon className="w-4 h-4 mt-0.5 shrink-0 text-amber-400" />
                     <div>
                       <div className="text-xs font-bold">Rekapitulasi (Senin-Minggu)</div>
-                      <div className="text-[10px] text-slate-400">Matrix 7 Hari Kalender & Buku Bulanan SPJ</div>
+                      <div className="text-[10px] text-slate-400">Matrix 7 hari kalender kerja & beban upah</div>
                     </div>
                   </button>
 
-                  <Link
-                    href="/arsip"
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="w-full flex items-start gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left text-slate-300 hover:bg-slate-800 hover:text-white"
-                  >
-                    <Archive className="w-4 h-4 mt-0.5 shrink-0 text-sky-400" />
-                    <div>
-                      <div className="text-xs font-bold flex items-center gap-1.5">
-                        <span>Arsip Operasional (/arsip)</span>
-                        <span className="text-[9px] bg-blue-500/30 text-blue-300 px-1.5 py-0.2 rounded font-mono">Rute Khusus</span>
-                      </div>
-                      <div className="text-[10px] text-slate-400">Katalog 126+ Hari Menu MBG &amp; SPJ Presensi</div>
-                    </div>
-                  </Link>
-
                   <button
                     onClick={() => {
-                      setMainCategory('absensi');
                       setAbsensiSubTab('roster');
                       setIsDrawerOpen(false);
                     }}
                     className={`w-full flex items-start gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
-                      mainCategory === 'absensi' && absensiSubTab === 'roster'
+                      absensiSubTab === 'roster'
                         ? 'bg-blue-600 text-white font-bold'
                         : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                     }`}
                   >
-                    <Users className="w-4 h-4 mt-0.5 shrink-0 text-pink-400" />
+                    <Users className="w-4 h-4 mt-0.5 shrink-0 text-rose-400" />
                     <div>
                       <div className="text-xs font-bold">Daftar Relawan Dapur</div>
-                      <div className="text-[10px] text-slate-400">Data 40 Personel, Shift 24 Jam & Tarif Upah</div>
+                      <div className="text-[10px] text-slate-400">Master 40 personel, shift & tarif upah</div>
                     </div>
                   </button>
+                </div>
+
+                <div className="pt-2">
+                  <Link
+                    href="/admin"
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="w-full flex items-start gap-3 p-3 rounded-2xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-left"
+                  >
+                    <FileSpreadsheet className="w-5 h-5 mt-0.5 shrink-0 text-purple-400" />
+                    <div>
+                      <div className="text-xs font-bold leading-tight">Panel Operator Admin</div>
+                      <div className="text-[10px] text-slate-400 pt-0.5">
+                        Input Menu Baru & Upload Dokumentasi Foto GDrive
+                      </div>
+                    </div>
+                  </Link>
                 </div>
               </div>
 
@@ -2436,11 +2334,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 <button
                   onClick={() => {
                     setIsDrawerOpen(false);
-                    if (mainCategory === 'arsip') {
-                      handleOpenPrintModalMenu();
-                    } else {
-                      handleOpenPrintForDate(selectedDate);
-                    }
+                    handleOpenPrintForDate(selectedDate);
                   }}
                   className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-xs font-medium cursor-pointer transition-colors"
                 >
