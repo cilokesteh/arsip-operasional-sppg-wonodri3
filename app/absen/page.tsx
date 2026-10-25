@@ -13,7 +13,8 @@ import {
   ChevronDown,
   Search,
   User,
-  Check
+  Check,
+  Lock
 } from 'lucide-react';
 import { DEFAULT_ROSTER_40 } from '@/lib/attendance';
 
@@ -63,6 +64,8 @@ export default function AbsenMandiriPage() {
   const [distanceMeters, setDistanceMeters] = useState<number | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [locationError, setLocationError] = useState<string>('');
+
+  const isLocationValid = distanceMeters !== null && distanceMeters <= MAX_RADIUS_METERS;
 
   // 5. Submit & Result Status
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -124,13 +127,18 @@ export default function AbsenMandiriPage() {
     refreshLocation();
   }, []);
 
-  // Auto-start camera on page load for seamless experience
+  // Auto-start camera HANYA saat berada dalam radius dapur (<= 10 meter)
   useEffect(() => {
-    startWebCamera();
+    if (isLocationValid) {
+      startWebCamera();
+    } else {
+      stopCamera();
+      setCapturedPhoto(null);
+    }
     return () => {
       stopCamera();
     };
-  }, []);
+  }, [isLocationValid]);
 
   // Fungsi Deteksi GPS Geofence
   const refreshLocation = () => {
@@ -302,8 +310,6 @@ export default function AbsenMandiriPage() {
     setCapturedPhoto(null);
     startWebCamera();
   };
-
-  const isLocationValid = distanceMeters !== null && distanceMeters <= MAX_RADIUS_METERS;
 
   // Submit Presensi ke Cloudflare KV (Anti-Stuck: Penuh Validasi Interaktif)
   const handleSubmitAttendance = async (type: 'IN' | 'OUT') => {
@@ -683,52 +689,70 @@ export default function AbsenMandiriPage() {
 
               {/* Frame Kamera Rapi (Portrait 3:4 Natural, Tidak Zoom) */}
               <div className="relative w-full max-w-[280px] aspect-[3/4] mx-auto bg-slate-950 rounded-2xl overflow-hidden border-2 border-slate-700 shadow-inner flex items-center justify-center">
-                {/* 1. Preview Foto Terjepret */}
-                {capturedPhoto ? (
-                  <img
-                    src={capturedPhoto}
-                    alt="Selfie Preview"
-                    className="w-full h-full object-contain bg-slate-950"
-                  />
-                ) : null}
-
-                {/* 2. Live Video Feed (Selalu Mounted di DOM, Anti-Zoom) */}
-                <video
-                  ref={videoRef}
-                  playsInline
-                  autoPlay
-                  muted
-                  style={{ transform: 'scaleX(-1)' }}
-                  className={`w-full h-full object-cover ${capturedPhoto ? 'hidden' : ''}`}
-                />
-
-                {/* 3. Panduan Wajah & Status */}
-                {!capturedPhoto && isCameraActive && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-40 h-52 border-2 border-dashed border-white/50 rounded-full" />
+                {!isLocationValid ? (
+                  <div className="text-center p-6 space-y-3 z-10 animate-in fade-in">
+                    <div className="w-14 h-14 bg-rose-500/20 border-2 border-rose-500/40 rounded-full flex items-center justify-center mx-auto text-rose-400 shadow-inner">
+                      <Lock className="w-7 h-7" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-bold text-xs text-white">Kamera Dinonaktifkan</p>
+                      <p className="text-[11px] text-slate-400 leading-relaxed max-w-xs mx-auto">
+                        {distanceMeters !== null
+                          ? `Anda terdeteksi ${distanceMeters} meter dari dapur. Seluruh fitur kamera dan presensi hanya aktif di dalam area dapur SPPG Wonodri 3 (Maksimal 10 meter).`
+                          : 'Satelit GPS sedang mendeteksi... Fitur kamera akan aktif otomatis saat Anda berada di dapur.'}
+                      </p>
+                    </div>
                   </div>
-                )}
+                ) : (
+                  <>
+                    {/* 1. Preview Foto Terjepret */}
+                    {capturedPhoto ? (
+                      <img
+                        src={capturedPhoto}
+                        alt="Selfie Preview"
+                        className="w-full h-full object-contain bg-slate-950"
+                      />
+                    ) : null}
 
-                {!capturedPhoto && !isCameraActive && (
-                  <div className="text-center p-4 space-y-2 z-10">
-                    {cameraLoading ? (
-                      <>
-                        <RefreshCw className="w-8 h-8 text-blue-400 animate-spin mx-auto" />
-                        <p className="text-xs text-slate-400">Menghubungkan kamera...</p>
-                      </>
-                    ) : (
-                      <>
-                        <Camera className="w-10 h-10 text-slate-600 mx-auto" />
-                        <p className="text-xs text-slate-400 font-medium">
-                          Kamera siap diaktifkan
-                        </p>
-                      </>
+                    {/* 2. Live Video Feed (Selalu Mounted di DOM, Anti-Zoom) */}
+                    <video
+                      ref={videoRef}
+                      playsInline
+                      autoPlay
+                      muted
+                      style={{ transform: 'scaleX(-1)' }}
+                      className={`w-full h-full object-cover ${capturedPhoto ? 'hidden' : ''}`}
+                    />
+
+                    {/* 3. Panduan Wajah & Status */}
+                    {!capturedPhoto && isCameraActive && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-40 h-52 border-2 border-dashed border-white/50 rounded-full" />
+                      </div>
                     )}
-                  </div>
+
+                    {!capturedPhoto && !isCameraActive && (
+                      <div className="text-center p-4 space-y-2 z-10">
+                        {cameraLoading ? (
+                          <>
+                            <RefreshCw className="w-8 h-8 text-blue-400 animate-spin mx-auto" />
+                            <p className="text-xs text-slate-400">Menghubungkan kamera...</p>
+                          </>
+                        ) : (
+                          <>
+                            <Camera className="w-10 h-10 text-slate-600 mx-auto" />
+                            <p className="text-xs text-slate-400 font-medium">
+                              Kamera siap diaktifkan
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
-              {cameraError && (
+              {cameraError && isLocationValid && (
                 <div className="p-2.5 rounded-lg bg-amber-950/60 border border-amber-800 text-xs text-amber-300 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
                   <span>{cameraError}</span>
@@ -737,7 +761,16 @@ export default function AbsenMandiriPage() {
 
               {/* Tombol Kontrol Kamera */}
               <div>
-                {!capturedPhoto ? (
+                {!isLocationValid ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="w-full py-3 bg-slate-900 border border-slate-800 text-slate-500 font-bold text-xs rounded-xl flex items-center justify-center gap-2 cursor-not-allowed opacity-60"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Fitur Kamera Terkunci di Luar Radius</span>
+                  </button>
+                ) : !capturedPhoto ? (
                   isCameraActive ? (
                     <button
                       type="button"
@@ -771,31 +804,41 @@ export default function AbsenMandiriPage() {
               </div>
             </div>
 
-            {/* 4. Tombol Aksi: Presensi Masuk / Pulang (ANTI-STUCK) */}
+            {/* 4. Tombol Aksi: Presensi Masuk / Pulang (Mati Total Jika Luar Radius) */}
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 type="button"
-                disabled={isSubmitting}
+                disabled={!isLocationValid || isSubmitting}
                 onClick={() => handleSubmitAttendance('IN')}
-                className="py-4 px-4 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-white font-black text-xs transition shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 cursor-pointer"
+                className={`py-4 px-4 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 ${
+                  isLocationValid && !isSubmitting
+                    ? 'bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-white shadow-lg shadow-emerald-950/60 cursor-pointer'
+                    : 'bg-slate-800 border border-slate-700/60 text-slate-500 cursor-not-allowed opacity-40'
+                }`}
               >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>{isSubmitting ? 'Mengirim...' : 'Presensi Masuk'}</span>
+                {isLocationValid ? <CheckCircle2 className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                <span>{isSubmitting ? 'Mengirim...' : isLocationValid ? 'Presensi Masuk' : 'Terkunci (Luar Radius)'}</span>
               </button>
 
               <button
                 type="button"
-                disabled={isSubmitting}
+                disabled={!isLocationValid || isSubmitting}
                 onClick={() => handleSubmitAttendance('OUT')}
-                className="py-4 px-4 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-black text-xs transition shadow-lg shadow-blue-950/60 flex items-center justify-center gap-2 cursor-pointer"
+                className={`py-4 px-4 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 ${
+                  isLocationValid && !isSubmitting
+                    ? 'bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white shadow-lg shadow-blue-950/60 cursor-pointer'
+                    : 'bg-slate-800 border border-slate-700/60 text-slate-500 cursor-not-allowed opacity-40'
+                }`}
               >
-                <LogOut className="w-4 h-4" />
-                <span>{isSubmitting ? 'Mengirim...' : 'Presensi Pulang'}</span>
+                {isLocationValid ? <LogOut className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                <span>{isSubmitting ? 'Mengirim...' : isLocationValid ? 'Presensi Pulang' : 'Terkunci (Luar Radius)'}</span>
               </button>
             </div>
 
             <p className="text-[11px] text-slate-400 text-center font-medium leading-relaxed">
-              Pastikan Anda sudah memilih nama pada langkah 1 dan menjepret foto selfie pada langkah 3 sebelum mengirim presensi.
+              {isLocationValid
+                ? 'Pastikan Anda sudah memilih nama pada langkah 1 dan menjepret foto selfie sebelum mengirim presensi.'
+                : '⛔ Seluruh fitur presensi terkunci karena Anda berada di luar batas area dapur SPPG Wonodri 3 (Maksimal 10 meter).'}
             </p>
           </div>
         )}
