@@ -269,6 +269,13 @@ export default function ArsipPage() {
                 <span className="hidden sm:inline">Portal Utama</span>
               </Link>
               <Link
+                href="/absensi"
+                className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1"
+              >
+                <Users className="w-3.5 h-3.5 text-blue-600" />
+                <span className="hidden sm:inline">Absensi</span>
+              </Link>
+              <Link
                 href="/admin"
                 className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100"
                 title="Panel Operator"
@@ -296,6 +303,13 @@ export default function ArsipPage() {
               >
                 <Archive className="w-3.5 h-3.5" />
                 Arsip Operasional
+              </Link>
+              <Link
+                href="/absensi"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
+              >
+                <Users className="w-3.5 h-3.5" />
+                Absensi Relawan
               </Link>
               <Link
                 href="/admin"
@@ -533,31 +547,39 @@ export default function ArsipPage() {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  {/* Action Buttons: 3 Aksi Cepat */}
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-1.5">
                     {menu ? (
                       <Link
                         href={`/?date=${dateStr}`}
-                        className="flex-1 py-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-center text-xs font-bold transition-colors shadow-2xs flex items-center justify-center gap-1.5"
+                        className="flex-1 py-1.5 px-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-center text-xs font-bold transition-colors shadow-2xs flex items-center justify-center gap-1"
                         title="Buka Laporan Menu MBG Resmi"
                       >
-                        <Utensils className="w-3.5 h-3.5" />
-                        <span>Buka Laporan Menu</span>
+                        <Utensils className="w-3 h-3" />
+                        <span>Menu</span>
                       </Link>
                     ) : (
-                      <span className="flex-1 py-1.5 px-3 bg-slate-100 text-slate-400 rounded-lg text-center text-xs font-semibold">
+                      <span className="flex-1 py-1.5 px-2 bg-slate-100 text-slate-400 rounded-lg text-center text-xs font-semibold">
                         No Menu
                       </span>
                     )}
 
+                    <Link
+                      href={`/absensi?date=${dateStr}`}
+                      className="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-center text-xs font-bold transition-colors flex items-center justify-center gap-1 border border-slate-200"
+                      title="Buka Presensi Relawan Tanggal Ini"
+                    >
+                      <Users className="w-3 h-3 text-slate-600" />
+                      <span>Presensi</span>
+                    </Link>
+
                     <button
                       type="button"
                       onClick={() => handleOpenPrintForDate(dateStr)}
-                      className="px-3 py-1.5 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 hover:border-blue-200 rounded-lg transition-colors cursor-pointer flex items-center gap-1 text-xs font-bold"
+                      className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-700 border border-slate-200 hover:border-blue-200 rounded-lg transition-colors cursor-pointer"
                       title="Pratinjau & Cetak Lembar SPJ A4"
                     >
                       <Printer className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Cetak SPJ</span>
                     </button>
                   </div>
                 </div>
