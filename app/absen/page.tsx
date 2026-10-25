@@ -11,7 +11,9 @@ import {
   RefreshCw,
   LogOut,
   ChevronDown,
-  Search
+  Search,
+  User,
+  Check
 } from 'lucide-react';
 import { DEFAULT_ROSTER_40 } from '@/lib/attendance';
 
@@ -46,12 +48,13 @@ export default function AbsenMandiriPage() {
   const [selectedVolunteerId, setSelectedVolunteerId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [nameError, setNameError] = useState<string>('');
 
   // 3. Camera & Photo
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
+  const [cameraLoading, setCameraLoading] = useState<boolean>(false);
   const [cameraError, setCameraError] = useState<string>('');
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
 
@@ -121,6 +124,14 @@ export default function AbsenMandiriPage() {
     refreshLocation();
   }, []);
 
+  // Auto-start camera on page load for seamless experience
+  useEffect(() => {
+    startWebCamera();
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
   // Fungsi Deteksi GPS Geofence
   const refreshLocation = () => {
     if (!navigator.geolocation) {
@@ -144,9 +155,9 @@ export default function AbsenMandiriPage() {
       (err) => {
         setIsLocating(false);
         if (err.code === 1) {
-          setLocationError('Izin akses lokasi ditolak. Silakan aktifkan GPS & izinkan lokasi pada browser HP.');
+          setLocationError('Izin akses lokasi ditolak. Aktifkan GPS pada HP dan izinkan lokasi browser.');
         } else {
-          setLocationError('Gagal mendeteksi koordinat GPS. Pastikan GPS HP aktif.');
+          setLocationError('Satelit GPS sedang mendeteksi... Pastikan GPS HP aktif.');
         }
       },
       {
@@ -158,55 +169,61 @@ export default function AbsenMandiriPage() {
   };
 
   // Helper Menggambar Stempel / Watermark Resmi pada Canvas
-  const applyWatermark = (ctx: CanvasRenderingContext2D, size: number) => {
-    // Watermark background box
+  const applyWatermark = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    const barHeight = 84;
     ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-    ctx.fillRect(0, size - 88, size, 88);
+    ctx.fillRect(0, height - barHeight, width, barHeight);
 
     // Title SPPG
     ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('SPPG WONODRI 3 • PRESENSI REALTIME', 16, size - 60);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('SPPG WONODRI 3 • PRESENSI REALTIME', 14, height - 58);
 
     // Date, Time & Volunteer Name
     ctx.fillStyle = '#ffffff';
-    ctx.font = '13px sans-serif';
+    ctx.font = '12px sans-serif';
     const nowStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
     const dateFormatted = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
     const volunteerLabel = selectedVolunteer ? selectedVolunteer.name : 'Relawan SPPG';
-    ctx.fillText(`${dateFormatted} • ${nowStr} • ${volunteerLabel}`, 16, size - 38);
+    ctx.fillText(`${dateFormatted} • ${nowStr} • ${volunteerLabel}`, 14, height - 36);
 
     // Coordinates & Distance
     const isValid = distanceMeters !== null && distanceMeters <= MAX_RADIUS_METERS;
     ctx.fillStyle = isValid ? '#4ade80' : '#f87171';
-    ctx.font = 'bold 12px monospace';
+    ctx.font = 'bold 11px monospace';
     const distText = distanceMeters !== null
       ? `📍 ${distanceMeters}m dari Dapur SPPG (${KITCHEN_LAT.toFixed(5)}, ${KITCHEN_LNG.toFixed(5)})`
       : '📍 GPS Terverifikasi';
-    ctx.fillText(distText, 16, size - 16);
+    ctx.fillText(distText, 14, height - 16);
   };
 
-  // 1. Jalur Utama: Live WebRTC Camera Stream
-  const startLiveCamera = async () => {
+  // Menyalakan Kamera Web Live (Langsung Tampil di Box Web, Anti-Zoom)
+  const startWebCamera = async () => {
+    setCameraLoading(true);
     setCameraError('');
-    setIsCameraActive(false);
 
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        // Fallback langsung ke native camera
-        triggerNativeCamera();
+        setCameraError('Browser ini tidak mendukung akses kamera langsung.');
+        setCameraLoading(false);
         return;
       }
 
-      // Coba constraints yang paling kompatibel untuk semua HP Android/iOS
+      // Constraints natural portrait yang pas dengan sensor HP tanpa ke-zoom
+      const constraints = {
+        video: {
+          facingMode: 'user', // Kamera Depan
+          width: { ideal: 720 },
+          height: { ideal: 960 },
+        },
+        audio: false,
+      };
+
       let stream: MediaStream | null = null;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'user' } },
-          audio: false,
-        });
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
       } catch {
-        // Fallback constraint tanpa facingMode
+        // Fallback untuk device lama
         stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: false,
@@ -215,19 +232,16 @@ export default function AbsenMandiriPage() {
 
       if (videoRef.current && stream) {
         videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute('playsinline', 'true');
-        videoRef.current.setAttribute('autoplay', 'true');
-        videoRef.current.setAttribute('muted', 'true');
-
-        await videoRef.current.play();
-        setIsCameraActive(true);
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play().catch(() => {});
+          setIsCameraActive(true);
+          setCameraLoading(false);
+        };
       }
     } catch {
-      // Jika browser memblokir WebRTC (misal di WebView Telegram/WhatsApp), arahkan ke Native Camera
-      setCameraError('Kamera live terkendala izin. Mengalihkan ke Kamera HP...');
-      setTimeout(() => {
-        triggerNativeCamera();
-      }, 500);
+      setCameraLoading(false);
+      setIsCameraActive(false);
+      setCameraError('Izin kamera belum aktif. Silakan izinkan akses kamera di browser Anda.');
     }
   };
 
@@ -240,8 +254,8 @@ export default function AbsenMandiriPage() {
     }
   };
 
-  // Jepret dari Video Stream
-  const captureFromStream = () => {
+  // Jepret Foto Langsung dari Box Web
+  const captureFromWebCamera = () => {
     if (!videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
@@ -249,75 +263,56 @@ export default function AbsenMandiriPage() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const size = Math.min(video.videoWidth || 640, video.videoHeight || 640, 720);
-    canvas.width = size;
-    canvas.height = size;
+    const vWidth = video.videoWidth || 640;
+    const vHeight = video.videoHeight || 480;
 
-    const startX = ((video.videoWidth || size) - size) / 2;
-    const startY = ((video.videoHeight || size) - size) / 2;
-    ctx.drawImage(video, startX, startY, size, size, 0, 0, size, size);
+    canvas.width = vWidth;
+    canvas.height = vHeight;
 
-    applyWatermark(ctx, size);
+    // Flip horizontal agar hasil foto selfie tidak terbalik (mirror natural)
+    ctx.save();
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, -vWidth, 0, vWidth, vHeight);
+    ctx.restore();
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    // Tambahkan stempel resmi
+    applyWatermark(ctx, vWidth, vHeight);
+
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
     setCapturedPhoto(dataUrl);
     stopCamera();
   };
 
-  // 2. Jalur Native Camera HP (100% Berhasil di Semua HP & In-App Browser)
-  const triggerNativeCamera = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleNativePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new window.Image();
-      img.onload = () => {
-        const canvas = canvasRef.current || document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        const size = Math.min(img.width, img.height, 800);
-        canvas.width = size;
-        canvas.height = size;
-
-        const startX = (img.width - size) / 2;
-        const startY = (img.height - size) / 2;
-        ctx.drawImage(img, startX, startY, size, size, 0, 0, size, size);
-
-        applyWatermark(ctx, size);
-
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        setCapturedPhoto(dataUrl);
-        setCameraError('');
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+  const handleRetakePhoto = () => {
+    setCapturedPhoto(null);
+    startWebCamera();
   };
 
   const isLocationValid = distanceMeters !== null && distanceMeters <= MAX_RADIUS_METERS;
 
-  // Submit Presensi ke Cloudflare KV
+  // Submit Presensi ke Cloudflare KV (Anti-Stuck: Penuh Validasi Interaktif)
   const handleSubmitAttendance = async (type: 'IN' | 'OUT') => {
+    // 1. Cek Apakah Nama Sudah Dipilih
     if (!selectedVolunteer) {
-      alert('Pilih nama Anda terlebih dahulu!');
+      setNameError('Pilih nama Anda terlebih dahulu!');
+      setIsDropdownOpen(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+    setNameError('');
+
+    // 2. Cek Apakah Foto Sudah Diambil
     if (!capturedPhoto) {
-      alert('Silakan ambil foto selfie terlebih dahulu!');
+      alert('Silakan jepret foto selfie terlebih dahulu di box kamera!');
       return;
     }
-    if (distanceMeters === null) {
-      alert('Lokasi GPS belum terdeteksi. Silakan klik tombol "Perbarui Lokasi GPS".');
-      return;
+
+    // 3. Cek Status Radius GPS
+    if (distanceMeters !== null && distanceMeters > MAX_RADIUS_METERS) {
+      const confirmOutside = window.confirm(
+        `⚠️ Peringatan Radius GPS:\nJarak Anda terdeteksi ${distanceMeters} meter dari Dapur SPPG Wonodri 3 (Maksimal ${MAX_RADIUS_METERS}m).\n\nTetap kirim presensi dengan catatan 'Di Luar Radius Dapur'?`
+      );
+      if (!confirmOutside) return;
     }
 
     setIsSubmitting(true);
@@ -337,10 +332,10 @@ export default function AbsenMandiriPage() {
         timestamp: now.toISOString(),
         latitude: currentCoords?.lat || KITCHEN_LAT,
         longitude: currentCoords?.lng || KITCHEN_LNG,
-        distanceMeters,
+        distanceMeters: distanceMeters ?? 0,
         isWithinRadius: isLocationValid,
         photoUrl: capturedPhoto,
-        notes: isLocationValid ? 'Presensi Mandiri Valid di Dapur' : `Presensi di luar radius dapur (${distanceMeters}m)`,
+        notes: isLocationValid ? 'Presensi Mandiri Valid di Dapur' : `Presensi di luar radius dapur (${distanceMeters ?? 0}m)`,
       };
 
       const res = await fetch(CLOUD_ATTENDANCE_API, {
@@ -356,11 +351,11 @@ export default function AbsenMandiriPage() {
           time: timeWib,
           volunteerName: selectedVolunteer.name,
           dutySection: selectedVolunteer.dutySection,
-          distance: distanceMeters,
+          distance: distanceMeters ?? 0,
           photo: capturedPhoto,
         });
       } else {
-        alert(`Gagal menyimpan presensi: ${resJson.error || 'Server error'}`);
+        alert(`Gagal menyimpan presensi: ${resJson.error || 'Terjadi kesalahan server.'}`);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Koneksi gagal';
@@ -374,7 +369,7 @@ export default function AbsenMandiriPage() {
     setSubmitSuccess(null);
     setCapturedPhoto(null);
     setSelectedVolunteerId('');
-    stopCamera();
+    startWebCamera();
     refreshLocation();
   };
 
@@ -382,16 +377,6 @@ export default function AbsenMandiriPage() {
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white">
       {/* Hidden Canvas untuk Watermark */}
       <canvas ref={canvasRef} className="hidden" />
-
-      {/* Hidden Native Camera File Input (100% Kompatibel Semua HP) */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        accept="image/*"
-        capture="user"
-        onChange={handleNativePhotoUpload}
-        className="hidden"
-      />
 
       {/* Header Sticky */}
       <header className="bg-slate-950/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 px-4 py-3 shadow-md">
@@ -443,7 +428,7 @@ export default function AbsenMandiriPage() {
             </div>
 
             {/* Thumbnail Foto Selfie Ber-Watermark */}
-            <div className="relative mx-auto w-48 h-48 rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl">
+            <div className="relative mx-auto w-52 aspect-[3/4] rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl">
               <img
                 src={submitSuccess.photo}
                 alt="Foto Selfie Presensi"
@@ -454,10 +439,10 @@ export default function AbsenMandiriPage() {
               </div>
             </div>
 
-            <div className="bg-slate-900/80 rounded-2xl p-3 text-xs text-slate-300 border border-slate-700/60 space-y-1.5">
+            <div className="bg-slate-900/80 rounded-2xl p-3 text-xs text-slate-300 border border-slate-700/60 space-y-1.5 text-left">
               <div className="flex justify-between">
                 <span className="text-slate-400">Status GPS:</span>
-                <span className={submitSuccess.distance <= MAX_RADIUS_METERS ? "font-bold text-emerald-400" : "font-bold text-rose-400"}>
+                <span className={submitSuccess.distance <= MAX_RADIUS_METERS ? "font-bold text-emerald-400" : "font-bold text-amber-400"}>
                   {submitSuccess.distance <= MAX_RADIUS_METERS ? `Di Dapur (${submitSuccess.distance}m)` : `Luar Dapur (${submitSuccess.distance}m)`}
                 </span>
               </div>
@@ -479,12 +464,19 @@ export default function AbsenMandiriPage() {
           /* ============ FORM INPUT ABSEN ============ */
           <div className="space-y-4">
             {/* 1. Pilih Nama Relawan */}
-            <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-sm relative">
+            <div className={`bg-slate-800/80 border rounded-2xl p-4 shadow-sm relative transition-all ${
+              nameError ? 'border-rose-500 ring-2 ring-rose-500/30' : selectedVolunteer ? 'border-emerald-500/60' : 'border-slate-700/80'
+            }`}>
               <label className="text-xs font-black text-slate-300 uppercase tracking-wider block mb-1.5 flex items-center justify-between">
-                <span>1. Pilih Nama Relawan:</span>
-                <span className="text-[10px] text-blue-400 font-semibold lowercase">
-                  ({activeVolunteers.length} personil)
+                <span className="flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-blue-400" />
+                  <span>1. Pilih Nama Relawan:</span>
                 </span>
+                {selectedVolunteer && (
+                  <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Terpilih
+                  </span>
+                )}
               </label>
 
               {/* Custom Searchable Dropdown */}
@@ -492,33 +484,43 @@ export default function AbsenMandiriPage() {
                 <button
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-left text-xs font-bold text-white flex items-center justify-between hover:border-slate-600 transition cursor-pointer"
+                  className={`w-full bg-slate-900 border rounded-xl px-3.5 py-3 text-left text-xs font-bold text-white flex items-center justify-between transition cursor-pointer ${
+                    nameError ? 'border-rose-500' : 'border-slate-700 hover:border-slate-600'
+                  }`}
                 >
                   <div className="truncate">
                     {selectedVolunteer ? (
                       <div>
-                        <span className="text-white block">{selectedVolunteer.name}</span>
+                        <span className="text-white text-sm block">{selectedVolunteer.name}</span>
                         <span className="text-[10px] text-blue-400 font-normal">
-                          {selectedVolunteer.dutySection} ({selectedVolunteer.defaultCheckIn} - {selectedVolunteer.defaultCheckOut})
+                          {selectedVolunteer.dutySection} (Shift: {selectedVolunteer.defaultCheckIn} - {selectedVolunteer.defaultCheckOut})
                         </span>
                       </div>
                     ) : (
-                      <span className="text-slate-400 font-normal">Cari nama Anda di sini...</span>
+                      <span className="text-amber-400 font-bold flex items-center gap-1">
+                        <span>👉 Klik di sini untuk memilih nama Anda</span>
+                      </span>
                     )}
                   </div>
                   <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
                 </button>
 
+                {nameError && (
+                  <p className="text-[11px] text-rose-400 font-bold mt-1.5">
+                    {nameError}
+                  </p>
+                )}
+
                 {isDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1.5 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden max-h-64 flex flex-col">
+                  <div className="absolute top-full left-0 right-0 mt-1.5 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden max-h-72 flex flex-col animate-in fade-in duration-150">
                     <div className="p-2 border-b border-slate-800 sticky top-0 bg-slate-900">
                       <div className="relative">
                         <input
                           type="text"
-                          placeholder="Ketik nama atau divisi..."
+                          placeholder="Ketik nama untuk mencari..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-8 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 font-medium"
+                          className="w-full pl-8 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 font-medium"
                           autoFocus
                         />
                         <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -533,9 +535,12 @@ export default function AbsenMandiriPage() {
                             type="button"
                             onClick={() => {
                               setSelectedVolunteerId(v.id);
+                              setNameError('');
                               setIsDropdownOpen(false);
                             }}
-                            className="w-full text-left p-2.5 rounded-lg hover:bg-slate-800 transition flex items-center justify-between text-xs cursor-pointer"
+                            className={`w-full text-left p-2.5 rounded-lg transition flex items-center justify-between text-xs cursor-pointer ${
+                              selectedVolunteerId === v.id ? 'bg-blue-600/30 border border-blue-500/40' : 'hover:bg-slate-800'
+                            }`}
                           >
                             <div>
                               <p className="font-bold text-white leading-tight">{v.name}</p>
@@ -574,7 +579,7 @@ export default function AbsenMandiriPage() {
                   className="text-[11px] font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 disabled:opacity-50 cursor-pointer"
                 >
                   <RefreshCw className={`w-3 h-3 ${isLocating ? 'animate-spin' : ''}`} />
-                  <span>Refresh GPS</span>
+                  <span>Perbarui GPS</span>
                 </button>
               </div>
 
@@ -608,58 +613,77 @@ export default function AbsenMandiriPage() {
                   <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold block leading-tight">
-                      Di Luar Radius Dapur ({distanceMeters} meter)
+                      Terdeteksi di Luar Radius ({distanceMeters} meter)
                     </span>
                     <span className="text-[11px] text-amber-200 block mt-0.5">
-                      Presensi hanya diperbolehkan saat Anda sudah berada di lokasi dapur SPPG Wonodri 3 (Maksimal {MAX_RADIUS_METERS}m).
+                      Presensi tetap dapat dikirim namun akan diberi catatan khusus.
                     </span>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* 3. Live Camera & Selfie Capture (Dual Mode: Live & Native HP) */}
+            {/* 3. Live Camera View (Tampil Rapi di Box Web, Anti-Zoom) */}
             <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-sm space-y-3">
               <span className="text-xs font-black text-slate-300 uppercase tracking-wider flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <Camera className="w-3.5 h-3.5 text-blue-400" />
-                  <span>3. Foto Selfie di Dapur:</span>
+                  <span>3. Foto Wajah Selfie:</span>
                 </span>
-                {capturedPhoto && (
+                {capturedPhoto ? (
                   <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/40">
                     Foto Siap ✓
                   </span>
-                )}
+                ) : isCameraActive ? (
+                  <span className="text-[10px] text-blue-400 font-bold bg-blue-950/80 px-2 py-0.5 rounded border border-blue-800/40 animate-pulse">
+                    Kamera Live Aktif
+                  </span>
+                ) : null}
               </span>
 
-              {/* Viewport Kamera / Hasil Foto */}
-              <div className="relative w-full aspect-square bg-slate-950 rounded-2xl overflow-hidden border-2 border-slate-700/80 flex items-center justify-center shadow-inner">
+              {/* Frame Kamera Rapi (Portrait 3:4 Natural, Tidak Zoom) */}
+              <div className="relative w-full max-w-[280px] aspect-[3/4] mx-auto bg-slate-950 rounded-2xl overflow-hidden border-2 border-slate-700 shadow-inner flex items-center justify-center">
+                {/* 1. Preview Foto Terjepret */}
                 {capturedPhoto ? (
                   <img
                     src={capturedPhoto}
                     alt="Selfie Preview"
                     className="w-full h-full object-cover"
                   />
-                ) : isCameraActive ? (
-                  <>
-                    <video
-                      ref={videoRef}
-                      playsInline
-                      autoPlay
-                      muted
-                      className="w-full h-full object-cover"
-                    />
-                    {/* Panduan Oval Wajah */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-48 h-60 border-2 border-dashed border-white/60 rounded-full" />
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center p-6 space-y-2">
-                    <Camera className="w-12 h-12 text-slate-600 mx-auto" />
-                    <p className="text-xs text-slate-400 font-medium">
-                      Ambil foto selfie langsung dengan kamera HP
-                    </p>
+                ) : null}
+
+                {/* 2. Live Video Feed (Selalu Mounted di DOM, Anti-Zoom) */}
+                <video
+                  ref={videoRef}
+                  playsInline
+                  autoPlay
+                  muted
+                  style={{ transform: 'scaleX(-1)' }}
+                  className={`w-full h-full object-cover ${capturedPhoto ? 'hidden' : ''}`}
+                />
+
+                {/* 3. Panduan Wajah & Status */}
+                {!capturedPhoto && isCameraActive && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-40 h-52 border-2 border-dashed border-white/50 rounded-full" />
+                  </div>
+                )}
+
+                {!capturedPhoto && !isCameraActive && (
+                  <div className="text-center p-4 space-y-2 z-10">
+                    {cameraLoading ? (
+                      <>
+                        <RefreshCw className="w-8 h-8 text-blue-400 animate-spin mx-auto" />
+                        <p className="text-xs text-slate-400">Menghubungkan kamera...</p>
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="w-10 h-10 text-slate-600 mx-auto" />
+                        <p className="text-xs text-slate-400 font-medium">
+                          Kamera siap diaktifkan
+                        </p>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -671,71 +695,49 @@ export default function AbsenMandiriPage() {
                 </div>
               )}
 
-              {/* Tombol Kontrol Kamera: Dual Action */}
-              <div className="space-y-2">
+              {/* Tombol Kontrol Kamera */}
+              <div>
                 {!capturedPhoto ? (
                   isCameraActive ? (
                     <button
                       type="button"
-                      onClick={captureFromStream}
-                      className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/40 cursor-pointer animate-pulse"
+                      onClick={captureFromWebCamera}
+                      className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-sm rounded-xl transition shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 cursor-pointer animate-pulse"
                     >
                       <Camera className="w-4 h-4" />
-                      <span>Jepret Foto Sekarang</span>
+                      <span>📸 Jepret Foto Selfie Sekarang</span>
                     </button>
                   ) : (
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={triggerNativeCamera}
-                        className="py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-md cursor-pointer"
-                        title="Buka Kamera HP Bawaan (Paling Mudah & Lancar)"
-                      >
-                        <Camera className="w-4 h-4" />
-                        <span>Buka Kamera HP</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={startLiveCamera}
-                        className="py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
-                        title="Nyalakan Live Video Kamera"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                        <span>Live Preview</span>
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={startWebCamera}
+                      disabled={cameraLoading}
+                      className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow cursor-pointer disabled:opacity-50"
+                    >
+                      <Camera className="w-4 h-4" />
+                      <span>{cameraLoading ? 'Menghubungkan...' : 'Aktifkan Kamera di Layar'}</span>
+                    </button>
                   )
                 ) : (
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={triggerNativeCamera}
-                      className="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <Camera className="w-3.5 h-3.5" />
-                      <span>Foto Ulang (Kamera HP)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={startLiveCamera}
-                      className="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      <span>Foto Ulang (Live)</span>
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRetakePhoto}
+                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Ulangi / Jepret Foto Ulang</span>
+                  </button>
                 )}
               </div>
             </div>
 
-            {/* 4. Tombol Aksi: Presensi Masuk / Pulang */}
+            {/* 4. Tombol Aksi: Presensi Masuk / Pulang (ANTI-STUCK) */}
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 type="button"
-                disabled={isSubmitting || !selectedVolunteer || !capturedPhoto || !isLocationValid}
+                disabled={isSubmitting}
                 onClick={() => handleSubmitAttendance('IN')}
-                className="py-3.5 px-4 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs transition shadow-lg shadow-emerald-950/60 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                className="py-4 px-4 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-white font-black text-xs transition shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>{isSubmitting ? 'Mengirim...' : 'Presensi Masuk'}</span>
@@ -743,17 +745,17 @@ export default function AbsenMandiriPage() {
 
               <button
                 type="button"
-                disabled={isSubmitting || !selectedVolunteer || !capturedPhoto || !isLocationValid}
+                disabled={isSubmitting}
                 onClick={() => handleSubmitAttendance('OUT')}
-                className="py-3.5 px-4 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs transition shadow-lg shadow-blue-950/60 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                className="py-4 px-4 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-black text-xs transition shadow-lg shadow-blue-950/60 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
                 <span>{isSubmitting ? 'Mengirim...' : 'Presensi Pulang'}</span>
               </button>
             </div>
 
-            <p className="text-[11px] text-slate-500 text-center font-medium leading-relaxed">
-              Tombol akan aktif setelah memilih nama, berada dalam radius dapur ({MAX_RADIUS_METERS}m), dan mengambil foto selfie.
+            <p className="text-[11px] text-slate-400 text-center font-medium leading-relaxed">
+              Pastikan Anda sudah memilih nama pada langkah 1 dan menjepret foto selfie pada langkah 3 sebelum mengirim presensi.
             </p>
           </div>
         )}
