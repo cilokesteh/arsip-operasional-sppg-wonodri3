@@ -530,41 +530,53 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       reason: data.reason,
     }));
 
+    // ===== JADWAL TAHAPAN PATEN (dipatenkan Tuan, 25 Okt 2026) =====
+    // Semua tanggal pakai jadwal sama — TIDAK diambil dari input, TIDAK berubah per hari.
+    // Sumber patokan: jadwal operasional SIPGN + jam kerja personel (lib/attendance.ts).
+    const PATEN_STAGE_TIMES: Record<string, string> = {
+      '1. Persiapan': '17:00 - 01:00 WIB',
+      '2. Pengolahan': '02:00 - 05:00 WIB',
+      '3. Pengemasan': '05:00 - 06:15 WIB',
+      '4. Distribusi': '06:00 - 09:00 WIB',
+      '5. Pencucian': '13:00 - 21:00 WIB',
+    };
+    const patenTime = (step: string) => PATEN_STAGE_TIMES[step] ?? '';
+
     const allPhotos = [
       {
         step: '1. Persiapan',
         title: 'Sortasi Bahan Baku Higienis',
         description: 'Pembersihan dan sortasi bahan baku makanan di dapur SPPG Wonodri 3.',
         imageUrl: prepPhotoUrl || '',
-        timeEstimate: '04:00 - 05:30 WIB',
+        timeEstimate: patenTime('1. Persiapan'),
       },
       {
         step: '2. Pengolahan',
         title: 'Pemasakan Suhu Terukur (>85°C)',
         description: 'Pengolahan makanan hangat menggunakan kuali stainless steel berstandar BGN.',
         imageUrl: cookPhotoUrl || '',
-        timeEstimate: '05:30 - 07:15 WIB',
+        timeEstimate: patenTime('2. Pengolahan'),
       },
       {
         step: '3. Pengemasan',
         title: 'Food Plating & Segel Thermal Box',
         description: 'Pengecekan porsi gramasi dan segel kotak makanan hangat siap kirim.',
         imageUrl: packPhotoUrl || '',
-        timeEstimate: '07:15 - 08:30 WIB',
+        timeEstimate: patenTime('3. Pengemasan'),
       },
       {
         step: '4. Distribusi',
         title: 'Pengantaran & Serah Terima Sekolah',
         description: 'Distribusi makanan bergizi tepat waktu ke sekolah penerima manfaat.',
         imageUrl: distPhotoUrl || '',
-        timeEstimate: '08:30 - 10:00 WIB',
+        timeEstimate: patenTime('4. Distribusi'),
       },
       {
         step: '5. Pencucian',
         title: 'Pencucian & Sterilisasi Ompreng',
         description: 'Pembersihan menyeluruh wadah ompreng stainless steel dengan air panas dan sabun sanitasi.',
         imageUrl: washPhotoUrl || '',
-        timeEstimate: '11:00 - 13:00 WIB',
+        timeEstimate: patenTime('5. Pencucian'),
       },
     ].filter((p) => p.imageUrl && p.imageUrl.trim() !== '');
 
