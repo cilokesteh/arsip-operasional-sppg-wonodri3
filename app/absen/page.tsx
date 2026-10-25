@@ -170,31 +170,31 @@ export default function AbsenMandiriPage() {
 
   // Helper Menggambar Stempel / Watermark Resmi pada Canvas
   const applyWatermark = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    const barHeight = 82;
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    const barHeight = 66;
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
     ctx.fillRect(0, height - barHeight, width, barHeight);
 
     // Title SPPG
     ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('SPPG WONODRI 3 • PRESENSI REALTIME', 16, height - 56);
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText('SPPG WONODRI 3 • PRESENSI REALTIME', 10, height - 46);
 
     // Date, Time & Volunteer Name
     ctx.fillStyle = '#ffffff';
-    ctx.font = '13px sans-serif';
+    ctx.font = '10px sans-serif';
     const nowStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
     const dateFormatted = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
     const volunteerLabel = selectedVolunteer ? selectedVolunteer.name : 'Relawan SPPG';
-    ctx.fillText(`${dateFormatted} • ${nowStr} • ${volunteerLabel}`, 16, height - 34);
+    ctx.fillText(`${dateFormatted} • ${nowStr} • ${volunteerLabel}`, 10, height - 28);
 
     // Coordinates & Distance
     const isValid = distanceMeters !== null && distanceMeters <= MAX_RADIUS_METERS;
     ctx.fillStyle = isValid ? '#4ade80' : '#f87171';
-    ctx.font = 'bold 12px monospace';
+    ctx.font = 'bold 10px monospace';
     const distText = distanceMeters !== null
       ? `📍 ${distanceMeters}m dari Dapur SPPG (${isValid ? 'Valid di Dapur' : 'Luar Radius'})`
       : '📍 GPS Terverifikasi';
-    ctx.fillText(distText, 16, height - 14);
+    ctx.fillText(distText, 10, height - 12);
   };
 
   // Menyalakan Kamera Web Live (Langsung Tampil di Box Web, Anti-Zoom)
@@ -279,8 +279,8 @@ export default function AbsenMandiriPage() {
     const startX = (vWidth - cropWidth) / 2;
     const startY = (vHeight - cropHeight) / 2;
 
-    const destW = 480;
-    const destH = 640;
+    const destW = 320;
+    const destH = 426;
     canvas.width = destW;
     canvas.height = destH;
 
@@ -290,10 +290,10 @@ export default function AbsenMandiriPage() {
     ctx.drawImage(video, startX, startY, cropWidth, cropHeight, -destW, 0, destW, destH);
     ctx.restore();
 
-    // Tambahkan stempel resmi pada resolusi 480x640 yang pas
+    // Tambahkan stempel resmi pada resolusi 320x426 yang pas & ringan
     applyWatermark(ctx, destW, destH);
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.65);
     setCapturedPhoto(dataUrl);
     stopCamera();
   };
@@ -358,14 +358,34 @@ export default function AbsenMandiriPage() {
         notes: isLocationValid ? 'Presensi Mandiri Valid di Dapur' : `Presensi di luar radius dapur (${distanceMeters ?? 0}m)`,
       };
 
-      const res = await fetch(CLOUD_ATTENDANCE_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      let res: Response | null = null;
+      let resJson: { success?: boolean; error?: string } | null = null;
 
-      const resJson = await res.json();
-      if (res.ok && resJson.success) {
+      // Auto-retry 1x dengan timeout 12 detik untuk kehandalan sinyal HP
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+          res = await fetch(CLOUD_ATTENDANCE_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+
+          if (res && res.ok) {
+            resJson = await res.json();
+            if (resJson && resJson.success) break;
+          }
+        } catch (fetchErr) {
+          if (attempt === 2) throw fetchErr;
+          await new Promise((r) => setTimeout(r, 600));
+        }
+      }
+
+      if (res && res.ok && resJson && resJson.success) {
         setSubmitSuccess({
           type,
           time: timeWib,
@@ -375,7 +395,7 @@ export default function AbsenMandiriPage() {
           photo: capturedPhoto,
         });
       } else {
-        alert(`Gagal menyimpan presensi: ${resJson.error || 'Terjadi kesalahan server.'}`);
+        alert(`Gagal menyimpan presensi: ${resJson?.error || 'Koneksi ke server terputus.'}`);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Koneksi gagal';
@@ -668,7 +688,7 @@ export default function AbsenMandiriPage() {
                   <img
                     src={capturedPhoto}
                     alt="Selfie Preview"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-slate-950"
                   />
                 ) : null}
 
