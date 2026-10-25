@@ -20,7 +20,7 @@ import { DEFAULT_ROSTER_40 } from '@/lib/attendance';
 // Koordinat Resmi Dapur SPPG Wonodri 3 Kota Semarang (Juknis BGN 2026)
 const KITCHEN_LAT = -6.992554;
 const KITCHEN_LNG = 110.425959;
-const MAX_RADIUS_METERS = 150; // Radius toleransi GPS HP indoor (150 meter)
+const MAX_RADIUS_METERS = 10; // Radius ketat dapur (10 meter, anti-absen dari rumah)
 const CLOUD_ATTENDANCE_API = 'https://sppg-sync-worker.cilokesteh.workers.dev/api/attendance';
 
 // Formula Haversine untuk kalkulasi jarak GPS akurat
@@ -307,12 +307,17 @@ export default function AbsenMandiriPage() {
       return;
     }
 
-    // 3. Cek Status Radius GPS
-    if (distanceMeters !== null && distanceMeters > MAX_RADIUS_METERS) {
-      const confirmOutside = window.confirm(
-        `⚠️ Peringatan Radius GPS:\nJarak Anda terdeteksi ${distanceMeters} meter dari Dapur SPPG Wonodri 3 (Maksimal ${MAX_RADIUS_METERS}m).\n\nTetap kirim presensi dengan catatan 'Di Luar Radius Dapur'?`
+    // 3. Cek Status Radius GPS (Ketat 10 Meter)
+    if (distanceMeters === null) {
+      alert('⚠️ Koordinat GPS belum terbaca. Silakan klik tombol "Perbarui GPS" dan pastikan izin lokasi browser aktif.');
+      return;
+    }
+
+    if (distanceMeters > MAX_RADIUS_METERS) {
+      alert(
+        `⛔ PRESENSI DITOLAK!\n\nJarak Anda terdeteksi ${distanceMeters} meter dari titik Dapur SPPG Wonodri 3.\n\nBatas maksimal radius yang diizinkan hanya ${MAX_RADIUS_METERS} meter.\nPresensi dari rumah atau luar area dapur dilarang keras!`
       );
-      if (!confirmOutside) return;
+      return;
     }
 
     setIsSubmitting(true);
@@ -604,19 +609,19 @@ export default function AbsenMandiriPage() {
                       Lokasi Valid di Dapur SPPG Wonodri 3
                     </span>
                     <span className="text-[11px] text-emerald-200 font-mono block mt-0.5">
-                      Jarak: {distanceMeters}m (Radius maks: {MAX_RADIUS_METERS}m)
+                      Jarak: {distanceMeters}m (Radius maks ketat: {MAX_RADIUS_METERS}m)
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="p-3 rounded-xl bg-amber-950/60 border border-amber-800 text-xs text-amber-300 flex items-start gap-2.5">
-                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800 text-xs text-rose-300 flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold block leading-tight">
-                      Terdeteksi di Luar Radius ({distanceMeters} meter)
+                      Di Luar Radius Dapur ({distanceMeters} meter)
                     </span>
-                    <span className="text-[11px] text-amber-200 block mt-0.5">
-                      Presensi tetap dapat dikirim namun akan diberi catatan khusus.
+                    <span className="text-[11px] text-rose-200 block mt-0.5">
+                      Presensi hanya dapat dikirim jika Anda berada di dalam area dapur SPPG Wonodri 3 (Maksimal {MAX_RADIUS_METERS} meter).
                     </span>
                   </div>
                 </div>
