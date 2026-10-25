@@ -16,7 +16,7 @@ import {
   Check,
   Lock
 } from 'lucide-react';
-import { DEFAULT_ROSTER_40 } from '@/lib/attendance';
+import { DEFAULT_ROSTER_40, toIsoDateLocal } from '@/lib/attendance';
 
 // Koordinat Resmi Dapur SPPG Wonodri 3 Kota Semarang (Juknis BGN 2026)
 const KITCHEN_LAT = -6.992554;
@@ -345,10 +345,8 @@ export default function AbsenMandiriPage() {
 
     try {
       const now = new Date();
-      // Hitung tanggal lokal WIB (UTC+7)
-      const wibOffset = 7 * 60 * 60 * 1000;
-      const wibTime = new Date(now.getTime() + wibOffset);
-      const dateWib = wibTime.toISOString().slice(0, 10);
+      // Gunakan toIsoDateLocal agar presisi sama dengan kalender sistem
+      const dateWib = toIsoDateLocal(now);
       const timeWib = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) + ' WIB';
 
       const payload = {
@@ -395,6 +393,21 @@ export default function AbsenMandiriPage() {
 
       if (res && res.ok && resJson && resJson.success) {
         setIsSubmitting(false);
+        // Simpan juga ke localStorage browser untuk fallback offline
+        try {
+          const localRecord = {
+            volunteerId: selectedVolunteer.id,
+            volunteerName: selectedVolunteer.name,
+            dutySection: selectedVolunteer.dutySection,
+            date: dateWib,
+            type,
+            time: timeWib,
+            distanceMeters: distanceMeters ?? 0,
+            photoUrl: capturedPhoto,
+          };
+          localStorage.setItem(`sppg_last_absen_${selectedVolunteer.id}`, JSON.stringify(localRecord));
+        } catch {}
+
         setSubmitSuccess({
           type,
           time: timeWib,
@@ -403,6 +416,7 @@ export default function AbsenMandiriPage() {
           distance: distanceMeters ?? 0,
           photo: capturedPhoto,
         });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       } else {
         setIsSubmitting(false);
@@ -811,34 +825,52 @@ export default function AbsenMandiriPage() {
             </div>
 
             {/* 4. Tombol Aksi: Presensi Masuk / Pulang (Mati Total Jika Luar Radius) */}
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <button
-                type="button"
-                disabled={!isLocationValid || isSubmitting}
-                onClick={() => handleSubmitAttendance('IN')}
-                className={`py-4 px-4 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 ${
-                  isLocationValid && !isSubmitting
-                    ? 'bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-white shadow-lg shadow-emerald-950/60 cursor-pointer'
-                    : 'bg-slate-800 border border-slate-700/60 text-slate-500 cursor-not-allowed opacity-40'
-                }`}
-              >
-                {isLocationValid ? <CheckCircle2 className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                <span>{isSubmitting ? 'Mengirim...' : isLocationValid ? 'Presensi Masuk' : 'Terkunci (Luar Radius)'}</span>
-              </button>
+            <div className="space-y-3 pt-2">
+              {/* Status Validasi Sebelum Kirim */}
+              {(!selectedVolunteer || !capturedPhoto || !isLocationValid) && (
+                <div className="p-3 rounded-xl bg-slate-900 border border-slate-700/60 text-xs text-slate-400 space-y-1">
+                  <p className="font-bold text-slate-300">Kelengkapan Sebelum Kirim:</p>
+                  <p className={selectedVolunteer ? 'text-emerald-400' : 'text-amber-400'}>
+                    {selectedVolunteer ? `✓ Nama: ${selectedVolunteer.name}` : '• Belum memilih nama (Langkah 1)'}
+                  </p>
+                  <p className={isLocationValid ? 'text-emerald-400' : 'text-rose-400'}>
+                    {isLocationValid ? `✓ Lokasi Dapur (${distanceMeters}m)` : `• Di luar radius dapur (${distanceMeters ?? '?'}m)`}
+                  </p>
+                  <p className={capturedPhoto ? 'text-emerald-400' : 'text-amber-400'}>
+                    {capturedPhoto ? '✓ Foto selfie siap' : '• Belum jepret foto selfie (Langkah 3)'}
+                  </p>
+                </div>
+              )}
 
-              <button
-                type="button"
-                disabled={!isLocationValid || isSubmitting}
-                onClick={() => handleSubmitAttendance('OUT')}
-                className={`py-4 px-4 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 ${
-                  isLocationValid && !isSubmitting
-                    ? 'bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white shadow-lg shadow-blue-950/60 cursor-pointer'
-                    : 'bg-slate-800 border border-slate-700/60 text-slate-500 cursor-not-allowed opacity-40'
-                }`}
-              >
-                {isLocationValid ? <LogOut className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                <span>{isSubmitting ? 'Mengirim...' : isLocationValid ? 'Presensi Pulang' : 'Terkunci (Luar Radius)'}</span>
-              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  disabled={!isLocationValid || isSubmitting}
+                  onClick={() => handleSubmitAttendance('IN')}
+                  className={`py-4 px-4 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 ${
+                    isLocationValid && !isSubmitting
+                      ? 'bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-white shadow-lg shadow-emerald-950/60 cursor-pointer'
+                      : 'bg-slate-800 border border-slate-700/60 text-slate-500 cursor-not-allowed opacity-40'
+                  }`}
+                >
+                  {isLocationValid ? <CheckCircle2 className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                  <span>{isSubmitting ? 'Mengirim...' : isLocationValid ? 'Presensi Masuk' : 'Terkunci (Luar Radius)'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={!isLocationValid || isSubmitting}
+                  onClick={() => handleSubmitAttendance('OUT')}
+                  className={`py-4 px-4 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 ${
+                    isLocationValid && !isSubmitting
+                      ? 'bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white shadow-lg shadow-blue-950/60 cursor-pointer'
+                      : 'bg-slate-800 border border-slate-700/60 text-slate-500 cursor-not-allowed opacity-40'
+                  }`}
+                >
+                  {isLocationValid ? <LogOut className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                  <span>{isSubmitting ? 'Mengirim...' : isLocationValid ? 'Presensi Pulang' : 'Terkunci (Luar Radius)'}</span>
+                </button>
+              </div>
             </div>
 
             <p className="text-[11px] text-slate-400 text-center font-medium leading-relaxed">
