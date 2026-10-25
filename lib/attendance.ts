@@ -30,6 +30,9 @@ export interface AttendanceEntry {
   paid: boolean;
   recordedAt: string;
   recordedBy: string;
+  photoUrl?: string;
+  distanceMeters?: number;
+  isWithinRadius?: boolean;
 }
 
 export interface DayWorkInfo {

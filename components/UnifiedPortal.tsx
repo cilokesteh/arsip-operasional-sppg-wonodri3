@@ -249,6 +249,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   const [pinErrorSalary, setPinErrorSalary] = useState<string>('');
   const [pinPendingActionSalary, setPinPendingActionSalary] = useState<'unlock' | 'print' | 'export' | null>(null);
 
+  // Modal Foto Selfie Presensi Realtime
+  const [viewingPhotoModal, setViewingPhotoModal] = useState<{ url: string; name: string; time: string; distance?: number } | null>(null);
+
   // Form states Roster
   const [newPersonName, setNewPersonName] = useState<string>('');
   const [newPersonSection, setNewPersonSection] = useState<string>('Pemorsian');
@@ -314,6 +317,62 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   }, [selectedDate, ledger, roster, todayDateStr]);
 
   const rosterMap = useMemo(() => new Map<string, VolunteerProfile>(roster.map((v) => [v.id, v])), [roster]);
+
+  // Sinkronisasi Presensi Realtime Mandiri dari Cloudflare KV
+  useEffect(() => {
+    let isCancelled = false;
+    const fetchCloudAttendance = async () => {
+      try {
+        const res = await fetch(`https://sppg-sync-worker.cilokesteh.workers.dev/api/attendance?date=${selectedDate}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.success && Array.isArray(data.records) && data.records.length > 0 && !isCancelled) {
+          setCurrentDayDraft((prev) => {
+            interface CloudRecord {
+              volunteerId: string;
+              time?: string;
+              checkInTime?: string;
+              checkOutTime?: string;
+              photoUrl?: string;
+              checkInPhoto?: string;
+              distanceMeters?: number;
+              isWithinRadius?: boolean;
+            }
+            const cloudMap = new Map<string, CloudRecord>(data.records.map((r: CloudRecord) => [r.volunteerId, r]));
+            return prev.map((entry) => {
+              const cloud = cloudMap.get(entry.volunteerId);
+              if (cloud) {
+                const person = rosterMap.get(entry.volunteerId);
+                return {
+                  ...entry,
+                  status: 'Hadir' as AttendanceStatus,
+                  checkIn: cloud.checkInTime || cloud.time || entry.checkIn,
+                  checkOut: cloud.checkOutTime || entry.checkOut,
+                  earnedAmount: person ? person.dailyRate : entry.earnedAmount,
+                  notes: cloud.isWithinRadius
+                    ? `📍 Realtime Selfie (${cloud.distanceMeters ?? 0}m)`
+                    : `⚠️ Luar Dapur (${cloud.distanceMeters ?? 0}m)`,
+                  photoUrl: cloud.checkInPhoto || cloud.photoUrl,
+                  distanceMeters: cloud.distanceMeters,
+                  isWithinRadius: cloud.isWithinRadius,
+                };
+              }
+              return entry;
+            });
+          });
+        }
+      } catch (err) {
+        console.warn('Realtime cloud attendance sync error:', err);
+      }
+    };
+
+    fetchCloudAttendance();
+    const interval = setInterval(fetchCloudAttendance, 15000); // Polling tiap 15 detik
+    return () => {
+      isCancelled = true;
+      clearInterval(interval);
+    };
+  }, [selectedDate, rosterMap]);
 
   const absentPersonnel = useMemo(() => {
     return currentDayDraft
@@ -1084,14 +1143,34 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                 {person.no}
                               </td>
                               <td className="py-2.5 px-3">
-                                <div className="font-semibold text-slate-900">
-                                  <span className={isNonAktif ? 'line-through text-slate-400' : ''}>
-                                    {person.name}
-                                  </span>
+                                <div className="flex items-center gap-2">
+                                  {entry.photoUrl && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setViewingPhotoModal({ url: entry.photoUrl!, name: person.name, time: entry.checkIn, distance: entry.distanceMeters })}
+                                      className="w-8 h-8 rounded-lg overflow-hidden border border-emerald-500 shrink-0 hover:scale-105 transition shadow cursor-pointer relative"
+                                      title="Klik untuk melihat foto selfie GPS"
+                                    >
+                                      <img src={entry.photoUrl} alt="Selfie" className="w-full h-full object-cover" />
+                                    </button>
+                                  )}
+                                  <div>
+                                    <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                                      <span className={isNonAktif ? 'line-through text-slate-400' : ''}>
+                                        {person.name}
+                                      </span>
+                                      {entry.photoUrl && (
+                                        <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 inline-flex items-center gap-0.5">
+                                          <span>📍</span>
+                                          <span>{entry.distanceMeters !== undefined ? `${entry.distanceMeters}m` : 'GPS'}</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-[10px] text-slate-400 font-mono">
+                                      Shift: {person.defaultCheckIn}-{person.defaultCheckOut}
+                                    </span>
+                                  </div>
                                 </div>
-                                <span className="text-[10px] text-slate-400 font-mono">
-                                  Shift: {person.defaultCheckIn}-{person.defaultCheckOut}
-                                </span>
                               </td>
                               <td className="py-2.5 px-3 text-slate-600 font-medium whitespace-nowrap">
                                 {person.dutySection}
@@ -2375,6 +2454,43 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               </div>
               <p className="text-[10px] text-slate-500 pt-1">
                 Verifikasi: Arief Rahman Hakim (Aslap) & Salsabiila Zainima, S.Ak (Akuntan)
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL VIEW FOTO SELFIE PRESENSI REALTIME */}
+      {viewingPhotoModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-2xl text-center">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>Bukti Selfie GPS Relawan</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setViewingPhotoModal(null)}
+                className="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 bg-slate-800 rounded-lg cursor-pointer"
+              >
+                ✕ Tutup
+              </button>
+            </div>
+
+            <div className="relative w-full aspect-square rounded-2xl overflow-hidden border border-slate-700 shadow-inner">
+              <img
+                src={viewingPhotoModal.url}
+                alt="Foto Selfie Relawan"
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="text-left bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 text-xs space-y-1">
+              <p className="font-bold text-white">{viewingPhotoModal.name}</p>
+              <p className="text-[11px] text-slate-400">Jam Hadir: {viewingPhotoModal.time}</p>
+              <p className="text-[11px] text-emerald-400 font-mono">
+                📍 Jarak GPS: {viewingPhotoModal.distance !== undefined ? `${viewingPhotoModal.distance} meter dari Dapur` : 'Terverifikasi'}
               </p>
             </div>
           </div>
