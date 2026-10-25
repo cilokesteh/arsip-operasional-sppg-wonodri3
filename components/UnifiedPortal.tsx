@@ -85,7 +85,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     (staticMenusData as unknown as DailyMenuRecord[]) || INITIAL_MENU_HISTORY
   );
   const [selectedDate, setSelectedDate] = useState<string>(
-    staticMenusData && staticMenusData.length > 0 ? staticMenusData[0].date : '2026-10-21'
+    initialCategory === 'absensi'
+      ? toIsoDateLocal(new Date())
+      : (staticMenusData && staticMenusData.length > 0 ? staticMenusData[0].date : '2026-10-21')
   );
   const [showCalendarModal, setShowCalendarModal] = useState<boolean>(false);
   const [searchBeneficiary, setSearchBeneficiary] = useState<string>('');
@@ -129,7 +131,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setMenuHistory(parsed);
-          setSelectedDate(parsed[0].date);
+          if (initialCategory !== 'absensi') {
+            setSelectedDate(parsed[0].date);
+          }
         }
       }
     } catch {
@@ -284,7 +288,11 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       try {
         const params = new URLSearchParams(window.location.search);
         const qDate = params.get('date');
-        if (qDate) setSelectedDate(qDate);
+        if (qDate) {
+          setSelectedDate(qDate);
+        } else if (initialCategory === 'absensi') {
+          setSelectedDate(toIsoDateLocal(new Date()));
+        }
       } catch {}
     }
   }, []);
@@ -1298,14 +1306,34 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                           !isHadir ? 'border-amber-200 bg-amber-50/20' : 'border-slate-200'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <span className="font-bold text-xs text-slate-900 block">{person.name}</span>
-                            <span className="text-[10px] text-slate-400">
-                              #{person.no} • {person.dutySection} • {person.defaultCheckIn}-{person.defaultCheckOut}
-                            </span>
+                        <div className="flex items-center justify-between gap-2.5">
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            {entry.photoUrl && (
+                              <button
+                                type="button"
+                                onClick={() => setViewingPhotoModal({ url: entry.photoUrl!, name: person.name, time: entry.checkIn, distance: entry.distanceMeters })}
+                                className="w-10 h-10 rounded-xl overflow-hidden border-2 border-emerald-500 shrink-0 shadow active:scale-95 transition cursor-pointer relative"
+                                title="Klik untuk melihat foto selfie GPS"
+                              >
+                                <img src={entry.photoUrl} alt="Selfie" className="w-full h-full object-cover" />
+                              </button>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-bold text-xs text-slate-900 block truncate">{person.name}</span>
+                                {entry.photoUrl && (
+                                  <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 inline-flex items-center gap-0.5">
+                                    <span>📍</span>
+                                    <span>{entry.distanceMeters !== undefined ? `${entry.distanceMeters}m` : 'GPS'}</span>
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-slate-400 block truncate">
+                                #{person.no} • {person.dutySection} • {person.defaultCheckIn}-{person.defaultCheckOut}
+                              </span>
+                            </div>
                           </div>
-                          <div>{isHadir ? renderSalary(entry.earnedAmount) : renderSalary(person.dailyRate, true)}</div>
+                          <div className="shrink-0">{isHadir ? renderSalary(entry.earnedAmount) : renderSalary(person.dailyRate, true)}</div>
                         </div>
 
                         <div className="grid grid-cols-4 gap-1 text-[11px] font-semibold">
@@ -1667,22 +1695,43 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-                  {roster.map((person) => (
+                  {roster.map((person) => {
+                    const todayEntry = currentDayDraft.find((e) => e.volunteerId === person.id);
+                    return (
                     <div
                       key={person.id}
                       className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
                         person.isActive ? 'border-slate-200 bg-white' : 'border-rose-200 bg-rose-50/30 opacity-70'
                       }`}
                     >
-                      <div>
-                        <div className="font-bold text-xs text-slate-900">
-                          #{person.no} {person.name}
-                        </div>
-                        <div className="text-[10px] text-slate-500">
-                          {person.dutySection} • {person.defaultCheckIn}-{person.defaultCheckOut}
-                        </div>
-                        <div className="text-[10px] text-blue-900 font-mono font-bold pt-0.5">
-                          {renderSalary(person.dailyRate)}
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        {todayEntry?.photoUrl ? (
+                          <button
+                            type="button"
+                            onClick={() => setViewingPhotoModal({ url: todayEntry.photoUrl!, name: person.name, time: todayEntry.checkIn, distance: todayEntry.distanceMeters })}
+                            className="w-10 h-10 rounded-xl overflow-hidden border-2 border-emerald-500 shrink-0 shadow cursor-pointer relative"
+                            title="Lihat Foto Selfie Hari Ini"
+                          >
+                            <img src={todayEntry.photoUrl} alt="Selfie" className="w-full h-full object-cover" />
+                          </button>
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 font-bold text-xs shrink-0 font-mono">
+                            #{person.no}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-xs text-slate-900 flex items-center gap-1.5 truncate">
+                            <span className="truncate">{person.name}</span>
+                            {todayEntry?.photoUrl && (
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Sudah Absen Selfie Hari Ini" />
+                            )}
+                          </div>
+                          <div className="text-[10px] text-slate-500 truncate">
+                            {person.dutySection} • {person.defaultCheckIn}-{person.defaultCheckOut}
+                          </div>
+                          <div className="text-[10px] text-blue-900 font-mono font-bold pt-0.5">
+                            {renderSalary(person.dailyRate)}
+                          </div>
                         </div>
                       </div>
 
@@ -1704,7 +1753,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -170,31 +170,31 @@ export default function AbsenMandiriPage() {
 
   // Helper Menggambar Stempel / Watermark Resmi pada Canvas
   const applyWatermark = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    const barHeight = 84;
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    const barHeight = 82;
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
     ctx.fillRect(0, height - barHeight, width, barHeight);
 
     // Title SPPG
     ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.fillText('SPPG WONODRI 3 • PRESENSI REALTIME', 14, height - 58);
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillText('SPPG WONODRI 3 • PRESENSI REALTIME', 16, height - 56);
 
     // Date, Time & Volunteer Name
     ctx.fillStyle = '#ffffff';
-    ctx.font = '12px sans-serif';
+    ctx.font = '13px sans-serif';
     const nowStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
     const dateFormatted = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
     const volunteerLabel = selectedVolunteer ? selectedVolunteer.name : 'Relawan SPPG';
-    ctx.fillText(`${dateFormatted} • ${nowStr} • ${volunteerLabel}`, 14, height - 36);
+    ctx.fillText(`${dateFormatted} • ${nowStr} • ${volunteerLabel}`, 16, height - 34);
 
     // Coordinates & Distance
     const isValid = distanceMeters !== null && distanceMeters <= MAX_RADIUS_METERS;
     ctx.fillStyle = isValid ? '#4ade80' : '#f87171';
-    ctx.font = 'bold 11px monospace';
+    ctx.font = 'bold 12px monospace';
     const distText = distanceMeters !== null
-      ? `📍 ${distanceMeters}m dari Dapur SPPG (${KITCHEN_LAT.toFixed(5)}, ${KITCHEN_LNG.toFixed(5)})`
+      ? `📍 ${distanceMeters}m dari Dapur SPPG (${isValid ? 'Valid di Dapur' : 'Luar Radius'})`
       : '📍 GPS Terverifikasi';
-    ctx.fillText(distText, 14, height - 16);
+    ctx.fillText(distText, 16, height - 14);
   };
 
   // Menyalakan Kamera Web Live (Langsung Tampil di Box Web, Anti-Zoom)
@@ -254,7 +254,7 @@ export default function AbsenMandiriPage() {
     }
   };
 
-  // Jepret Foto Langsung dari Box Web
+  // Jepret Foto Langsung dari Box Web (Cegah Terpotong & Anti-Zoom)
   const captureFromWebCamera = () => {
     if (!videoRef.current || !canvasRef.current) return;
 
@@ -266,19 +266,34 @@ export default function AbsenMandiriPage() {
     const vWidth = video.videoWidth || 640;
     const vHeight = video.videoHeight || 480;
 
-    canvas.width = vWidth;
-    canvas.height = vHeight;
+    // Hitung crop presisi rasio 3:4 portrait dari sumber kamera
+    const targetRatio = 3 / 4;
+    let cropWidth = vWidth;
+    let cropHeight = vWidth / targetRatio;
+
+    if (cropHeight > vHeight) {
+      cropHeight = vHeight;
+      cropWidth = vHeight * targetRatio;
+    }
+
+    const startX = (vWidth - cropWidth) / 2;
+    const startY = (vHeight - cropHeight) / 2;
+
+    const destW = 480;
+    const destH = 640;
+    canvas.width = destW;
+    canvas.height = destH;
 
     // Flip horizontal agar hasil foto selfie tidak terbalik (mirror natural)
     ctx.save();
     ctx.scale(-1, 1);
-    ctx.drawImage(video, -vWidth, 0, vWidth, vHeight);
+    ctx.drawImage(video, startX, startY, cropWidth, cropHeight, -destW, 0, destW, destH);
     ctx.restore();
 
-    // Tambahkan stempel resmi
-    applyWatermark(ctx, vWidth, vHeight);
+    // Tambahkan stempel resmi pada resolusi 480x640 yang pas
+    applyWatermark(ctx, destW, destH);
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
     setCapturedPhoto(dataUrl);
     stopCamera();
   };
