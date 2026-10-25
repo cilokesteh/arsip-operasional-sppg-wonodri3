@@ -1676,7 +1676,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                             if (d.date > todayDateStr) {
                               return 'FUTURE';
                             }
-                            const st = weeklyLedgerMap.get(`${person.id}:${d.date}`) || (person.isActive ? 'Hadir' : 'Nonaktif');
+                            const st = weeklyLedgerMap.get(`${person.id}:${d.date}`) || (person.isActive ? 'Belum Absen' : 'Nonaktif');
                             if (st === 'Hadir') hadirCount += 1;
                             return st;
                           });
@@ -1697,6 +1697,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                     <span className="text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded text-[10px]">S</span>
                                   ) : st === 'FUTURE' ? (
                                     <span className="text-slate-300 font-normal">·</span>
+                                  ) : st === 'Belum Absen' ? (
+                                    <span className="text-slate-300 font-normal">–</span>
                                   ) : (
                                     <span className="text-slate-300">-</span>
                                   )}
