@@ -345,7 +345,10 @@ export default function AbsenMandiriPage() {
 
     try {
       const now = new Date();
-      const dateWib = now.toISOString().slice(0, 10);
+      // Hitung tanggal lokal WIB (UTC+7)
+      const wibOffset = 7 * 60 * 60 * 1000;
+      const wibTime = new Date(now.getTime() + wibOffset);
+      const dateWib = wibTime.toISOString().slice(0, 10);
       const timeWib = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) + ' WIB';
 
       const payload = {
@@ -374,23 +377,24 @@ export default function AbsenMandiriPage() {
           body: JSON.stringify(payload),
         });
 
-        if (res && res.ok) {
+        if (res) {
           resJson = await res.json();
         }
       } catch (fetchErr) {
-        // Fallback retry 1x jika ada gangguan jaringan sekilas
-        await new Promise((r) => setTimeout(r, 800));
+        console.warn('First fetch attempt failed, retrying once...', fetchErr);
+        await new Promise((r) => setTimeout(r, 600));
         res = await fetch(CLOUD_ATTENDANCE_API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-        if (res && res.ok) {
+        if (res) {
           resJson = await res.json();
         }
       }
 
       if (res && res.ok && resJson && resJson.success) {
+        setIsSubmitting(false);
         setSubmitSuccess({
           type,
           time: timeWib,
@@ -399,10 +403,13 @@ export default function AbsenMandiriPage() {
           distance: distanceMeters ?? 0,
           photo: capturedPhoto,
         });
+        return;
       } else {
-        alert(`Gagal menyimpan presensi: ${resJson?.error || 'Koneksi ke server terputus.'}`);
+        setIsSubmitting(false);
+        alert(`Gagal menyimpan presensi: ${resJson?.error || (res ? `Status ${res.status}` : 'Koneksi ke server terputus.')}`);
       }
     } catch (err: unknown) {
+      setIsSubmitting(false);
       const msg = err instanceof Error ? err.message : 'Koneksi gagal';
       alert(`Terjadi kesalahan jaringan: ${msg}`);
     } finally {
