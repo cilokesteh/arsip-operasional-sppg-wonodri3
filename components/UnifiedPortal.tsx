@@ -126,14 +126,20 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('sppg_synced_menus');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setMenuHistory(parsed);
-          if (initialCategory !== 'absensi') {
-            setSelectedDate(parsed[0].date);
-          }
+      const storedV1 = localStorage.getItem('sppg_synced_menus');
+      const storedV2 = localStorage.getItem('sppg_synced_menus_v2');
+      const listV1 = storedV1 ? JSON.parse(storedV1) : [];
+      const listV2 = storedV2 ? JSON.parse(storedV2) : [];
+      const byDate = new Map<string, DailyMenuRecord>();
+      (Array.isArray(listV2) ? listV2 : []).forEach((m: DailyMenuRecord) => { if (m?.date) byDate.set(m.date, m); });
+      (Array.isArray(listV1) ? listV1 : []).forEach((m: DailyMenuRecord) => { if (m?.date) byDate.set(m.date, m); });
+      const combined = Array.from(byDate.values()).sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      if (combined.length > 0) {
+        setMenuHistory(combined);
+        if (initialCategory !== 'absensi') {
+          setSelectedDate(combined[0].date);
         }
       }
     } catch {

@@ -161,6 +161,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
           );
           try {
             localStorage.setItem('sppg_synced_menus', JSON.stringify(merged));
+            localStorage.setItem('sppg_synced_menus_v2', JSON.stringify(merged));
           } catch {
             // ignore
           }
@@ -169,14 +170,22 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       }
     });
 
-    // 2. Baca dari localStorage lokal
+    // 2. Baca dari localStorage lokal (gabungkan V1 dan V2)
     try {
-      const stored = localStorage.getItem('sppg_synced_menus');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setSavedMenuList(parsed);
-        }
+      const storedV1 = localStorage.getItem('sppg_synced_menus');
+      const storedV2 = localStorage.getItem('sppg_synced_menus_v2');
+      const listV1 = storedV1 ? JSON.parse(storedV1) : [];
+      const listV2 = storedV2 ? JSON.parse(storedV2) : [];
+      const byDate = new Map<string, DailyMenuRecord>();
+      (Array.isArray(listV2) ? listV2 : []).forEach((m: DailyMenuRecord) => { if (m?.date) byDate.set(m.date, m); });
+      (Array.isArray(listV1) ? listV1 : []).forEach((m: DailyMenuRecord) => { if (m?.date) byDate.set(m.date, m); });
+      const merged = Array.from(byDate.values()).sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      if (merged.length > 0) {
+        setSavedMenuList(merged);
+        localStorage.setItem('sppg_synced_menus', JSON.stringify(merged));
+        localStorage.setItem('sppg_synced_menus_v2', JSON.stringify(merged));
       }
     } catch {
       // fallback
@@ -322,11 +331,12 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
   const handleDeleteMenu = (dateToDelete: string) => {
     if (confirm(`Yakin ingin menghapus arsip menu untuk tanggal ${dateToDelete}?`)) {
       try {
-        const stored = localStorage.getItem('sppg_synced_menus');
+        const stored = localStorage.getItem('sppg_synced_menus') || localStorage.getItem('sppg_synced_menus_v2');
         if (stored) {
           const list = JSON.parse(stored);
           const updated = list.filter((m: { date: string }) => m.date !== dateToDelete);
           localStorage.setItem('sppg_synced_menus', JSON.stringify(updated));
+          localStorage.setItem('sppg_synced_menus_v2', JSON.stringify(updated));
           setSavedMenuList(updated);
           saveMenusToCloud(updated);
           alert(`Arsip menu tanggal ${dateToDelete} berhasil dihapus.`);
@@ -399,7 +409,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
       // AUTO-SAVE LANGSUNG KE RECORD AGAR FOTO TIDAK PERNAH HILANG WALAUPUN HALAMAN DI-REFRESH
       try {
-        const existing = localStorage.getItem('sppg_synced_menus');
+        const existing = localStorage.getItem('sppg_synced_menus') || localStorage.getItem('sppg_synced_menus_v2');
         if (existing) {
           const list: DailyMenuRecord[] = JSON.parse(existing);
           const currentRecord = list.find((m) => m.date === menuDate);
@@ -422,6 +432,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
               }
             }
             localStorage.setItem('sppg_synced_menus', JSON.stringify(list));
+            localStorage.setItem('sppg_synced_menus_v2', JSON.stringify(list));
             setSavedMenuList(list);
             saveSingleMenuToCloud(currentRecord).catch((e) => console.warn('Instant photo sync error:', e));
           }
@@ -595,36 +606,51 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     };
 
     try {
-      // 1. Simpan langsung ke state lokal & localStorage browser (Instan & Pasti Selamat)
+      // 1. Simpan langsung ke state lokal & KEDUA localStorage browser (V1 dan V2 agar langsung tampil di Portal)
       const existing = localStorage.getItem('sppg_synced_menus');
-      const localList: DailyMenuRecord[] = existing ? JSON.parse(existing) : [];
-      const updatedList = [newRecord, ...localList.filter((item: { date: string }) => item.date !== menuDate)].sort(
+      const existingV2 = localStorage.getItem('sppg_synced_menus_v2');
+      const listV1: DailyMenuRecord[] = existing ? JSON.parse(existing) : [];
+      const listV2: DailyMenuRecord[] = existingV2 ? JSON.parse(existingV2) : [];
+      const byDate = new Map<string, DailyMenuRecord>();
+      listV2.forEach((item) => byDate.set(item.date, item));
+      listV1.forEach((item) => byDate.set(item.date, item));
+      byDate.set(menuDate, newRecord);
+
+      const updatedList = Array.from(byDate.values()).sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
       localStorage.setItem('sppg_synced_menus', JSON.stringify(updatedList));
+      localStorage.setItem('sppg_synced_menus_v2', JSON.stringify(updatedList));
       setSavedMenuList(updatedList);
       localStorage.removeItem('sppg_admin_draft_v3');
 
-      // RESET LOADING SPINNER SEGERA agar tombol kembali normal dan tidak gantung
-      setIsSubmitting(false);
-      setPublishSuccess(true);
-      setSubmitToast({
-        type: 'success',
-        message: `BERHASIL DIRILIS! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan & sedang disinkronkan ke Cloud.`,
-      });
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      // 2. Kirim ke Cloudflare KV di background tanpa memblokir tombol UI sama sekali
-      saveSingleMenuToCloud(newRecord).then((cloudRes) => {
+      // 2. Kirim ke Cloudflare KV Database dengan await agar tidak di-cancel browser mobile
+      try {
+        const cloudRes = await saveSingleMenuToCloud(newRecord);
+        setIsSubmitting(false);
+        setPublishSuccess(true);
         if (cloudRes.success) {
           setSubmitToast({
             type: 'success',
-            message: `BERHASIL! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan permanen di Cloud & semua perangkat.`,
+            message: `BERHASIL DIRILIS! Laporan menu tanggal ${menuDate} ("${namaMenu}") telah tersimpan permanen di Cloud & Portal.`,
+          });
+        } else {
+          setSubmitToast({
+            type: 'success',
+            message: `BERHASIL DIRILIS LOKAL! Sinkronisasi cloud: ${cloudRes.error || 'akan disinkronkan saat portal dibuka'}.`,
           });
         }
-      }).catch((cloudErr) => {
+      } catch (cloudErr) {
+        setIsSubmitting(false);
+        setPublishSuccess(true);
         console.warn('Background cloud sync warning:', cloudErr);
-      });
+        setSubmitToast({
+          type: 'success',
+          message: `BERHASIL DIRILIS LOKAL! Laporan menu tersimpan di browser & akan otomatis disinkronkan saat portal dibuka.`,
+        });
+      }
     } catch (err: unknown) {
       setIsSubmitting(false);
       const msg = err instanceof Error ? err.message : 'Gagal menyimpan data';

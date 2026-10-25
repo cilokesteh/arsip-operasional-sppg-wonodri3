@@ -70,15 +70,17 @@ export default function ArsipPage() {
     } catch {}
 
     try {
-      const saved = localStorage.getItem('sppg_synced_menus_v2');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const byDate = new Map<string, DailyMenuRecord>();
-          (staticMenusData as unknown as DailyMenuRecord[]).forEach((s) => byDate.set(s.date, s));
-          parsed.forEach((p: DailyMenuRecord) => byDate.set(p.date, { ...(byDate.get(p.date) || {}), ...p }));
-          setMenuList(Array.from(byDate.values()).sort((a, b) => b.date.localeCompare(a.date)));
-        }
+      const rawV1 = localStorage.getItem('sppg_synced_menus');
+      const rawV2 = localStorage.getItem('sppg_synced_menus_v2');
+      const listV1 = rawV1 ? JSON.parse(rawV1) : [];
+      const listV2 = rawV2 ? JSON.parse(rawV2) : [];
+      const byDate = new Map<string, DailyMenuRecord>();
+      (staticMenusData as unknown as DailyMenuRecord[]).forEach((s) => byDate.set(s.date, s));
+      (Array.isArray(listV2) ? listV2 : []).forEach((p: DailyMenuRecord) => byDate.set(p.date, { ...(byDate.get(p.date) || {}), ...p }));
+      (Array.isArray(listV1) ? listV1 : []).forEach((p: DailyMenuRecord) => byDate.set(p.date, { ...(byDate.get(p.date) || {}), ...p }));
+      const combined = Array.from(byDate.values()).sort((a, b) => b.date.localeCompare(a.date));
+      if (combined.length > 0) {
+        setMenuList(combined);
       }
     } catch {}
 

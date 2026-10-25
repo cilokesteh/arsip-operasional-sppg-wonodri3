@@ -56,7 +56,7 @@ import {
   Archive,
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';
-import { fetchMenusFromCloud } from '@/lib/cloudSync';
+import { fetchMenusFromCloud, saveSingleMenuToCloud } from '@/lib/cloudSync';
 import staticMenusData from '@/lib/staticMenus.json';
 import OfficialReport from '@/components/OfficialReport';
 
@@ -118,40 +118,33 @@ export default function PortalHome() {
     }
 
     try {
-      // MIGRASI v1 -> v2: data lama (mis. draft 15/16 Okt yang belum ke-push cloud)
-      // dibawa masuk ke cache baru lalu cache v1 ditandai sudah dimigrasi.
+      // BACA & GABUNGKAN SEMUA SUMBER LOKAL (V1 & V2) AGAR APA YANG DISIMPAN DI ADMIN LANGSUNG TAMPIL DI PORTAL
       const V1 = 'sppg_synced_menus';
       const V2 = 'sppg_synced_menus_v2';
-      if (!localStorage.getItem(V2) && localStorage.getItem(V1)) {
-        try {
-          localStorage.setItem(V2, localStorage.getItem(V1) as string);
-        } catch {
-          /* ignore */
-        }
-      }
+      const rawV1 = localStorage.getItem(V1);
+      const rawV2 = localStorage.getItem(V2);
+      const listV1: DailyMenuRecord[] = rawV1 ? JSON.parse(rawV1) : [];
+      const listV2: DailyMenuRecord[] = rawV2 ? JSON.parse(rawV2) : [];
 
-      const saved = localStorage.getItem(V2);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Merge staticMenusData into parsed agar tanggal baru langsung terdeteksi
-          const byDate = new Map<string, DailyMenuRecord>();
-          (staticMenusData as unknown as DailyMenuRecord[]).forEach((s) => byDate.set(s.date, s));
-          parsed.forEach((p: DailyMenuRecord) => {
-            const existing = byDate.get(p.date);
-            if (!existing) {
-              byDate.set(p.date, p);
-            } else {
-              byDate.set(p.date, { ...existing, ...p });
-            }
-          });
-          const combined = Array.from(byDate.values()).sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-          setMenuHistory(combined);
-          if (typeof window !== 'undefined' && !window.location.search.includes('date=')) {
-            setSelectedDate(combined[0].date);
-          }
+      const byDate = new Map<string, DailyMenuRecord>();
+      (staticMenusData as unknown as DailyMenuRecord[]).forEach((s) => byDate.set(s.date, s));
+      (Array.isArray(listV2) ? listV2 : []).forEach((p: DailyMenuRecord) => {
+        if (p?.date) byDate.set(p.date, { ...(byDate.get(p.date) || {}), ...p });
+      });
+      (Array.isArray(listV1) ? listV1 : []).forEach((p: DailyMenuRecord) => {
+        if (p?.date) byDate.set(p.date, { ...(byDate.get(p.date) || {}), ...p });
+      });
+      const combined = Array.from(byDate.values()).sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      if (combined.length > 0) {
+        setMenuHistory(combined);
+        try {
+          localStorage.setItem(V1, JSON.stringify(combined));
+          localStorage.setItem(V2, JSON.stringify(combined));
+        } catch {}
+        if (typeof window !== 'undefined' && !window.location.search.includes('date=')) {
+          setSelectedDate(combined[0].date);
         }
       }
     } catch {
@@ -162,7 +155,7 @@ export default function PortalHome() {
       if (cloudMenus && cloudMenus.length > 0) {
         setMenuHistory((prev) => {
           /* CLOUD WINS untuk tanggal yang ADA DI CLOUD.
-             Tanggal yang HANYA ada di lokal (mis. 15/16 Okt yang gagal push ke cloud)
+             Tanggal yang HANYA ada di lokal (mis. tgl baru yang tersimpan dari admin)
              TETAP DIPERTAHANKAN — jangan sampai data lokal hilang. */
           const byDate = new Map<string, DailyMenuRecord>();
           prev.forEach((localItem) => byDate.set(localItem.date, localItem));
@@ -181,15 +174,25 @@ export default function PortalHome() {
               });
             }
           });
+
           const merged = Array.from(byDate.values()).sort(
             (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
           );
           try {
+            localStorage.setItem('sppg_synced_menus', JSON.stringify(merged));
             localStorage.setItem('sppg_synced_menus_v2', JSON.stringify(merged));
-          } catch {
-            /* ignore */
-          }
-          setSelectedDate(merged[0].date);
+          } catch {}
+
+          // AUTO-SYNC BACK TO CLOUD:
+          // Jika ada data yang tersimpan dari admin lokal (seperti tgl 26 Okt) tapi belum masuk ke cloud,
+          // langsung sinkronkan ke Cloudflare KV!
+          const cloudDates = new Set(cloudMenus.map((c) => c.date));
+          merged.forEach((item) => {
+            if (item?.date && !cloudDates.has(item.date) && item.status === 'published') {
+              saveSingleMenuToCloud(item).catch(() => {});
+            }
+          });
+
           return merged;
         });
       }
