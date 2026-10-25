@@ -23,7 +23,6 @@ import { enqueueAttendance, flushQueue, startQueueSync, getQueueLength } from '@
 const KITCHEN_LAT = -6.992554;
 const KITCHEN_LNG = 110.425959;
 const MAX_RADIUS_METERS = 10; // Radius ketat dapur (10 meter, anti-absen dari rumah)
-const CLOUD_ATTENDANCE_API = 'https://sppg-sync-worker.cilokesteh.workers.dev/api/attendance';
 
 // Formula Haversine untuk kalkulasi jarak GPS akurat
 function calculateDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -429,6 +428,12 @@ export default function AbsenMandiriPage() {
             <span className="text-[10px] text-slate-400 block truncate">
               {currentDateStr}
             </span>
+            {pendingSync > 0 && (
+              <span className="text-[9px] font-bold text-amber-400 bg-amber-950/80 border border-amber-700/60 px-1.5 py-0.5 rounded inline-flex items-center gap-1 mt-1">
+                <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                {pendingSync} menunggu kirim
+              </span>
+            )}
           </div>
         </div>
       </header>
@@ -473,10 +478,22 @@ export default function AbsenMandiriPage() {
                   {submitSuccess.distance <= MAX_RADIUS_METERS ? `Di Dapur (${submitSuccess.distance}m)` : `Luar Dapur (${submitSuccess.distance}m)`}
                 </span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-slate-400">Sinkronisasi Cloud:</span>
-                <span className="font-bold text-blue-400">Cloudflare Realtime ✓</span>
+                {pendingSync > 0 ? (
+                  <span className="font-bold text-amber-400 flex items-center gap-1">
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    Menunggu sinyal ({pendingSync})
+                  </span>
+                ) : (
+                  <span className="font-bold text-blue-400">Cloudflare Realtime ✓</span>
+                )}
               </div>
+              {pendingSync > 0 && (
+                <p className="text-[10px] text-slate-500 leading-relaxed pt-0.5">
+                  Presensi sudah tercatat aman di HP Anda dan otomatis dikirim ulang ke pusat begitu sinyal membaik. Anda boleh menutup halaman ini.
+                </p>
+              )}
             </div>
 
             <button
@@ -814,8 +831,8 @@ export default function AbsenMandiriPage() {
                       : 'bg-slate-800 border border-slate-700/60 text-slate-500 cursor-not-allowed opacity-40'
                   }`}
                 >
-                  {isLocationValid ? <CheckCircle2 className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                  <span>{isSubmitting ? 'Mengirim...' : isLocationValid ? 'Presensi Masuk' : 'Terkunci (Luar Radius)'}</span>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{isLocationValid ? 'Presensi Masuk' : 'Terkunci (Luar Radius)'}</span>
                 </button>
 
                 <button
@@ -828,8 +845,8 @@ export default function AbsenMandiriPage() {
                       : 'bg-slate-800 border border-slate-700/60 text-slate-500 cursor-not-allowed opacity-40'
                   }`}
                 >
-                  {isLocationValid ? <LogOut className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                  <span>{isSubmitting ? 'Mengirim...' : isLocationValid ? 'Presensi Pulang' : 'Terkunci (Luar Radius)'}</span>
+                  <LogOut className="w-4 h-4" />
+                  <span>{isLocationValid ? 'Presensi Pulang' : 'Terkunci (Luar Radius)'}</span>
                 </button>
               </div>
             </div>
