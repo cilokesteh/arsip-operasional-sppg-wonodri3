@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -305,7 +305,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
   const todayDateStr = useMemo(() => toIsoDateLocal(new Date()), []);
 
+  // Reset draft HANYA saat tanggal berganti — BUKAN setiap ledger berubah.
+  // Kalau bergantung pada ledger, sinkronisasi realtime akan tertimpa dan data absen hilang.
+  const prevSelectedDateRef = useRef<string | null>(null);
   useEffect(() => {
+    if (prevSelectedDateRef.current === selectedDate) return;
+    prevSelectedDateRef.current = selectedDate;
+
     const dayEntries = ledger.filter((entry) => entry.date === selectedDate);
     if (dayEntries.length > 0) {
       setCurrentDayDraft(dayEntries);
@@ -328,7 +334,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       }
     }
     setIsDirty(false);
-  }, [selectedDate, ledger, roster, todayDateStr]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate]);
 
   const rosterMap = useMemo(() => new Map<string, VolunteerProfile>(roster.map((v) => [v.id, v])), [roster]);
 
@@ -1601,7 +1608,10 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                               });
                               const secHadir = secEntries.filter((e) => e.status === 'Hadir').length;
                               const secAbsen = secEntries.filter((e) => e.status === 'Izin' || e.status === 'Sakit' || e.status === 'Alpha').length;
-                              const secEarned = secEntries.reduce((acc, curr) => acc + curr.earnedAmount, 0);
+                              // Upah hanya dihitung dari relawan yang benar-benar HADIR
+                              const secEarned = secEntries
+                                .filter((e) => e.status === 'Hadir')
+                                .reduce((acc, curr) => acc + curr.earnedAmount, 0);
 
                               return (
                                 <tr key={sec} className="hover:bg-slate-50">
