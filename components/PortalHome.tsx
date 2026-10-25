@@ -183,6 +183,10 @@ export default function PortalHome() {
             localStorage.setItem('sppg_synced_menus_v2', JSON.stringify(merged));
           } catch {}
 
+          if (typeof window !== 'undefined' && !window.location.search.includes('date=')) {
+            setSelectedDate(merged[0].date);
+          }
+
           // AUTO-SYNC BACK TO CLOUD:
           // Jika ada data yang tersimpan dari admin lokal (seperti tgl 26 Okt) tapi belum masuk ke cloud,
           // langsung sinkronkan ke Cloudflare KV!

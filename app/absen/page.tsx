@@ -17,6 +17,7 @@ import {
   Lock
 } from 'lucide-react';
 import { DEFAULT_ROSTER_40, toIsoDateLocal } from '@/lib/attendance';
+import { enqueueAttendance, flushQueue, startQueueSync, getQueueLength } from '@/lib/attendanceQueue';
 
 // Koordinat Resmi Dapur SPPG Wonodri 3 Kota Semarang (Juknis BGN 2026)
 const KITCHEN_LAT = -6.992554;
@@ -69,6 +70,7 @@ export default function AbsenMandiriPage() {
 
   // 5. Submit & Result Status
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [pendingSync, setPendingSync] = useState<number>(0);
   const [submitSuccess, setSubmitSuccess] = useState<{
     type: 'IN' | 'OUT';
     time: string;
@@ -125,6 +127,18 @@ export default function AbsenMandiriPage() {
   // Inisialisasi Lokasi GPS saat halaman dibuka
   useEffect(() => {
     refreshLocation();
+  }, []);
+
+  // Auto-sync antrean presensi (fail-safe): kirim ulang otomatis tiap 10 detik
+  useEffect(() => {
+    const stop = startQueueSync();
+    const onFlush = () => setPendingSync(getQueueLength());
+    window.addEventListener('sppg_absen_flush', onFlush);
+    setPendingSync(getQueueLength());
+    return () => {
+      stop();
+      window.removeEventListener('sppg_absen_flush', onFlush);
+    };
   }, []);
 
   // Auto-start camera HANYA saat berada dalam radius dapur (<= 10 meter)
@@ -311,8 +325,8 @@ export default function AbsenMandiriPage() {
     startWebCamera();
   };
 
-  // Submit Presensi ke Cloudflare KV (Anti-Stuck: Penuh Validasi Interaktif)
-  const handleSubmitAttendance = async (type: 'IN' | 'OUT') => {
+  // Submit Presensi ke Antrean Fail-Safe (GAGAL-MUTET: tombol tidak akan pernah stuck)
+  const handleSubmitAttendance = (type: 'IN' | 'OUT') => {
     // 1. Cek Apakah Nama Sudah Dipilih
     if (!selectedVolunteer) {
       setNameError('Pilih nama Anda terlebih dahulu!');
@@ -341,94 +355,41 @@ export default function AbsenMandiriPage() {
       return;
     }
 
-    setIsSubmitting(true);
+    const now = new Date();
+    const dateWib = toIsoDateLocal(now);
+    const timeWib = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) + ' WIB';
 
-    try {
-      const now = new Date();
-      // Gunakan toIsoDateLocal agar presisi sama dengan kalender sistem
-      const dateWib = toIsoDateLocal(now);
-      const timeWib = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) + ' WIB';
+    const payload = {
+      volunteerId: selectedVolunteer.id,
+      volunteerName: selectedVolunteer.name,
+      dutySection: selectedVolunteer.dutySection,
+      date: dateWib,
+      type,
+      time: timeWib,
+      timestamp: now.toISOString(),
+      latitude: currentCoords?.lat || KITCHEN_LAT,
+      longitude: currentCoords?.lng || KITCHEN_LNG,
+      distanceMeters: distanceMeters ?? 0,
+      isWithinRadius: isLocationValid,
+      photoUrl: capturedPhoto,
+      notes: isLocationValid ? 'Presensi Mandiri Valid di Dapur' : `Presensi di luar radius dapur (${distanceMeters ?? 0}m)`,
+    };
 
-      const payload = {
-        volunteerId: selectedVolunteer.id,
-        volunteerName: selectedVolunteer.name,
-        dutySection: selectedVolunteer.dutySection,
-        date: dateWib,
-        type,
-        time: timeWib,
-        timestamp: now.toISOString(),
-        latitude: currentCoords?.lat || KITCHEN_LAT,
-        longitude: currentCoords?.lng || KITCHEN_LNG,
-        distanceMeters: distanceMeters ?? 0,
-        isWithinRadius: isLocationValid,
-        photoUrl: capturedPhoto,
-        notes: isLocationValid ? 'Presensi Mandiri Valid di Dapur' : `Presensi di luar radius dapur (${distanceMeters ?? 0}m)`,
-      };
-
-      let res: Response | null = null;
-      let resJson: { success?: boolean; error?: string } | null = null;
-
-      try {
-        res = await fetch(CLOUD_ATTENDANCE_API, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        if (res) {
-          resJson = await res.json();
-        }
-      } catch (fetchErr) {
-        console.warn('First fetch attempt failed, retrying once...', fetchErr);
-        await new Promise((r) => setTimeout(r, 600));
-        res = await fetch(CLOUD_ATTENDANCE_API, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (res) {
-          resJson = await res.json();
-        }
-      }
-
-      if (res && res.ok && resJson && resJson.success) {
-        setIsSubmitting(false);
-        // Simpan juga ke localStorage browser untuk fallback offline
-        try {
-          const localRecord = {
-            volunteerId: selectedVolunteer.id,
-            volunteerName: selectedVolunteer.name,
-            dutySection: selectedVolunteer.dutySection,
-            date: dateWib,
-            type,
-            time: timeWib,
-            distanceMeters: distanceMeters ?? 0,
-            photoUrl: capturedPhoto,
-          };
-          localStorage.setItem(`sppg_last_absen_${selectedVolunteer.id}`, JSON.stringify(localRecord));
-        } catch {}
-
-        setSubmitSuccess({
-          type,
-          time: timeWib,
-          volunteerName: selectedVolunteer.name,
-          dutySection: selectedVolunteer.dutySection,
-          distance: distanceMeters ?? 0,
-          photo: capturedPhoto,
-        });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      } else {
-        setIsSubmitting(false);
-        alert(`Gagal menyimpan presensi: ${resJson?.error || (res ? `Status ${res.status}` : 'Koneksi ke server terputus.')}`);
-      }
-    } catch (err: unknown) {
-      setIsSubmitting(false);
-      const msg = err instanceof Error ? err.message : 'Koneksi gagal';
-      alert(`Terjadi kesalahan jaringan: ${msg}`);
-    } finally {
-      setIsSubmitting(false);
-    }
+    // === KUNCI ANTI-STUCK ===
+    // 1. Simpan ke antrean persisten DULU (data tidak akan pernah hilang)
+    enqueueAttendance(payload);
+    // 2. Langsung tampilkan kartu sukses — tidak menunggu jaringan
+    setSubmitSuccess({
+      type,
+      time: timeWib,
+      volunteerName: selectedVolunteer.name,
+      dutySection: selectedVolunteer.dutySection,
+      distance: distanceMeters ?? 0,
+      photo: capturedPhoto,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 3. Coba kirim di background; kalau gagal, auto-retry tiap 10 detik
+    void flushQueue();
   };
 
   const handleResetForm = () => {
