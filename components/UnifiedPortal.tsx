@@ -332,7 +332,10 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
   const rosterMap = useMemo(() => new Map<string, VolunteerProfile>(roster.map((v) => [v.id, v])), [roster]);
 
+  const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
+
   // Sinkronisasi Presensi Realtime Mandiri dari Cloudflare KV
+  // Menulis ke currentDayDraft (tabel harian) DAN ledger (rekap harian/mingguan/bulanan + cetak SPJ)
   useEffect(() => {
     let isCancelled = false;
     const fetchCloudAttendance = async () => {
@@ -341,18 +344,18 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
         if (!res.ok) return;
         const data = await res.json();
         if (data.success && Array.isArray(data.records) && data.records.length > 0 && !isCancelled) {
+          interface CloudRecord {
+            volunteerId: string;
+            time?: string;
+            checkInTime?: string;
+            checkOutTime?: string;
+            photoUrl?: string;
+            checkInPhoto?: string;
+            distanceMeters?: number;
+            isWithinRadius?: boolean;
+          }
+          const cloudMap = new Map<string, CloudRecord>(data.records.map((r: CloudRecord) => [r.volunteerId, r]));
           setCurrentDayDraft((prev) => {
-            interface CloudRecord {
-              volunteerId: string;
-              time?: string;
-              checkInTime?: string;
-              checkOutTime?: string;
-              photoUrl?: string;
-              checkInPhoto?: string;
-              distanceMeters?: number;
-              isWithinRadius?: boolean;
-            }
-            const cloudMap = new Map<string, CloudRecord>(data.records.map((r: CloudRecord) => [r.volunteerId, r]));
             return prev.map((entry) => {
               const cloud = cloudMap.get(entry.volunteerId);
               if (cloud) {
@@ -374,6 +377,46 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               return entry;
             });
           });
+
+          // TULIS KE LEDGER — sumber data rekap harian, mingguan, bulanan, dan cetak SPJ
+          setLedger((prevLedger) => {
+            const others = prevLedger.filter((e) => e.date !== selectedDate);
+            const dayEntries = prevLedger.filter((e) => e.date === selectedDate);
+            const dayMap = new Map(dayEntries.map((e) => [e.volunteerId, e]));
+
+            cloudMap.forEach((cloud, volunteerId) => {
+              const person = rosterMap.get(volunteerId);
+              if (!person) return;
+              const existing = dayMap.get(volunteerId);
+              const base =
+                existing ||
+                ({
+                  id: `${selectedDate}:${volunteerId}`,
+                  volunteerId,
+                  date: selectedDate,
+                  status: 'Hadir' as AttendanceStatus,
+                  checkIn: person.defaultCheckIn,
+                  checkOut: person.defaultCheckOut,
+                  earnedAmount: person.dailyRate,
+                  notes: '',
+                } as AttendanceEntry);
+              dayMap.set(volunteerId, {
+                ...base,
+                status: 'Hadir' as AttendanceStatus,
+                checkIn: cloud.checkInTime || cloud.time || base.checkIn,
+                checkOut: cloud.checkOutTime || base.checkOut,
+                earnedAmount: person.dailyRate,
+                notes: cloud.isWithinRadius
+                  ? `📍 Realtime Selfie (${cloud.distanceMeters ?? 0}m)`
+                  : `⚠️ Luar Dapur (${cloud.distanceMeters ?? 0}m)`,
+                photoUrl: cloud.checkInPhoto || cloud.photoUrl,
+                distanceMeters: cloud.distanceMeters,
+                isWithinRadius: cloud.isWithinRadius,
+              });
+            });
+
+            return [...others, ...Array.from(dayMap.values())];
+          });
         }
       } catch (err) {
         console.warn('Realtime cloud attendance sync error:', err);
@@ -381,12 +424,119 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     };
 
     fetchCloudAttendance();
-    const interval = setInterval(fetchCloudAttendance, 15000); // Polling tiap 15 detik
+    const interval = setInterval(fetchCloudAttendance, 5000); // Polling cepat 5 detik
     return () => {
       isCancelled = true;
       clearInterval(interval);
     };
   }, [selectedDate, rosterMap]);
+
+  // Sinkronisasi MULTI-TANGGAL untuk rekap mingguan & bulanan
+  // Menarik presensi realtime semua tanggal dalam rentang minggu aktif
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchWeekCloud = async () => {
+      const weekStart = weekDays[0]?.date;
+      const weekEnd = weekDays[weekDays.length - 1]?.date;
+      if (!weekStart || !weekEnd) return;
+
+      // Kumpulkan tanggal Senin..hari ini (jangan menarik tanggal masa depan)
+      const dates: string[] = [];
+      const cur = new Date(`${weekStart}T12:00:00`);
+      const end = new Date(`${weekEnd}T12:00:00`);
+      const today = todayDateStr;
+      while (cur <= end) {
+        const iso = toIsoDateLocal(cur);
+        if (iso <= today) dates.push(iso);
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      const results = await Promise.all(
+        dates.map(async (d) => {
+          try {
+            const r = await fetch(`https://sppg-sync-worker.cilokesteh.workers.dev/api/attendance?date=${d}`);
+            if (!r.ok) return null;
+            const j = await r.json();
+            if (j?.success && Array.isArray(j.records)) return { date: d, records: j.records };
+          } catch {
+            /* abaikan tanggal yang gagal */
+          }
+          return null;
+        })
+      );
+
+      if (isCancelled) return;
+      const valid = results.filter(Boolean) as { date: string; records: Record<string, unknown>[] }[];
+      if (valid.length === 0) return;
+
+      setLedger((prevLedger) => {
+        let next = prevLedger;
+        let changed = false;
+
+        for (const { date, records } of valid) {
+          for (const rec of records) {
+            const volunteerId = String(rec.volunteerId || '');
+            const person = rosterMap.get(volunteerId);
+            if (!person) continue;
+
+            const checkInTime = String(rec.checkInTime || rec.time || '');
+            const photo = (rec.checkInPhoto as string) || (rec.photoUrl as string) || undefined;
+            const dist = rec.distanceMeters as number | undefined;
+            const within = rec.isWithinRadius as boolean | undefined;
+
+            const existing = next.find((e) => e.date === date && e.volunteerId === volunteerId);
+            const merged: AttendanceEntry =
+              existing ||
+              ({
+                id: `${date}:${volunteerId}`,
+                volunteerId,
+                date,
+                status: 'Hadir',
+                checkIn: person.defaultCheckIn,
+                checkOut: person.defaultCheckOut,
+                earnedAmount: person.dailyRate,
+                notes: '',
+              } as AttendanceEntry);
+
+            const alreadySynced =
+              existing &&
+              existing.status === 'Hadir' &&
+              existing.checkIn === checkInTime &&
+              existing.photoUrl === photo;
+            if (alreadySynced) continue;
+
+            changed = true;
+            const updated: AttendanceEntry = {
+              ...merged,
+              status: 'Hadir',
+              checkIn: checkInTime || merged.checkIn,
+              earnedAmount: person.dailyRate,
+              notes:
+                within === false
+                  ? `⚠️ Luar Dapur (${dist ?? 0}m)`
+                  : `📍 Realtime Selfie (${dist ?? 0}m)`,
+              photoUrl: photo,
+              distanceMeters: dist,
+              isWithinRadius: within,
+            };
+            next = existing
+              ? next.map((e) => (e === existing ? updated : e))
+              : [...next, updated];
+          }
+        }
+
+        return changed ? next : prevLedger;
+      });
+    };
+
+    fetchWeekCloud();
+    const interval = setInterval(fetchWeekCloud, 20000); // Rekap mingguan: refresh 20 detik
+    return () => {
+      isCancelled = true;
+      clearInterval(interval);
+    };
+  }, [weekDays, rosterMap, todayDateStr]);
 
   const absentPersonnel = useMemo(() => {
     return currentDayDraft
@@ -685,7 +835,6 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
   // Summaries
   const dailySummary = useMemo(() => calculatePeriodSummary(currentDayDraft), [currentDayDraft]);
-  const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
 
   // Summaries: HANYA rekap data yang benar-benar tersimpan di ledger dan tidak melampaui hari ini / tanggal aktif
   const weeklyLedgerMap = useMemo(() => {
