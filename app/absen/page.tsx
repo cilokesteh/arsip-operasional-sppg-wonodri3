@@ -367,27 +367,26 @@ export default function AbsenMandiriPage() {
       let res: Response | null = null;
       let resJson: { success?: boolean; error?: string } | null = null;
 
-      // Auto-retry 1x dengan timeout 12 detik untuk kehandalan sinyal HP
-      for (let attempt = 1; attempt <= 2; attempt++) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 12000);
+      try {
+        res = await fetch(CLOUD_ATTENDANCE_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
 
-          res = await fetch(CLOUD_ATTENDANCE_API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            signal: controller.signal,
-          });
-          clearTimeout(timeoutId);
-
-          if (res && res.ok) {
-            resJson = await res.json();
-            if (resJson && resJson.success) break;
-          }
-        } catch (fetchErr) {
-          if (attempt === 2) throw fetchErr;
-          await new Promise((r) => setTimeout(r, 600));
+        if (res && res.ok) {
+          resJson = await res.json();
+        }
+      } catch (fetchErr) {
+        // Fallback retry 1x jika ada gangguan jaringan sekilas
+        await new Promise((r) => setTimeout(r, 800));
+        res = await fetch(CLOUD_ATTENDANCE_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (res && res.ok) {
+          resJson = await res.json();
         }
       }
 
