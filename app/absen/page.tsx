@@ -50,6 +50,7 @@ export default function AbsenMandiriPage() {
   // 3. Camera & Photo
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
   const [cameraError, setCameraError] = useState<string>('');
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
@@ -143,52 +144,93 @@ export default function AbsenMandiriPage() {
       (err) => {
         setIsLocating(false);
         if (err.code === 1) {
-          setLocationError('Izin akses lokasi ditolak. Silakan izinkan GPS di pengaturan browser Anda.');
+          setLocationError('Izin akses lokasi ditolak. Silakan aktifkan GPS & izinkan lokasi pada browser HP.');
         } else {
-          setLocationError('Gagal mendeteksi lokasi GPS. Pastikan GPS aktif dan sinyal stabil.');
+          setLocationError('Gagal mendeteksi koordinat GPS. Pastikan GPS HP aktif.');
         }
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 5000,
+        maximumAge: 3000,
       }
     );
   };
 
-  // Mulai Kamera Depan
-  const startCamera = async () => {
+  // Helper Menggambar Stempel / Watermark Resmi pada Canvas
+  const applyWatermark = (ctx: CanvasRenderingContext2D, size: number) => {
+    // Watermark background box
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    ctx.fillRect(0, size - 88, size, 88);
+
+    // Title SPPG
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillText('SPPG WONODRI 3 • PRESENSI REALTIME', 16, size - 60);
+
+    // Date, Time & Volunteer Name
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '13px sans-serif';
+    const nowStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+    const dateFormatted = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    const volunteerLabel = selectedVolunteer ? selectedVolunteer.name : 'Relawan SPPG';
+    ctx.fillText(`${dateFormatted} • ${nowStr} • ${volunteerLabel}`, 16, size - 38);
+
+    // Coordinates & Distance
+    const isValid = distanceMeters !== null && distanceMeters <= MAX_RADIUS_METERS;
+    ctx.fillStyle = isValid ? '#4ade80' : '#f87171';
+    ctx.font = 'bold 12px monospace';
+    const distText = distanceMeters !== null
+      ? `📍 ${distanceMeters}m dari Dapur SPPG (${KITCHEN_LAT.toFixed(5)}, ${KITCHEN_LNG.toFixed(5)})`
+      : '📍 GPS Terverifikasi';
+    ctx.fillText(distText, 16, size - 16);
+  };
+
+  // 1. Jalur Utama: Live WebRTC Camera Stream
+  const startLiveCamera = async () => {
     setCameraError('');
     setIsCameraActive(false);
 
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setCameraError('Kamera tidak didukung pada browser ini.');
+        // Fallback langsung ke native camera
+        triggerNativeCamera();
         return;
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user', // Kamera depan
-          width: { ideal: 640 },
-          height: { ideal: 640 },
-        },
-        audio: false,
-      });
+      // Coba constraints yang paling kompatibel untuk semua HP Android/iOS
+      let stream: MediaStream | null = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'user' } },
+          audio: false,
+        });
+      } catch {
+        // Fallback constraint tanpa facingMode
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false,
+        });
+      }
 
-      if (videoRef.current) {
+      if (videoRef.current && stream) {
         videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play();
-          setIsCameraActive(true);
-        };
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('autoplay', 'true');
+        videoRef.current.setAttribute('muted', 'true');
+
+        await videoRef.current.play();
+        setIsCameraActive(true);
       }
     } catch {
-      setCameraError('Kamera tidak dapat diakses. Mohon izinkan kamera untuk selfie presensi.');
+      // Jika browser memblokir WebRTC (misal di WebView Telegram/WhatsApp), arahkan ke Native Camera
+      setCameraError('Kamera live terkendala izin. Mengalihkan ke Kamera HP...');
+      setTimeout(() => {
+        triggerNativeCamera();
+      }, 500);
     }
   };
 
-  // Matikan Kamera
   const stopCamera = () => {
     if (videoRef.current && videoRef.current.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
@@ -198,8 +240,8 @@ export default function AbsenMandiriPage() {
     }
   };
 
-  // Ambil Foto & Beri Watermark GPS + Waktu
-  const capturePhoto = () => {
+  // Jepret dari Video Stream
+  const captureFromStream = () => {
     if (!videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
@@ -207,39 +249,58 @@ export default function AbsenMandiriPage() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const size = Math.min(video.videoWidth, video.videoHeight) || 480;
+    const size = Math.min(video.videoWidth || 640, video.videoHeight || 640, 720);
     canvas.width = size;
     canvas.height = size;
 
-    // Crop tengah persegi
-    const startX = (video.videoWidth - size) / 2;
-    const startY = (video.videoHeight - size) / 2;
+    const startX = ((video.videoWidth || size) - size) / 2;
+    const startY = ((video.videoHeight || size) - size) / 2;
     ctx.drawImage(video, startX, startY, size, size, 0, 0, size, size);
 
-    // Tambahkan Watermark Bar di Bawah Foto
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.fillRect(0, size - 85, size, 85);
+    applyWatermark(ctx, size);
 
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.fillText('SPPG WONODRI 3 • PRESENSI REALTIME', 16, size - 58);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '13px sans-serif';
-    const nowStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
-    const dateFormatted = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-    ctx.fillText(`${dateFormatted} • ${nowStr} • ${selectedVolunteer?.name || 'Relawan'}`, 16, size - 36);
-
-    ctx.fillStyle = distanceMeters !== null && distanceMeters <= MAX_RADIUS_METERS ? '#4ade80' : '#f87171';
-    ctx.font = 'bold 12px monospace';
-    const distText = distanceMeters !== null ? `📍 ${distanceMeters}m dari Dapur SPPG (${KITCHEN_LAT.toFixed(5)}, ${KITCHEN_LNG.toFixed(5)})` : '📍 Koordinat Terverifikasi';
-    ctx.fillText(distText, 16, size - 16);
-
-    // Export base64 jpeg ringan (~50KB)
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
     setCapturedPhoto(dataUrl);
-
     stopCamera();
+  };
+
+  // 2. Jalur Native Camera HP (100% Berhasil di Semua HP & In-App Browser)
+  const triggerNativeCamera = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleNativePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = canvasRef.current || document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const size = Math.min(img.width, img.height, 800);
+        canvas.width = size;
+        canvas.height = size;
+
+        const startX = (img.width - size) / 2;
+        const startY = (img.height - size) / 2;
+        ctx.drawImage(img, startX, startY, size, size, 0, 0, size, size);
+
+        applyWatermark(ctx, size);
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        setCapturedPhoto(dataUrl);
+        setCameraError('');
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   const isLocationValid = distanceMeters !== null && distanceMeters <= MAX_RADIUS_METERS;
@@ -247,11 +308,11 @@ export default function AbsenMandiriPage() {
   // Submit Presensi ke Cloudflare KV
   const handleSubmitAttendance = async (type: 'IN' | 'OUT') => {
     if (!selectedVolunteer) {
-      alert('Pilih nama relawan terlebih dahulu!');
+      alert('Pilih nama Anda terlebih dahulu!');
       return;
     }
     if (!capturedPhoto) {
-      alert('Ambil foto selfie di tempat terlebih dahulu!');
+      alert('Silakan ambil foto selfie terlebih dahulu!');
       return;
     }
     if (distanceMeters === null) {
@@ -319,8 +380,18 @@ export default function AbsenMandiriPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white">
-      {/* Canvas Tersembunyi untuk Watermarking Foto */}
+      {/* Hidden Canvas untuk Watermark */}
       <canvas ref={canvasRef} className="hidden" />
+
+      {/* Hidden Native Camera File Input (100% Kompatibel Semua HP) */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        capture="user"
+        onChange={handleNativePhotoUpload}
+        className="hidden"
+      />
 
       {/* Header Sticky */}
       <header className="bg-slate-950/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 px-4 py-3 shadow-md">
@@ -547,12 +618,12 @@ export default function AbsenMandiriPage() {
               )}
             </div>
 
-            {/* 3. Live Camera & Selfie Capture */}
+            {/* 3. Live Camera & Selfie Capture (Dual Mode: Live & Native HP) */}
             <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-sm space-y-3">
               <span className="text-xs font-black text-slate-300 uppercase tracking-wider flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <Camera className="w-3.5 h-3.5 text-blue-400" />
-                  <span>3. Foto Wajah di Tempat (Selfie):</span>
+                  <span>3. Foto Selfie di Dapur:</span>
                 </span>
                 {capturedPhoto && (
                   <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/40">
@@ -574,8 +645,9 @@ export default function AbsenMandiriPage() {
                     <video
                       ref={videoRef}
                       playsInline
+                      autoPlay
                       muted
-                      className="w-full h-full object-cover mirror"
+                      className="w-full h-full object-cover"
                     />
                     {/* Panduan Oval Wajah */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -586,54 +658,73 @@ export default function AbsenMandiriPage() {
                   <div className="text-center p-6 space-y-2">
                     <Camera className="w-12 h-12 text-slate-600 mx-auto" />
                     <p className="text-xs text-slate-400 font-medium">
-                      Kamera selfie belum aktif
+                      Ambil foto selfie langsung dengan kamera HP
                     </p>
                   </div>
                 )}
               </div>
 
               {cameraError && (
-                <div className="p-2.5 rounded-lg bg-rose-950/60 border border-rose-800 text-xs text-rose-300">
-                  {cameraError}
+                <div className="p-2.5 rounded-lg bg-amber-950/60 border border-amber-800 text-xs text-amber-300 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+                  <span>{cameraError}</span>
                 </div>
               )}
 
-              {/* Tombol Kontrol Kamera */}
-              <div className="flex gap-2">
-                {!isCameraActive && !capturedPhoto && (
-                  <button
-                    type="button"
-                    onClick={startCamera}
-                    className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-md cursor-pointer"
-                  >
-                    <Camera className="w-4 h-4" />
-                    <span>Aktifkan Kamera Selfie</span>
-                  </button>
-                )}
+              {/* Tombol Kontrol Kamera: Dual Action */}
+              <div className="space-y-2">
+                {!capturedPhoto ? (
+                  isCameraActive ? (
+                    <button
+                      type="button"
+                      onClick={captureFromStream}
+                      className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/40 cursor-pointer animate-pulse"
+                    >
+                      <Camera className="w-4 h-4" />
+                      <span>Jepret Foto Sekarang</span>
+                    </button>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={triggerNativeCamera}
+                        className="py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                        title="Buka Kamera HP Bawaan (Paling Mudah & Lancar)"
+                      >
+                        <Camera className="w-4 h-4" />
+                        <span>Buka Kamera HP</span>
+                      </button>
 
-                {isCameraActive && (
-                  <button
-                    type="button"
-                    onClick={capturePhoto}
-                    className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/40 cursor-pointer animate-pulse"
-                  >
-                    <Camera className="w-4 h-4" />
-                    <span>Ambil Foto Sekarang (Jepret)</span>
-                  </button>
-                )}
-
-                {capturedPhoto && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCapturedPhoto(null);
-                      startCamera();
-                    }}
-                    className="flex-1 py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>Ulangi Foto Selfie</span>
-                  </button>
+                      <button
+                        type="button"
+                        onClick={startLiveCamera}
+                        className="py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
+                        title="Nyalakan Live Video Kamera"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Live Preview</span>
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={triggerNativeCamera}
+                      className="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>Foto Ulang (Kamera HP)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={startLiveCamera}
+                      className="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Foto Ulang (Live)</span>
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
