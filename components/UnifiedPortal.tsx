@@ -298,23 +298,47 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       // ignore
     }
 
+    let activeDate = selectedDate;
     if (typeof window !== 'undefined') {
       try {
         const params = new URLSearchParams(window.location.search);
         const qDate = params.get('date');
         if (qDate) {
+          activeDate = qDate;
           setSelectedDate(qDate);
         } else if (initialCategory === 'absensi') {
-          setSelectedDate(toIsoDateLocal(new Date()));
+          activeDate = toIsoDateLocal(new Date());
+          setSelectedDate(activeDate);
         }
       } catch {}
     }
+
+    // Inisialisasi draft langsung dari loadedLedger yang ada di storage
+    const dayEntries = loadedLedger.filter((entry) => entry.date === activeDate);
+    if (dayEntries.length > 0) {
+      setCurrentDayDraft(dayEntries);
+    } else {
+      const fresh = buildDailyEntries(loadedRoster, activeDate);
+      if (activeDate > todayDateStr) {
+        setCurrentDayDraft(
+          fresh.map((e) => ({
+            ...e,
+            status: 'Libur' as AttendanceStatus,
+            earnedAmount: 0,
+            paid: false,
+            notes: 'Belum Terlewati',
+          }))
+        );
+      } else {
+        setCurrentDayDraft(fresh);
+      }
+    }
+    prevSelectedDateRef.current = activeDate;
   }, []);
 
   const todayDateStr = useMemo(() => toIsoDateLocal(new Date()), []);
 
   // Reset draft HANYA saat tanggal berganti — BUKAN setiap ledger berubah.
-  // Kalau bergantung pada ledger, sinkronisasi realtime akan tertimpa dan data absen hilang.
   const prevSelectedDateRef = useRef<string | null>(null);
   useEffect(() => {
     if (prevSelectedDateRef.current === selectedDate) return;
@@ -342,8 +366,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       }
     }
     setIsDirty(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate]);
+  }, [selectedDate, ledger, roster, todayDateStr]);
 
   const rosterMap = useMemo(() => new Map<string, VolunteerProfile>(roster.map((v) => [v.id, v])), [roster]);
 
@@ -368,6 +391,10 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             checkInPhoto?: string;
             distanceMeters?: number;
             isWithinRadius?: boolean;
+            status?: AttendanceStatus;
+            notes?: string;
+            paid?: boolean;
+            earnedAmount?: number;
           }
           const cloudMap = new Map<string, CloudRecord>(data.records.map((r: CloudRecord) => [r.volunteerId, r]));
           setCurrentDayDraft((prev) => {
@@ -375,20 +402,23 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               const cloud = cloudMap.get(entry.volunteerId);
               if (cloud) {
                 const person = rosterMap.get(entry.volunteerId);
+                const cloudStatus = (cloud.status as AttendanceStatus) || 'Hadir';
+                const isPresent = cloudStatus === 'Hadir' && (person ? person.isActive : true);
                 return {
                   ...entry,
-                  status: 'Hadir' as AttendanceStatus,
+                  status: cloudStatus,
                   checkIn: cloud.checkInTime || cloud.time || entry.checkIn,
                   checkOut: cloud.checkOutTime || entry.checkOut,
-                  earnedAmount: person ? person.dailyRate : entry.earnedAmount,
-                  notes: cloud.isWithinRadius
+                  earnedAmount: person ? (isPresent ? person.dailyRate : 0) : (cloud.earnedAmount ?? entry.earnedAmount),
+                  notes: cloud.notes || (cloud.isWithinRadius
                     ? `📍 Realtime Selfie (${cloud.distanceMeters ?? 0}m)`
-                    : `⚠️ Luar Dapur (${cloud.distanceMeters ?? 0}m)`,
+                    : `⚠️ Luar Dapur (${cloud.distanceMeters ?? 0}m)`),
                   photoUrl: isValidPhoto(cloud.checkInPhoto || cloud.photoUrl)
                     ? (cloud.checkInPhoto || cloud.photoUrl)
-                    : undefined,
-                  distanceMeters: cloud.distanceMeters,
-                  isWithinRadius: cloud.isWithinRadius,
+                    : entry.photoUrl,
+                  distanceMeters: cloud.distanceMeters ?? entry.distanceMeters,
+                  isWithinRadius: cloud.isWithinRadius ?? entry.isWithinRadius,
+                  paid: cloud.paid ?? entry.paid,
                 };
               }
               return entry;
@@ -405,32 +435,35 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               const person = rosterMap.get(volunteerId);
               if (!person) return;
               const existing = dayMap.get(volunteerId);
+              const cloudStatus = (cloud.status as AttendanceStatus) || 'Hadir';
+              const isPresent = cloudStatus === 'Hadir' && person.isActive;
               const base =
                 existing ||
                 ({
                   id: `${selectedDate}:${volunteerId}`,
                   volunteerId,
                   date: selectedDate,
-                  status: 'Hadir' as AttendanceStatus,
+                  status: cloudStatus,
                   checkIn: person.defaultCheckIn,
                   checkOut: person.defaultCheckOut,
-                  earnedAmount: person.dailyRate,
+                  earnedAmount: isPresent ? person.dailyRate : 0,
                   notes: '',
                 } as AttendanceEntry);
               dayMap.set(volunteerId, {
                 ...base,
-                status: 'Hadir' as AttendanceStatus,
+                status: cloudStatus,
                 checkIn: cloud.checkInTime || cloud.time || base.checkIn,
                 checkOut: cloud.checkOutTime || base.checkOut,
-                earnedAmount: person.dailyRate,
-                notes: cloud.isWithinRadius
+                earnedAmount: isPresent ? person.dailyRate : 0,
+                notes: cloud.notes || (cloud.isWithinRadius
                   ? `📍 Realtime Selfie (${cloud.distanceMeters ?? 0}m)`
-                  : `⚠️ Luar Dapur (${cloud.distanceMeters ?? 0}m)`,
+                  : `⚠️ Luar Dapur (${cloud.distanceMeters ?? 0}m)`),
                 photoUrl: isValidPhoto(cloud.checkInPhoto || cloud.photoUrl)
                   ? (cloud.checkInPhoto || cloud.photoUrl)
-                  : undefined,
-                distanceMeters: cloud.distanceMeters,
-                isWithinRadius: cloud.isWithinRadius,
+                  : base.photoUrl,
+                distanceMeters: cloud.distanceMeters ?? base.distanceMeters,
+                isWithinRadius: cloud.isWithinRadius ?? base.isWithinRadius,
+                paid: cloud.paid ?? base.paid,
               });
             });
 
@@ -645,6 +678,31 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     setIsDirty(false);
     setSaveToast(`✓ Presensi ${formatIndoDate(selectedDate)} tersimpan!`);
     setTimeout(() => setSaveToast(null), 3000);
+
+    // SINKRONKAN JUGA ARSIP HARIAN KE CLOUDFLARE KV (MULTI-DEVICE & PERMANEN)
+    fetch('https://sppg-sync-worker.cilokesteh.workers.dev/api/attendance/day', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        date: selectedDate,
+        records: currentDayDraft.map((e) => ({
+          volunteerId: e.volunteerId,
+          date: e.date,
+          status: e.status,
+          checkIn: e.checkIn,
+          checkOut: e.checkOut,
+          checkInTime: e.checkIn,
+          checkOutTime: e.checkOut,
+          earnedAmount: e.earnedAmount,
+          notes: e.notes,
+          paid: e.paid,
+          photoUrl: e.photoUrl,
+          checkInPhoto: e.photoUrl,
+          distanceMeters: e.distanceMeters,
+          isWithinRadius: e.isWithinRadius,
+        })),
+      }),
+    }).catch((err) => console.warn('Gagal sync presensi harian ke Cloudflare KV:', err));
   };
 
   const handleShiftDate = (daysOffset: number) => {
