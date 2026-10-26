@@ -132,45 +132,8 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
   const [editingAlert, setEditingAlert] = useState<string | null>(null);
 
   const loadSavedMenus = () => {
-    // 1. Tarik dari Cloudflare KV Database terlebih dahulu (Global Authority)
-    fetchMenusFromCloud().then((cloudList) => {
-      if (cloudList && cloudList.length > 0) {
-        setSavedMenuList((prev) => {
-          const byDate = new Map<string, DailyMenuRecord>();
-
-          /* CLOUD WINS untuk tanggal yang ada di cloud.
-             Tanggal yang hanya ada di lokal (gagal push) tetap dipertahankan. */
-          prev.forEach((localItem) => byDate.set(localItem.date, localItem));
-          cloudList.forEach((c) => {
-            const localItem = byDate.get(c.date);
-            if (!localItem) {
-              byDate.set(c.date, c);
-            } else {
-              byDate.set(c.date, {
-                ...localItem,
-                ...c,
-                photos: c.photos && c.photos.length > 0 ? c.photos : localItem.photos,
-                menuPhotoUrl:
-                  c.menuPhotoUrl && c.menuPhotoUrl.trim() !== '' ? c.menuPhotoUrl : localItem.menuPhotoUrl,
-              });
-            }
-          });
-
-          const merged = Array.from(byDate.values()).sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-          try {
-            localStorage.setItem('sppg_synced_menus', JSON.stringify(merged));
-            localStorage.setItem('sppg_synced_menus_v2', JSON.stringify(merged));
-          } catch {
-            // ignore
-          }
-          return merged;
-        });
-      }
-    });
-
-    // 2. Baca dari localStorage lokal (gabungkan V1 dan V2)
+    // 1. Baca localStorage DULU (sinkron) supaya UI langsung terisi
+    let localMerged: DailyMenuRecord[] = [];
     try {
       const storedV1 = localStorage.getItem('sppg_synced_menus');
       const storedV2 = localStorage.getItem('sppg_synced_menus_v2');
@@ -179,17 +142,61 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       const byDate = new Map<string, DailyMenuRecord>();
       (Array.isArray(listV2) ? listV2 : []).forEach((m: DailyMenuRecord) => { if (m?.date) byDate.set(m.date, m); });
       (Array.isArray(listV1) ? listV1 : []).forEach((m: DailyMenuRecord) => { if (m?.date) byDate.set(m.date, m); });
-      const merged = Array.from(byDate.values()).sort(
+      localMerged = Array.from(byDate.values()).sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
-      if (merged.length > 0) {
-        setSavedMenuList(merged);
-        localStorage.setItem('sppg_synced_menus', JSON.stringify(merged));
-        localStorage.setItem('sppg_synced_menus_v2', JSON.stringify(merged));
-      }
     } catch {
       // fallback
     }
+
+    if (localMerged.length > 0) {
+      setSavedMenuList(localMerged);
+    }
+
+    // 2. Tarik dari Cloudflare KV (otoritas tertinggi) — CLOUD MENANG
+    fetchMenusFromCloud().then((cloudList) => {
+      if (!cloudList || cloudList.length === 0) return;
+
+      setSavedMenuList((prev) => {
+        const byDate = new Map<string, DailyMenuRecord>();
+
+        /* CLOUD MENANG untuk tanggal yang ada di cloud.
+           Tanggal yang hanya ada di lokal (belum berhasil push) dipertahankan. */
+        prev.forEach((localItem) => byDate.set(localItem.date, localItem));
+        cloudList.forEach((c) => {
+          if (!c?.date) return;
+          const localItem = byDate.get(c.date);
+          if (!localItem) {
+            byDate.set(c.date, c);
+          } else {
+            byDate.set(c.date, {
+              ...localItem,
+              ...c,
+              photos: c.photos && c.photos.length > 0 ? c.photos : localItem.photos,
+              menuPhotoUrl:
+                c.menuPhotoUrl && c.menuPhotoUrl.trim() !== '' ? c.menuPhotoUrl : localItem.menuPhotoUrl,
+            });
+          }
+        });
+
+        const merged = Array.from(byDate.values()).sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        // Simpan ke localStorage HANYA kalau hasil cloud benar-benar lebih lengkap,
+        // supaya data lokal usang tidak pernah menimpa hasil cloud.
+        if (merged.length >= localMerged.length) {
+          try {
+            localStorage.setItem('sppg_synced_menus', JSON.stringify(merged));
+            localStorage.setItem('sppg_synced_menus_v2', JSON.stringify(merged));
+          } catch {
+            // ignore
+          }
+        }
+
+        return merged;
+      });
+    });
   };
 
   useEffect(() => {
