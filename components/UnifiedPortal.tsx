@@ -64,6 +64,14 @@ import {
   saveLedgerToStorage,
 } from '@/lib/attendance';
 
+// Foto valid: harus data URL gambar dan panjangnya wajar (foto asli 10-25 KB).
+// Base64 pendek (< 2 KB) berarti capture kamera gagal / gambar kosong.
+function isValidPhoto(photo: unknown): photo is string {
+  if (!photo || typeof photo !== 'string') return false;
+  if (!photo.startsWith('data:image/')) return false;
+  return photo.length >= 2048;
+}
+
 export type MainCategory = 'arsip' | 'absensi';
 export type AbsensiSubTab = 'harian' | 'rekap' | 'arsip' | 'roster';
 
@@ -376,7 +384,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   notes: cloud.isWithinRadius
                     ? `📍 Realtime Selfie (${cloud.distanceMeters ?? 0}m)`
                     : `⚠️ Luar Dapur (${cloud.distanceMeters ?? 0}m)`,
-                  photoUrl: cloud.checkInPhoto || cloud.photoUrl,
+                  photoUrl: isValidPhoto(cloud.checkInPhoto || cloud.photoUrl)
+                    ? (cloud.checkInPhoto || cloud.photoUrl)
+                    : undefined,
                   distanceMeters: cloud.distanceMeters,
                   isWithinRadius: cloud.isWithinRadius,
                 };
@@ -416,7 +426,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 notes: cloud.isWithinRadius
                   ? `📍 Realtime Selfie (${cloud.distanceMeters ?? 0}m)`
                   : `⚠️ Luar Dapur (${cloud.distanceMeters ?? 0}m)`,
-                photoUrl: cloud.checkInPhoto || cloud.photoUrl,
+                photoUrl: isValidPhoto(cloud.checkInPhoto || cloud.photoUrl)
+                  ? (cloud.checkInPhoto || cloud.photoUrl)
+                  : undefined,
                 distanceMeters: cloud.distanceMeters,
                 isWithinRadius: cloud.isWithinRadius,
               });
@@ -488,7 +500,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             if (!person) continue;
 
             const checkInTime = String(rec.checkInTime || rec.time || '');
-            const photo = (rec.checkInPhoto as string) || (rec.photoUrl as string) || undefined;
+            const rawPhoto = (rec.checkInPhoto as string) || (rec.photoUrl as string) || undefined;
+            const photo = isValidPhoto(rawPhoto) ? rawPhoto : undefined;
             const dist = rec.distanceMeters as number | undefined;
             const within = rec.isWithinRadius as boolean | undefined;
 

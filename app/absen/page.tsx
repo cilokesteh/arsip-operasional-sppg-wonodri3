@@ -24,6 +24,14 @@ const KITCHEN_LAT = -6.992554;
 const KITCHEN_LNG = 110.425959;
 const MAX_RADIUS_METERS = 10; // Radius ketat dapur (10 meter, anti-absen dari rumah)
 
+// Foto valid: harus data URL gambar dan panjangnya wajar (foto asli 10-25 KB).
+// Base64 pendek (< 2 KB) berarti capture gagal / gambar kosong.
+function isValidPhoto(photo: string | undefined | null): photo is string {
+  if (!photo || typeof photo !== 'string') return false;
+  if (!photo.startsWith('data:image/')) return false;
+  return photo.length >= 2048;
+}
+
 // Formula Haversine untuk kalkulasi jarak GPS akurat
 function calculateDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371e3; // radius bumi dalam meter
@@ -284,8 +292,14 @@ export default function AbsenMandiriPage() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const vWidth = video.videoWidth || 640;
-    const vHeight = video.videoHeight || 480;
+    const vWidth = video.videoWidth || 0;
+    const vHeight = video.videoHeight || 0;
+
+    // Validasi: kalau video belum siap, jangan hasilkan foto blank
+    if (vWidth === 0 || vHeight === 0 || video.readyState < 2) {
+      alert('Kamera belum siap. Tunggu sebentar sampai gambar wajah muncul di kotak kamera, lalu jepret lagi.');
+      return;
+    }
 
     // Hitung crop presisi rasio 3:4 portrait dari sumber kamera
     const targetRatio = 3 / 4;
@@ -314,7 +328,19 @@ export default function AbsenMandiriPage() {
     // Tambahkan stempel resmi pada resolusi 320x426 yang pas & ringan
     applyWatermark(ctx, destW, destH);
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.65);
+    let dataUrl = '';
+    try {
+      dataUrl = canvas.toDataURL('image/jpeg', 0.65);
+    } catch {
+      dataUrl = '';
+    }
+
+    // Validasi anti-blank: data URL harus minimal 2 KB (foto asli ~10-20 KB)
+    if (!dataUrl || dataUrl.length < 2048) {
+      alert('Gagal mengambil gambar dari kamera. Coba tutup aplikasi lain yang memakai kamera, lalu ulangi.');
+      return;
+    }
+
     setCapturedPhoto(dataUrl);
     stopCamera();
   };
