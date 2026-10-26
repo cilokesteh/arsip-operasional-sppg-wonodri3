@@ -56,6 +56,7 @@ import {
   Archive,
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';
+import { toIsoDateLocal } from '@/lib/attendance';
 import { fetchMenusFromCloud, saveSingleMenuToCloud } from '@/lib/cloudSync';
 import staticMenusData from '@/lib/staticMenus.json';
 import OfficialReport from '@/components/OfficialReport';
@@ -91,9 +92,8 @@ export default function PortalHome() {
   const [menuHistory, setMenuHistory] = useState<DailyMenuRecord[]>(
     (staticMenusData as unknown as DailyMenuRecord[]) || INITIAL_MENU_HISTORY
   );
-  const [selectedDate, setSelectedDate] = useState<string>(
-    staticMenusData && staticMenusData.length > 0 ? staticMenusData[0].date : '2026-10-02'
-  );
+  // Default ke HARI INI supaya laporan terbaru langsung tampil walau fetch cloud lambat/gagal
+  const [selectedDate, setSelectedDate] = useState<string>(toIsoDateLocal(new Date()));
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('overview');
   const [showCalendarModal, setShowCalendarModal] = useState<boolean>(false);
   const [searchBeneficiary, setSearchBeneficiary] = useState<string>('');
@@ -143,8 +143,12 @@ export default function PortalHome() {
           localStorage.setItem(V1, JSON.stringify(combined));
           localStorage.setItem(V2, JSON.stringify(combined));
         } catch {}
+        // Hanya ikuti tanggal terbaru kalau user TIDAK memilih tanggal spesifik via URL
+        // DAN tanggal terbaru itu memang hari ini atau lebih baru dari pilihan sekarang
         if (typeof window !== 'undefined' && !window.location.search.includes('date=')) {
-          setSelectedDate(combined[0].date);
+          const newest = combined[0].date;
+          const today = toIsoDateLocal(new Date());
+          setSelectedDate((cur) => (newest >= cur ? newest : cur === today ? today : newest));
         }
       }
     } catch {
@@ -184,7 +188,9 @@ export default function PortalHome() {
           } catch {}
 
           if (typeof window !== 'undefined' && !window.location.search.includes('date=')) {
-            setSelectedDate(merged[0].date);
+            const newest = merged[0].date;
+            const today = toIsoDateLocal(new Date());
+            setSelectedDate((cur) => (newest >= cur ? newest : cur === today ? today : newest));
           }
 
           // AUTO-SYNC BACK TO CLOUD:
