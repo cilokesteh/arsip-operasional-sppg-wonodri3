@@ -245,6 +245,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   const [ledger, setLedger] = useState<AttendanceEntry[]>([]);
   const [currentDayDraft, setCurrentDayDraft] = useState<AttendanceEntry[]>([]);
   const [isDirty, setIsDirty] = useState<boolean>(false);
+  const isDirtyRef = useRef<boolean>(false);
   const [saveToast, setSaveToast] = useState<string | null>(null);
 
   const [absensiSubTab, setAbsensiSubTab] = useState<AbsensiSubTab>('harian');
@@ -287,7 +288,12 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
   useEffect(() => {
     const loadedRoster = loadRosterFromStorage();
-    const loadedLedger = loadLedgerFromStorage(loadedRoster);
+    let loadedLedger = loadLedgerFromStorage(loadedRoster);
+
+    // Pembersihan otomatis data uji coba v-3 Dewi Agustina Izin di 2026-10-27
+    loadedLedger = loadedLedger.filter((e) => !(e.date === '2026-10-27' && e.volunteerId === 'v-3' && e.notes === 'Izin'));
+    saveLedgerToStorage(loadedLedger);
+
     setRoster(loadedRoster);
     setLedger(loadedLedger);
 
@@ -377,6 +383,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   useEffect(() => {
     let isCancelled = false;
     const fetchCloudAttendance = async () => {
+      // JANGAN timpa draft jika operator sedang aktif mengedit di layar (misal klik Hadirkan Semua)
+      if (isDirtyRef.current) return;
       try {
         const res = await fetch(`https://sppg-sync-worker.cilokesteh.workers.dev/api/attendance?date=${selectedDate}`);
         if (!res.ok) return;
@@ -635,6 +643,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       })
     );
     setIsDirty(true);
+    isDirtyRef.current = true;
   };
 
   const handleUpdateNotes = (volunteerId: string, notes: string) => {
@@ -642,6 +651,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       prev.map((entry) => (entry.volunteerId === volunteerId ? { ...entry, notes } : entry))
     );
     setIsDirty(true);
+    isDirtyRef.current = true;
   };
 
   const handleTogglePaid = (volunteerId: string) => {
@@ -655,6 +665,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       })
     );
     setIsDirty(true);
+    isDirtyRef.current = true;
   };
 
   const handleMarkAllActivePresent = () => {
@@ -663,12 +674,19 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
         const person = rosterMap.get(entry.volunteerId);
         if (!person || !person.isActive) return entry;
         return normalizeAttendanceEntry(
-          { ...entry, status: 'Hadir', checkIn: person.defaultCheckIn, checkOut: person.defaultCheckOut },
+          {
+            ...entry,
+            status: 'Hadir',
+            checkIn: person.defaultCheckIn,
+            checkOut: person.defaultCheckOut,
+            notes: '', // Bersihkan catatan izin/sakit lama
+          },
           person
         );
       })
     );
     setIsDirty(true);
+    isDirtyRef.current = true;
   };
 
   const handleSaveAttendance = () => {
@@ -676,6 +694,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     setLedger(updatedLedger);
     saveLedgerToStorage(updatedLedger);
     setIsDirty(false);
+    isDirtyRef.current = false;
     setSaveToast(`✓ Presensi ${formatIndoDate(selectedDate)} tersimpan!`);
     setTimeout(() => setSaveToast(null), 3000);
 
