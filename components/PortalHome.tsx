@@ -52,7 +52,6 @@ import {
   ArrowRight,
   Sparkles,
   Flame,
-  Download,
   Archive,
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';

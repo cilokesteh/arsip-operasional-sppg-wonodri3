@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   INITIAL_MENU_HISTORY,
-  STANDARD_AKG_REFERENCE,
   DailyMenuRecord,
   getBeneficiariesForDate,
 } from '@/lib/data';
@@ -17,8 +16,6 @@ import {
   X,
   FileSpreadsheet,
   Search,
-  Clock,
-  PlusCircle,
   Lock,
   Unlock,
   KeyRound,
@@ -36,10 +33,7 @@ import {
   Menu,
   ArrowUpRight,
   ExternalLink,
-  LayoutDashboard,
-  ClipboardList,
 } from 'lucide-react';
-import { formatTanggalIndo } from '@/lib/dateUtils';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
 import staticMenusData from '@/lib/staticMenus.json';
 import {
@@ -48,7 +42,6 @@ import {
   VolunteerProfile,
   DEFAULT_ROSTER_40,
   DUTY_SECTIONS,
-  STATUS_ORDER,
   buildDailyEntries,
   normalizeAttendanceEntry,
   mergeAttendanceDay,
@@ -80,10 +73,6 @@ export interface UnifiedPortalProps {
 }
 
 export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps) {
-  // -------------------------------------------------------------
-  // DUA KATEGORI UTAMA DALAM 1 PORTAL
-  // -------------------------------------------------------------
-  const [mainCategory, setMainCategory] = useState<MainCategory>(initialCategory);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
   // =============================================================
@@ -98,7 +87,6 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       : (staticMenusData && staticMenusData.length > 0 ? staticMenusData[0].date : '2026-10-21')
   );
   const [showCalendarModal, setShowCalendarModal] = useState<boolean>(false);
-  const [searchBeneficiary, setSearchBeneficiary] = useState<string>('');
   const [calendarMonth, setCalendarMonth] = useState<number>(9);
   const [calendarYear, setCalendarYear] = useState<number>(2026);
 
@@ -107,17 +95,6 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   const [inputPinMenu, setInputPinMenu] = useState<string>('');
   const [pinErrorMenu, setPinErrorMenu] = useState<string>('');
   const OFFICIAL_PRINT_PIN = '91206';
-
-  const handleOpenPrintModalMenu = () => {
-    const sessionAuth = sessionStorage.getItem('sppg_print_auth');
-    if (sessionAuth === 'true') {
-      window.print();
-    } else {
-      setInputPinMenu('');
-      setPinErrorMenu('');
-      setShowPinModalMenu(true);
-    }
-  };
 
   const handleVerifyPinMenu = (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,6 +161,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
         });
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const currentMenu = useMemo(() => {
@@ -207,10 +185,6 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   const totalMaster = useMemo(() => {
     return activeBeneficiaries.reduce((acc, site) => acc + site.masterCount, 0);
   }, [activeBeneficiaries]);
-
-  const filteredBeneficiaries = useMemo(() => {
-    return activeBeneficiaries.filter((b) => b.name.toLowerCase().includes(searchBeneficiary.toLowerCase()));
-  }, [activeBeneficiaries, searchBeneficiary]);
 
   // Calendar Helpers
   const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
@@ -340,6 +314,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       }
     }
     prevSelectedDateRef.current = activeDate;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const todayDateStr = useMemo(() => toIsoDateLocal(new Date()), []);

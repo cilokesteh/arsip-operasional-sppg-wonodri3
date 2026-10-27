@@ -76,7 +76,6 @@ export default function AbsenMandiriPage() {
   const isLocationValid = distanceMeters !== null && distanceMeters <= MAX_RADIUS_METERS;
 
   // 5. Submit & Result Status
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [pendingSync, setPendingSync] = useState<number>(0);
   const [submitSuccess, setSubmitSuccess] = useState<{
     type: 'IN' | 'OUT';
@@ -362,7 +361,7 @@ export default function AbsenMandiriPage() {
     setNameError('');
 
     // 2. Cek Apakah Foto Sudah Diambil
-    if (!capturedPhoto) {
+    if (!capturedPhoto || !isValidPhoto(capturedPhoto)) {
       alert('Silakan jepret foto selfie terlebih dahulu di box kamera!');
       return;
     }
@@ -849,10 +848,10 @@ export default function AbsenMandiriPage() {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  disabled={!isLocationValid || isSubmitting}
+                  disabled={!isLocationValid}
                   onClick={() => handleSubmitAttendance('IN')}
                   className={`py-4 px-4 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 ${
-                    isLocationValid && !isSubmitting
+                    isLocationValid
                       ? 'bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-white shadow-lg shadow-emerald-950/60 cursor-pointer'
                       : 'bg-slate-800 border border-slate-700/60 text-slate-500 cursor-not-allowed opacity-40'
                   }`}
@@ -863,10 +862,10 @@ export default function AbsenMandiriPage() {
 
                 <button
                   type="button"
-                  disabled={!isLocationValid || isSubmitting}
+                  disabled={!isLocationValid}
                   onClick={() => handleSubmitAttendance('OUT')}
                   className={`py-4 px-4 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 ${
-                    isLocationValid && !isSubmitting
+                    isLocationValid
                       ? 'bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white shadow-lg shadow-blue-950/60 cursor-pointer'
                       : 'bg-slate-800 border border-slate-700/60 text-slate-500 cursor-not-allowed opacity-40'
                   }`}

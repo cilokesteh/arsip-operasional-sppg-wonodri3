@@ -6,7 +6,6 @@ import Image from 'next/image';
 import {
   Calendar as CalendarIcon,
   Search,
-  FileText,
   Utensils,
   Users,
   Printer,

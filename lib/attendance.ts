@@ -360,7 +360,7 @@ export function getWeekDays(selectedDate: string): DayWorkInfo[] {
 }
 
 // Clean baseline: kosongkan seluruh riwayat dummy agar data murni dari input riil operator
-export function seedSampleHistory(_roster: VolunteerProfile[]): AttendanceEntry[] {
+export function seedSampleHistory(): AttendanceEntry[] {
   return [];
 }
 
@@ -387,7 +387,7 @@ export function saveRosterToStorage(roster: VolunteerProfile[]): void {
   }
 }
 
-export function loadLedgerFromStorage(_roster: VolunteerProfile[]): AttendanceEntry[] {
+export function loadLedgerFromStorage(): AttendanceEntry[] {
   const baseLedger = (officialLedgerData as unknown as AttendanceEntry[]) || [];
   if (typeof window === 'undefined') return baseLedger;
   try {
