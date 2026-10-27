@@ -86,7 +86,7 @@ export default function AbsenMandiriPage() {
     photo: string;
   } | null>(null);
 
-  // Filter roster yang aktif saja (38 Personel)
+  // Filter roster yang aktif saja (37 Personel)
   const activeVolunteers = useMemo(() => {
     return DEFAULT_ROSTER_40.filter((v) => v.isActive);
   }, []);

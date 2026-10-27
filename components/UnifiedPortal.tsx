@@ -351,6 +351,10 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
   const rosterMap = useMemo(() => new Map<string, VolunteerProfile>(roster.map((v) => [v.id, v])), [roster]);
 
+  const activeRosterCount = useMemo(() => roster.filter((p) => p.isActive).length, [roster]);
+  const nonActiveRosterCount = useMemo(() => roster.filter((p) => !p.isActive).length, [roster]);
+  const totalRosterPlafon = useMemo(() => roster.filter((p) => p.isActive).reduce((acc, curr) => acc + curr.dailyRate, 0), [roster]);
+
   const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
 
   // Sinkronisasi Presensi Realtime Mandiri dari Cloudflare KV
@@ -1226,10 +1230,10 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   Hadir ({formatIndoDate(selectedDate).split(',')[0]})
                 </span>
                 <div className="text-lg sm:text-2xl font-black text-emerald-600 font-mono">
-                  {dailySummary.statusCounts.Hadir} <span className="text-[10px] sm:text-xs font-normal text-slate-400">/ 38</span>
+                  {dailySummary.statusCounts.Hadir} <span className="text-[10px] sm:text-xs font-normal text-slate-400">/ {activeRosterCount}</span>
                 </div>
                 <span className="text-[10px] sm:text-[11px] text-emerald-700 font-medium block truncate">
-                  Efektivitas {Math.round((dailySummary.statusCounts.Hadir / 38) * 100)}%
+                  Efektivitas {activeRosterCount > 0 ? Math.round((dailySummary.statusCounts.Hadir / activeRosterCount) * 100) : 0}%
                 </span>
               </div>
 
@@ -1267,7 +1271,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 </div>
                 <div className="pt-0.5 truncate">{renderSalary(dailySummary.totalEarned)}</div>
                 <span className="text-[9px] sm:text-[10px] text-slate-400 block truncate">
-                  {isSalaryUnlocked ? 'Plafon Rp 5.005.000 / BNI' : 'Plafon •••••• / BNI'}
+                  {isSalaryUnlocked ? `Plafon ${formatRupiah(totalRosterPlafon)} / BNI` : 'Plafon •••••• / BNI'}
                 </span>
               </div>
 
@@ -1276,9 +1280,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   Total Roster
                 </span>
                 <div className="text-lg sm:text-2xl font-black text-slate-900 font-mono">
-                  40 <span className="text-[10px] sm:text-xs font-normal text-slate-400">Org</span>
+                  {roster.length} <span className="text-[10px] sm:text-xs font-normal text-slate-400">Org</span>
                 </div>
-                <span className="text-[10px] sm:text-[11px] text-slate-400 block truncate">38 Shift • 2 Nonaktif</span>
+                <span className="text-[10px] sm:text-[11px] text-slate-400 block truncate">{activeRosterCount} Shift • {nonActiveRosterCount} Nonaktif</span>
               </div>
             </div>
 
@@ -2731,7 +2735,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               <div className="flex items-center justify-between font-mono">
                 <span>Plafon Upah Harian:</span>
                 <span className="text-white font-bold">
-                  {isSalaryUnlocked ? formatRupiah(5005000) : '••••••••'}
+                  {isSalaryUnlocked ? formatRupiah(totalRosterPlafon) : '••••••••'}
                 </span>
               </div>
               <p className="text-[10px] text-slate-500 pt-1">

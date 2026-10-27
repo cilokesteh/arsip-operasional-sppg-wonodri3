@@ -111,7 +111,7 @@ export const DEFAULT_ROSTER_40: VolunteerProfile[] = [
   { id: 'v-30', no: 30, name: 'YANTI PUJASARI', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
   { id: 'v-31', no: 31, name: 'TITIS HARTAWAN', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
   { id: 'v-32', no: 32, name: 'IRFANA PUTRI SETIADI', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
-  { id: 'v-33', no: 33, name: 'RASETIKA WINA WIDIA PUTRI', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
+  { id: 'v-33', no: 33, name: 'RASETIKA WINA WIDIA PUTRI', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: false, defaultCheckIn: '13:00', defaultCheckOut: '21:00', notes: 'Non-Aktif / Resigned' },
   { id: 'v-34', no: 34, name: 'EKO RUMEININGSIH', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
   { id: 'v-35', no: 35, name: 'DEWI RATNASARI', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
   { id: 'v-36', no: 36, name: 'SAIFUL IKHSAN', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: false, defaultCheckIn: '13:00', defaultCheckOut: '21:00', notes: 'Non-Aktif / Resigned' },
@@ -371,7 +371,17 @@ export function loadRosterFromStorage(): VolunteerProfile[] {
     const raw = localStorage.getItem(ARSIP_ATTENDANCE_ROSTER_KEY);
     if (!raw) return DEFAULT_ROSTER_40;
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      // Sinkronkan status non-aktif resmi dari DEFAULT_ROSTER_40 (misal: SRI WAHYUNI, RASETIKA, SAIFUL)
+      const defaultMap = new Map(DEFAULT_ROSTER_40.map((p) => [p.id, p]));
+      return parsed.map((p: VolunteerProfile) => {
+        const def = defaultMap.get(p.id);
+        if (def && !def.isActive && p.isActive) {
+          return { ...p, isActive: false, notes: def.notes || 'Non-Aktif / Resigned' };
+        }
+        return p;
+      });
+    }
   } catch (err) {
     console.error('Failed to load roster from localStorage:', err);
   }
@@ -387,7 +397,7 @@ export function saveRosterToStorage(roster: VolunteerProfile[]): void {
   }
 }
 
-export function loadLedgerFromStorage(): AttendanceEntry[] {
+export function loadLedgerFromStorage(_roster?: VolunteerProfile[]): AttendanceEntry[] {
   const baseLedger = (officialLedgerData as unknown as AttendanceEntry[]) || [];
   if (typeof window === 'undefined') return baseLedger;
   try {
