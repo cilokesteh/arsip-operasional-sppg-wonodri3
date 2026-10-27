@@ -1671,6 +1671,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                           <tbody className="divide-y divide-slate-100">
                             {DUTY_SECTIONS.filter((s) => s !== 'Semua').map((sec) => {
                               const secPersons = roster.filter((p) => p.dutySection === sec);
+                              const secActive = secPersons.filter((p) => p.isActive).length;
+                              const secInactive = secPersons.filter((p) => !p.isActive).length;
                               const secEntries = currentDayDraft.filter((e) => {
                                 const p = rosterMap.get(e.volunteerId);
                                 return p?.dutySection === sec;
@@ -1685,7 +1687,15 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                               return (
                                 <tr key={sec} className="hover:bg-slate-50">
                                   <td className="py-2 px-3 font-semibold text-slate-900">{sec}</td>
-                                  <td className="py-2 px-3 text-center font-mono text-slate-500">{secPersons.length}</td>
+                                  <td className="py-2 px-3 text-center font-mono text-slate-500">
+                                    {secInactive > 0 ? (
+                                      <span>
+                                        {secActive} <span className="text-[10px] text-slate-400">({secInactive} Nonaktif)</span>
+                                      </span>
+                                    ) : (
+                                      <span>{secPersons.length}</span>
+                                    )}
+                                  </td>
                                   <td className="py-2 px-3 text-center font-mono font-bold text-emerald-700">{secHadir}</td>
                                   <td className="py-2 px-3 text-center font-mono text-amber-700">
                                     {secAbsen > 0 ? `${secAbsen} orang` : '-'}
@@ -1752,9 +1762,18 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                           const totalEarned = hadirCount * person.dailyRate;
 
                           return (
-                            <tr key={person.id} className="hover:bg-slate-50/70">
+                            <tr key={person.id} className={`hover:bg-slate-50/70 ${!person.isActive ? 'bg-slate-50/40 opacity-75' : ''}`}>
                               <td className="py-2 px-3 text-center font-mono text-slate-400">{person.no}</td>
-                              <td className="py-2 px-3 font-semibold text-slate-900">{person.name}</td>
+                              <td className="py-2 px-3 font-semibold text-slate-900">
+                                <span className={!person.isActive ? 'line-through text-slate-400' : ''}>
+                                  {person.name}
+                                </span>
+                                {!person.isActive && (
+                                  <span className="ml-1.5 text-[9px] font-mono text-rose-600 bg-rose-50 px-1 py-0.2 rounded border border-rose-200">
+                                    Nonaktif
+                                  </span>
+                                )}
+                              </td>
                               <td className="py-2 px-3 text-slate-500">{person.dutySection}</td>
                               {weekStatuses.map((st, idx) => (
                                 <td key={idx} className="py-2 px-2 text-center font-mono font-bold">
@@ -1814,9 +1833,18 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                           const totalEarned = hadirCount * person.dailyRate;
 
                           return (
-                            <tr key={person.id} className="hover:bg-slate-50/70">
+                            <tr key={person.id} className={`hover:bg-slate-50/70 ${!person.isActive ? 'bg-slate-50/40 opacity-75' : ''}`}>
                               <td className="py-2 px-3 text-center font-mono text-slate-400">{person.no}</td>
-                              <td className="py-2 px-3 font-semibold text-slate-900">{person.name}</td>
+                              <td className="py-2 px-3 font-semibold text-slate-900">
+                                <span className={!person.isActive ? 'line-through text-slate-400' : ''}>
+                                  {person.name}
+                                </span>
+                                {!person.isActive && (
+                                  <span className="ml-1.5 text-[9px] font-mono text-rose-600 bg-rose-50 px-1 py-0.2 rounded border border-rose-200">
+                                    Nonaktif
+                                  </span>
+                                )}
+                              </td>
                               <td className="py-2 px-3 text-slate-500">{person.dutySection}</td>
                               <td className="py-2 px-3 text-center font-mono font-bold text-emerald-700">
                                 {person.isActive ? `${hadirCount} Hari` : '-'}
@@ -2298,18 +2326,28 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     {printableEntries.map((entry) => {
                       const person = rosterMap.get(entry.volunteerId);
                       if (!person) return null;
+                      const isNonAktif = !person.isActive;
                       return (
-                        <tr key={entry.id} className="border-b border-slate-200">
+                        <tr key={entry.id} className={`border-b border-slate-200 ${isNonAktif ? 'bg-slate-50/50' : ''}`}>
                           <td className="p-1.5 border border-slate-300 text-center font-mono font-bold">
                             {person.no}
                           </td>
-                          <td className="p-1.5 border border-slate-300 font-semibold">{person.name}</td>
+                          <td className="p-1.5 border border-slate-300 font-semibold">
+                            <span className={isNonAktif ? 'line-through text-slate-400' : ''}>
+                              {person.name}
+                            </span>
+                            {isNonAktif && (
+                              <span className="text-[9px] text-rose-600 font-bold ml-1">
+                                (Nonaktif)
+                              </span>
+                            )}
+                          </td>
                           <td className="p-1.5 border border-slate-300">{person.dutySection}</td>
                           <td className="p-1.5 border border-slate-300 text-center font-semibold">{entry.status}</td>
                           <td className="p-1.5 border border-slate-300 text-center font-mono">{entry.checkIn || '-'}</td>
-                          <td className="p-1.5 border border-slate-300 text-right font-mono">{formatRupiah(person.dailyRate)}</td>
-                          <td className="p-1.5 border border-slate-300 text-right font-mono font-bold">{formatRupiah(entry.earnedAmount)}</td>
-                          <td className="p-1.5 border border-slate-300 text-center text-slate-300">{person.no}. .....</td>
+                          <td className="p-1.5 border border-slate-300 text-right font-mono">{isNonAktif ? '-' : formatRupiah(person.dailyRate)}</td>
+                          <td className="p-1.5 border border-slate-300 text-right font-mono font-bold">{isNonAktif ? '-' : formatRupiah(entry.earnedAmount)}</td>
+                          <td className="p-1.5 border border-slate-300 text-center text-slate-300">{isNonAktif ? '-' : `${person.no}. .....`}</td>
                         </tr>
                       );
                     })}
