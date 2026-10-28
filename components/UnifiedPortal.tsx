@@ -294,8 +294,19 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     }
 
     // Inisialisasi draft langsung dari loadedLedger yang ada di storage
-    const dayEntries = loadedLedger.filter((entry) => entry.date === activeDate);
+    let dayEntries = loadedLedger.filter((entry) => entry.date === activeDate);
     if (dayEntries.length > 0) {
+      dayEntries = dayEntries.map((e) => {
+        if (e.volunteerId === 'v-1') {
+          return {
+            ...e,
+            scheduledIn: '00:00',
+            scheduledOut: '23:59',
+            checkOut: (e.checkOut === '13:00' || !e.checkOut) ? '23:59' : e.checkOut,
+          };
+        }
+        return e;
+      });
       setCurrentDayDraft(dayEntries);
     } else {
       const fresh = buildDailyEntries(loadedRoster, activeDate);
@@ -325,8 +336,19 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     if (prevSelectedDateRef.current === selectedDate) return;
     prevSelectedDateRef.current = selectedDate;
 
-    const dayEntries = ledger.filter((entry) => entry.date === selectedDate);
+    let dayEntries = ledger.filter((entry) => entry.date === selectedDate);
     if (dayEntries.length > 0) {
+      dayEntries = dayEntries.map((e) => {
+        if (e.volunteerId === 'v-1') {
+          return {
+            ...e,
+            scheduledIn: '00:00',
+            scheduledOut: '23:59',
+            checkOut: (e.checkOut === '13:00' || !e.checkOut) ? '23:59' : e.checkOut,
+          };
+        }
+        return e;
+      });
       setCurrentDayDraft(dayEntries);
     } else {
       // Jika tanggal hari ini atau masa lalu: inisialisasi draft kerja.
@@ -391,11 +413,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 const person = rosterMap.get(entry.volunteerId);
                 const cloudStatus = (cloud.status as AttendanceStatus) || 'Hadir';
                 const isPresent = cloudStatus === 'Hadir' && (person ? person.isActive : true);
+                const isAslap = entry.volunteerId === 'v-1';
+                const finalCheckOut = cloud.checkOutTime || (isAslap ? '23:59' : (entry.checkOut === '13:00' ? person?.defaultCheckOut : entry.checkOut) || person?.defaultCheckOut || '');
                 return {
                   ...entry,
                   status: cloudStatus,
-                  checkIn: cloud.checkInTime || cloud.time || entry.checkIn,
-                  checkOut: cloud.checkOutTime || entry.checkOut,
+                  checkIn: cloud.checkInTime || cloud.time || (isAslap ? '00:00' : entry.checkIn),
+                  checkOut: finalCheckOut,
                   earnedAmount: person ? (isPresent ? person.dailyRate : 0) : (cloud.earnedAmount ?? entry.earnedAmount),
                   notes: cloud.notes || (cloud.isWithinRadius
                     ? `📍 Realtime Selfie (${cloud.distanceMeters ?? 0}m)`
@@ -424,6 +448,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               const existing = dayMap.get(volunteerId);
               const cloudStatus = (cloud.status as AttendanceStatus) || 'Hadir';
               const isPresent = cloudStatus === 'Hadir' && person.isActive;
+              const isAslap = volunteerId === 'v-1';
               const base =
                 existing ||
                 ({
@@ -431,16 +456,17 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   volunteerId,
                   date: selectedDate,
                   status: cloudStatus,
-                  checkIn: person.defaultCheckIn,
-                  checkOut: person.defaultCheckOut,
+                  checkIn: isAslap ? '00:00' : person.defaultCheckIn,
+                  checkOut: isAslap ? '23:59' : person.defaultCheckOut,
                   earnedAmount: isPresent ? person.dailyRate : 0,
                   notes: '',
                 } as AttendanceEntry);
+              const finalCheckOut = cloud.checkOutTime || (isAslap ? '23:59' : (base.checkOut === '13:00' ? person.defaultCheckOut : base.checkOut) || person.defaultCheckOut);
               dayMap.set(volunteerId, {
                 ...base,
                 status: cloudStatus,
-                checkIn: cloud.checkInTime || cloud.time || base.checkIn,
-                checkOut: cloud.checkOutTime || base.checkOut,
+                checkIn: cloud.checkInTime || cloud.time || (isAslap ? '00:00' : base.checkIn),
+                checkOut: finalCheckOut,
                 earnedAmount: isPresent ? person.dailyRate : 0,
                 notes: cloud.notes || (cloud.isWithinRadius
                   ? `📍 Realtime Selfie (${cloud.distanceMeters ?? 0}m)`
@@ -1479,7 +1505,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
                               {/* Jam Kerja */}
                               <td className="py-2.5 px-3 text-center font-mono text-xs text-slate-700">
-                                {isHadir ? `${entry.checkIn} - ${entry.checkOut}` : '-'}
+                                {isHadir ? `${entry.checkIn} - ${person.id === 'v-1' && (entry.checkOut === '13:00' || !entry.checkOut) ? '23:59' : (entry.checkOut || person.defaultCheckOut)}` : '-'}
                               </td>
 
                               {/* Upah */}
@@ -1595,7 +1621,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                         {isHadir && (
                           <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs font-mono">
                             <span className="text-slate-600 font-medium">
-                              Shift: {entry.checkIn} - {entry.checkOut}
+                              Shift: {person.id === 'v-1' && (entry.checkOut === '13:00' || !entry.checkOut) ? `${entry.checkIn} - 23:59` : `${entry.checkIn} - ${entry.checkOut || person.defaultCheckOut}`}
                             </span>
                             <button
                               onClick={() => handleTogglePaid(person.id)}

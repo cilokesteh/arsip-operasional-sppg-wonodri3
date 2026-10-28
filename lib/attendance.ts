@@ -62,8 +62,8 @@ export const DUTY_SECTIONS = [
 
 // 40 Personel Dapur SPPG Wonodri 3 Sesuai Struktur Matriks Resmi
 export const DEFAULT_ROSTER_40: VolunteerProfile[] = [
-  // 1. Asisten Lapangan (05:00 - 13:00 @ Rp 200.000)
-  { id: 'v-1', no: 1, name: 'ARIEF RAHMAN HAKIM', dutySection: 'Asisten Lapangan', dailyRate: 200000, isActive: true, defaultCheckIn: '05:00', defaultCheckOut: '13:00' },
+  // 1. Asisten Lapangan (24 Jam: 00:00 - 23:59 @ Rp 200.000)
+  { id: 'v-1', no: 1, name: 'ARIEF RAHMAN HAKIM', dutySection: 'Asisten Lapangan', dailyRate: 200000, isActive: true, defaultCheckIn: '00:00', defaultCheckOut: '23:59' },
 
   // 2. Head Chef (21:00 - 05:00 @ Rp 200.000)
   { id: 'v-2', no: 2, name: 'RIYAN ADHI KRISTANTO', dutySection: 'Head Chef', dailyRate: 200000, isActive: true, defaultCheckIn: '21:00', defaultCheckOut: '05:00' },
@@ -146,6 +146,7 @@ function minutes(value: string): number | null {
 }
 
 export function calculateMinutesLate(actual: string, scheduled: string): number {
+  if (scheduled === '00:00' || scheduled === '00:00:00') return 0; // 24 Jam Standby (Aslap)
   const actualMinutes = minutes(actual);
   const scheduledMinutes = minutes(scheduled);
   if (actualMinutes === null || scheduledMinutes === null) return 0;
@@ -373,11 +374,17 @@ export function loadRosterFromStorage(): VolunteerProfile[] {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
       // Sinkronkan status non-aktif resmi dari DEFAULT_ROSTER_40 (misal: SRI WAHYUNI, RASETIKA, SAIFUL)
+      // serta jam shift resmi Aslap (24 Jam: 00:00 - 23:59)
       const defaultMap = new Map(DEFAULT_ROSTER_40.map((p) => [p.id, p]));
       return parsed.map((p: VolunteerProfile) => {
         const def = defaultMap.get(p.id);
-        if (def && !def.isActive && p.isActive) {
-          return { ...p, isActive: false, notes: def.notes || 'Non-Aktif / Resigned' };
+        if (def) {
+          if (!def.isActive && p.isActive) {
+            p = { ...p, isActive: false, notes: def.notes || 'Non-Aktif / Resigned' };
+          }
+          if (p.id === 'v-1') {
+            p = { ...p, defaultCheckIn: '00:00', defaultCheckOut: '23:59' };
+          }
         }
         return p;
       });
