@@ -321,6 +321,115 @@ export function createAttendanceCsv(
   return `\uFEFF${rows.map((row) => row.map(csvCell).join(',')).join('\r\n')}`;
 }
 
+export function createAttendanceMonthlySummaryCsv(
+  monthStr: string,
+  roster: VolunteerProfile[],
+  ledger: AttendanceEntry[],
+  tenantName: string
+): string {
+  const monthEntries = ledger.filter((e) => e.date.startsWith(monthStr));
+  const workDaysCount = new Set(
+    monthEntries.filter((e) => e.status === 'Hadir').map((e) => e.date)
+  ).size;
+
+  const rows = [
+    ['PORTAL ARSIP OPERASIONAL SPPG', tenantName],
+    [`REKAPITULASI RESMI BULANAN INSENTIF & ABSENSI RELAWAN (${monthStr})`],
+    ['Tanggal Generate', new Date().toLocaleString('id-ID')],
+    ['Total Hari Kerja MBG Terdata', `${workDaysCount} Hari`],
+    [],
+    [
+      'No',
+      'Nama Lengkap',
+      'Divisi / Seksi',
+      'Status Keaktifan',
+      'Tarif Harian (Rp)',
+      'Total Hadir (Hari)',
+      'Total Izin (Hari)',
+      'Total Sakit (Hari)',
+      'Total Libur (Hari)',
+      'Total Hak Upah (Rp)',
+    ],
+    ...roster.map((person) => {
+      const pEntries = monthEntries.filter((e) => e.volunteerId === person.id);
+      const hadirCount = pEntries.filter((e) => e.status === 'Hadir').length;
+      const izinCount = pEntries.filter((e) => e.status === 'Izin').length;
+      const sakitCount = pEntries.filter((e) => e.status === 'Sakit').length;
+      const liburCount = pEntries.filter((e) => e.status === 'Libur').length;
+      const earned = person.isActive ? hadirCount * person.dailyRate : 0;
+
+      return [
+        person.no,
+        person.name,
+        person.dutySection,
+        person.isActive ? 'Aktif' : 'Nonaktif',
+        person.dailyRate,
+        person.isActive ? hadirCount : 0,
+        person.isActive ? izinCount : 0,
+        person.isActive ? sakitCount : 0,
+        person.isActive ? liburCount : 0,
+        earned,
+      ];
+    }),
+  ];
+
+  return `\uFEFF${rows.map((row) => row.map(csvCell).join(',')).join('\r\n')}`;
+}
+
+export function createAttendanceWeeklyMatrixCsv(
+  weekDays: DayWorkInfo[],
+  roster: VolunteerProfile[],
+  ledger: AttendanceEntry[],
+  tenantName: string
+): string {
+  const start = weekDays[0].date;
+  const end = weekDays[weekDays.length - 1].date;
+  const weekEntries = ledger.filter((e) => e.date >= start && e.date <= end);
+  const map = new Map<string, AttendanceStatus>();
+  weekEntries.forEach((e) => map.set(`${e.volunteerId}:${e.date}`, e.status));
+
+  const headers = [
+    'No',
+    'Nama Lengkap',
+    'Divisi',
+    'Status Keaktifan',
+    ...weekDays.map((d) => `${d.label} (${d.formatted})`),
+    'Total Hadir (Hari)',
+    'Tarif Harian (Rp)',
+    'Total Upah Mingguan (Rp)',
+  ];
+
+  const rows = [
+    ['PORTAL ARSIP OPERASIONAL SPPG', tenantName],
+    [`MATRIX KEHADIRAN MINGGUAN (${weekDays[0].formatted} - ${weekDays[weekDays.length - 1].formatted})`],
+    ['Tanggal Generate', new Date().toLocaleString('id-ID')],
+    [],
+    headers,
+    ...roster.map((person) => {
+      let hadirCount = 0;
+      const dailyStatuses = weekDays.map((d) => {
+        const st = map.get(`${person.id}:${d.date}`) || (person.isActive ? 'Belum Absen' : 'Nonaktif');
+        if (st === 'Hadir') hadirCount += 1;
+        return st;
+      });
+      const totalEarned = person.isActive ? hadirCount * person.dailyRate : 0;
+
+      return [
+        person.no,
+        person.name,
+        person.dutySection,
+        person.isActive ? 'Aktif' : 'Nonaktif',
+        ...dailyStatuses,
+        person.isActive ? hadirCount : 0,
+        person.dailyRate,
+        totalEarned,
+      ];
+    }),
+  ];
+
+  return `\uFEFF${rows.map((row) => row.map(csvCell).join(',')).join('\r\n')}`;
+}
+
 export function toIsoDateLocal(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
