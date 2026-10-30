@@ -891,10 +891,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   };
 
   const handleExportCsv = () => {
-    if (!isSalaryUnlocked) {
-      handleOpenPinModalSalary('export');
-      return;
-    }
+    // Unduh rekap CSV dapat langsung dijalankan oleh operator yang sudah lolos login PIN 91206 di halaman absensi
     executeExportCsv();
   };
 
