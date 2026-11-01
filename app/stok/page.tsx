@@ -2147,20 +2147,20 @@ export default function StockMonitoringPage() {
                   <span className="text-xs font-black uppercase text-blue-800 bg-blue-50 px-2 py-0.5 rounded">
                     Protein Hewani (Dorry Fillet)
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">90 KG Masuk</span>
+                  <span className="text-[10px] font-mono text-slate-400">65 KG Masuk</span>
                 </div>
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Porsi Besar (700 anak):</span>
-                    <strong className="font-mono">45 KG</strong>
+                    <strong className="font-mono">35 KG</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Porsi Kecil (853 anak):</span>
-                    <strong className="font-mono">45 KG</strong>
+                    <strong className="font-mono">30 KG</strong>
                   </div>
                   <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
-                    <span>Total Kebutuhan:</span>
-                    <span className="font-mono text-blue-700">90 KG</span>
+                    <span>Total Masuk:</span>
+                    <span className="font-mono text-blue-700">65 KG</span>
                   </div>
                   <div className="flex justify-between font-bold">
                     <span>Stok Saat Ini:</span>

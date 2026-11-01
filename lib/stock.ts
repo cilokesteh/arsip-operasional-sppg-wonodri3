@@ -49,9 +49,9 @@ export interface StockSummary {
   categoryCounts: Record<StockCategory, number>;
 }
 
-export const ARSIP_STOCK_INVENTORY_KEY = 'sppg_stock_inventory_v3';
-export const ARSIP_STOCK_MOVEMENTS_KEY = 'sppg_stock_movements_v3';
-export const ARSIP_STOCK_OPNAME_DRAFT_KEY = 'sppg_stock_opname_draft_v3';
+export const ARSIP_STOCK_INVENTORY_KEY = 'sppg_stock_inventory_v4';
+export const ARSIP_STOCK_MOVEMENTS_KEY = 'sppg_stock_movements_v4';
+export const ARSIP_STOCK_OPNAME_DRAFT_KEY = 'sppg_stock_opname_draft_v4';
 
 // 16 Master Bahan Baku Masuk Resmi Tanggal 01 November 2026
 export const DEFAULT_STOCK_ITEMS_16: StockItem[] = [
@@ -207,12 +207,12 @@ export const DEFAULT_STOCK_ITEMS_16: StockItem[] = [
     category: 'Protein Hewani',
     uom: 'KG',
     storageLocation: 'Freezer Daging/Ikan',
-    currentStock: 90,
+    currentStock: 65,
     minStockAlert: 20,
     dailyUsageAvg: 45,
     supplierName: 'Supplier Ikan & Daging',
     lastRestockDate: '2026-11-01',
-    notes: 'Penerimaan masuk 01 Nov 2026',
+    notes: 'Penerimaan masuk 01 Nov 2026 (Revisi 65 KG)',
   },
   {
     id: 'prh-02',
