@@ -26,6 +26,7 @@ import {
   RotateCcw,
   X,
   Archive,
+  Boxes,
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
 import { DailyMenuRecord, getBeneficiariesForDate } from '@/lib/data';
@@ -781,6 +782,14 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
             >
               <Users className="w-3.5 h-3.5 text-blue-600" />
               <span>Absensi</span>
+            </Link>
+            <Link
+              href="/stok"
+              className="hidden sm:flex px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors items-center gap-1"
+              title="Monitoring Stok Gudang & Logistik"
+            >
+              <Boxes className="w-3.5 h-3.5 text-blue-600" />
+              <span>Stok</span>
             </Link>
             <button
               type="button"

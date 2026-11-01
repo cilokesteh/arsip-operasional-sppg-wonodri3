@@ -53,6 +53,7 @@ import {
   Sparkles,
   Flame,
   Archive,
+  Boxes,
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';
 import { toIsoDateLocal } from '@/lib/attendance';
@@ -484,6 +485,13 @@ export default function PortalHome() {
               >
                 <Users className="w-3.5 h-3.5" />
                 Absensi Relawan
+              </Link>
+              <Link
+                href="/stok"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
+              >
+                <Boxes className="w-3.5 h-3.5" />
+                Monitoring Stok
               </Link>
               <Link
                 href="/admin"

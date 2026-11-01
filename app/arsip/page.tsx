@@ -20,6 +20,7 @@ import {
   KeyRound,
   X,
   Archive,
+  Boxes,
 } from 'lucide-react';
 import staticMenusData from '@/lib/staticMenus.json';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
@@ -277,6 +278,13 @@ export default function ArsipPage() {
                 <span className="hidden sm:inline">Absensi</span>
               </Link>
               <Link
+                href="/stok"
+                className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1"
+              >
+                <Boxes className="w-3.5 h-3.5 text-blue-600" />
+                <span className="hidden sm:inline">Stok</span>
+              </Link>
+              <Link
                 href="/admin"
                 className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100"
                 title="Panel Operator"
@@ -311,6 +319,13 @@ export default function ArsipPage() {
               >
                 <Users className="w-3.5 h-3.5" />
                 Absensi Relawan
+              </Link>
+              <Link
+                href="/stok"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
+              >
+                <Boxes className="w-3.5 h-3.5" />
+                Monitoring Stok
               </Link>
               <Link
                 href="/admin"

@@ -33,6 +33,7 @@ import {
   Menu,
   ArrowUpRight,
   ExternalLink,
+  Boxes,
 } from 'lucide-react';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
 import staticMenusData from '@/lib/staticMenus.json';
@@ -1045,6 +1046,14 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             >
               <Archive className="w-3.5 h-3.5 text-slate-500" />
               <span>Katalog Arsip</span>
+            </Link>
+
+            <Link
+              href="/stok"
+              className="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition-colors"
+            >
+              <Boxes className="w-3.5 h-3.5 text-slate-500" />
+              <span>Stok Gudang</span>
             </Link>
 
             <span className="px-3.5 py-1.5 rounded-lg bg-blue-600 text-white shadow-xs flex items-center gap-1.5">
@@ -2702,6 +2711,20 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     <div className="text-xs font-bold leading-tight">Katalog Arsip Operasional</div>
                     <div className="text-[10px] text-slate-400 pt-0.5">
                       Direktori 126+ hari arsip historis berpaginasi
+                    </div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/stok"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="w-full flex items-start gap-3 p-3 rounded-2xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-left cursor-pointer"
+                >
+                  <Boxes className="w-5 h-5 mt-0.5 shrink-0 text-amber-400" />
+                  <div>
+                    <div className="text-xs font-bold leading-tight">Monitoring Stok Gudang</div>
+                    <div className="text-[10px] text-slate-400 pt-0.5">
+                      Kartu stok 32 bahan baku, log mutasi & stok opname
                     </div>
                   </div>
                 </Link>
