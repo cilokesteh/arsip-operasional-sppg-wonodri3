@@ -934,7 +934,7 @@ export default function StockMonitoringPage() {
       )}
 
       {/* ============ MAIN CONTENT ============ */}
-      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-5 sm:py-7 flex-1 space-y-5">
+      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-5 sm:py-7 flex-1 space-y-5 print:hidden">
         {/* Banner Header Halaman */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5 max-w-2xl">
@@ -2689,8 +2689,8 @@ export default function StockMonitoringPage() {
 
       {/* ============ MODAL 4: CETAK BERITA ACARA STOK OPNAME A4 (TANPA HARGA) ============ */}
       {showPrintModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 flex flex-col max-h-[95vh] overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs print:static print:p-0 print:bg-white print:z-auto print:block">
+          <div className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 flex flex-col max-h-[95vh] overflow-hidden print:max-h-none print:shadow-none print:border-none print:overflow-visible print:w-full print:max-w-none print:rounded-none">
             {/* Modal Header Toolbar */}
             <div className="flex items-center justify-between border-b border-slate-200 p-3 sm:p-4 bg-slate-50 no-print shrink-0">
               <div className="flex items-center gap-2">
@@ -2723,9 +2723,9 @@ export default function StockMonitoringPage() {
             </div>
 
             {/* Document Body Wrapper with Scroll */}
-            <div className="p-2 sm:p-8 bg-slate-100 overflow-y-auto flex-1">
+            <div className="p-2 sm:p-8 bg-slate-100 overflow-y-auto flex-1 print:p-0 print:bg-white print:overflow-visible">
               {/* Genuine A4 Document Sheet */}
-              <div className="bg-white text-slate-950 p-4 sm:p-10 border border-slate-300 rounded-xl shadow-md max-w-3xl mx-auto space-y-6 font-serif text-xs">
+              <div className="report-sheet bg-white text-slate-950 p-4 sm:p-10 border border-slate-300 rounded-xl shadow-md max-w-3xl mx-auto space-y-6 font-serif text-xs print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full">
                 {/* Official KOP BGN SPPG */}
                 <div className="border-b-2 border-slate-950 pb-4 text-center relative">
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
