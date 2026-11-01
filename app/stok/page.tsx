@@ -360,7 +360,7 @@ export default function StockMonitoringPage() {
         id: `OPN-${new Date().toISOString().slice(0, 10)}`,
         date: new Date().toISOString().slice(0, 10),
         title: 'Audit Fisik Berkala Stok Bahan Baku SPPG Wonodri 3',
-        checkerName: 'Bambang Susanto (Staf Logistik)',
+        checkerName: 'Nur Khafidin (Petugas Timbangan)',
         status: 'draft',
         rows: resetRows,
         savedAt: new Date().toISOString(),
@@ -531,7 +531,7 @@ export default function StockMonitoringPage() {
       uom: target.uom,
       balanceAfter: Number((target.currentStock + qty).toFixed(2)),
       reference: formRestockInvoice || 'GRN-20261101-01',
-      loggedBy: 'Petugas Timbangan Logistik',
+      loggedBy: 'Nur Khafidin (Petugas Timbangan)',
       notes: formRestockNotes || 'Penerimaan bahan baku masuk tgl 01 Nov 2026',
     };
 
@@ -955,38 +955,38 @@ export default function StockMonitoringPage() {
           </div>
 
           {/* Quick Actions in Banner */}
-          <div className="flex items-center gap-2 flex-wrap shrink-0">
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full md:w-auto shrink-0">
             <button
               type="button"
               onClick={() => handleOpenAddItem()}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+              className="px-3 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
-              <PlusCircle className="w-4 h-4" />
-              <span>+ Tambah Bahan Baru</span>
+              <PlusCircle className="w-4 h-4 shrink-0" />
+              <span>+ Bahan Baru</span>
             </button>
             <button
               type="button"
               onClick={() => handleOpenRestock()}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+              className="px-3 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
-              <PlusCircle className="w-4 h-4" />
-              <span>+ Bahan Masuk</span>
+              <PlusCircle className="w-4 h-4 shrink-0" />
+              <span>+ Masuk (01 Nov)</span>
             </button>
             <button
               type="button"
               onClick={() => handleOpenUsage()}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+              className="px-3 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
-              <MinusCircle className="w-4 h-4" />
+              <MinusCircle className="w-4 h-4 shrink-0" />
               <span>- Pakai Masak</span>
             </button>
             <button
               type="button"
               onClick={() => setShowPrintModal(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1.5 cursor-pointer transition-colors"
+              className="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
-              <Printer className="w-4 h-4 text-slate-600" />
-              <span>Cetak Laporan</span>
+              <Printer className="w-4 h-4 text-slate-600 shrink-0" />
+              <span>Cetak Berita Acara</span>
             </button>
           </div>
         </div>
@@ -1246,8 +1246,134 @@ export default function StockMonitoringPage() {
               </div>
             </div>
 
-            {/* Inventory Table (Tanpa Kolom Harga) */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            {/* Mobile Card View (md:hidden) */}
+            <div className="md:hidden space-y-3">
+              {filteredItems.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500 shadow-xs">
+                  <Boxes className="w-10 h-10 mx-auto mb-3 text-slate-300" />
+                  <p className="font-bold text-slate-700 text-sm">Inventory Belum Memiliki Data Bahan Baku</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Mulai tambahkan bahan baru atau muat 16 bahan masuk 01 Nov 2026.
+                  </p>
+                  <div className="flex flex-col gap-2 mt-4">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenAddItem()}
+                      className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      <span>+ Tambah Bahan Baru</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleResetToBaseline()}
+                      className="w-full py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs border border-slate-300 flex items-center justify-center gap-1.5"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Muat 16 Bahan Masuk 01 Nov 2026</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                filteredItems.map((item) => {
+                  const status = calculateStockStatus(item);
+                  const daysLeft = getDaysLeft(item);
+                  const pctOfMin =
+                    item.minStockAlert > 0
+                      ? Math.min(100, Math.round((item.currentStock / item.minStockAlert) * 100))
+                      : 100;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <h4 className="font-black text-slate-900 text-sm leading-snug">{item.name}</h4>
+                          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                            <span className="font-mono text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                              {item.sku}
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                              {getCategoryIcon(item.category)}
+                              <span>{item.category}</span>
+                            </span>
+                          </div>
+                        </div>
+                        <div className="shrink-0">{getStatusBadge(status, daysLeft)}</div>
+                      </div>
+
+                      <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 flex items-center justify-between">
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-slate-500 block">Jumlah Stok Fisik</span>
+                          <div className="flex items-baseline gap-1.5 mt-0.5">
+                            <span className="font-mono font-black text-2xl text-slate-900">{item.currentStock}</span>
+                            <span className="font-mono font-black text-xs px-2 py-0.5 rounded bg-white text-slate-800 border border-slate-200">
+                              {item.uom}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] uppercase font-bold text-slate-500 block">Pemakaian Dapur</span>
+                          <span className="font-mono font-bold text-xs text-slate-700">
+                            {item.dailyUsageAvg} {item.uom} / hari
+                          </span>
+                          <span className="text-[10px] text-slate-400 block mt-0.5">
+                            Lokasi: {item.storageLocation}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
+                          <span>Ketahanan: <strong className="text-slate-800">{daysLeft} Hari</strong></span>
+                          <span>Batas Min: {item.minStockAlert} {item.uom} ({pctOfMin}%)</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              status === 'critical' ? 'bg-rose-500' : status === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'
+                            }`}
+                            style={{ width: `${Math.min(100, Math.max(10, (daysLeft / 5) * 100))}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-100 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenRestock(item)}
+                          className="py-2 px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center gap-1 border border-emerald-200 transition-colors"
+                        >
+                          <PlusCircle className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>+ Masuk</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenUsage(item)}
+                          className="py-2 px-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-bold flex items-center justify-center gap-1 border border-indigo-200 transition-colors"
+                        >
+                          <MinusCircle className="w-3.5 h-3.5 text-indigo-600" />
+                          <span>- Pakai</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDetail(item)}
+                          className="py-2 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center gap-1 transition-colors"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-slate-600" />
+                          <span>Detail</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Desktop Inventory Table (hidden md:block) */}
+            <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-black tracking-wider">
@@ -1520,8 +1646,123 @@ export default function StockMonitoringPage() {
               </span>
             </div>
 
-            {/* Opname Table (Tanpa Kolom Rupiah) */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            {/* Mobile Opname Cards (md:hidden) */}
+            <div className="md:hidden space-y-3">
+              {filteredOpnameRows.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500 shadow-xs">
+                  <ClipboardCheck className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+                  <p className="font-bold text-slate-700">Belum Ada Item pada Lembar Opname</p>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenAddItem()}
+                    className="mt-3 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs"
+                  >
+                    + Tambah Bahan Baru
+                  </button>
+                </div>
+              ) : (
+                filteredOpnameRows.map((row, idx) => {
+                  const diff = Number((row.physicalQty - row.systemQty).toFixed(2));
+                  return (
+                    <div
+                      key={row.itemId}
+                      className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-mono font-bold text-xs flex items-center justify-center shrink-0">
+                            {idx + 1}
+                          </span>
+                          <div>
+                            <h4 className="font-black text-slate-900 text-sm leading-snug">{row.name}</h4>
+                            <span className="text-[10px] text-slate-500 font-medium">
+                              {row.category} • {row.storageLocation}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div>
+                          {diff === 0 ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                              KLOP
+                            </span>
+                          ) : diff > 0 ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                              +{diff} {row.uom}
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                              {diff} {row.uom}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200 items-center">
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-slate-500 block">Stok Sistem</span>
+                          <div className="font-mono font-black text-lg text-slate-800 mt-0.5">
+                            {row.systemQty} <span className="text-xs text-slate-500">{row.uom}</span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-amber-800 block">
+                            Fisik Timbangan *
+                          </label>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <input
+                              type="number"
+                              step="0.1"
+                              min="0"
+                              value={row.physicalQty}
+                              onChange={(e) =>
+                                handleOpnamePhysicalChange(row.itemId, parseFloat(e.target.value) || 0)
+                              }
+                              className="w-full bg-white border-2 border-amber-400 rounded-lg py-1.5 px-2 text-right font-mono font-black text-lg text-slate-900 focus:outline-none focus:border-amber-600 shadow-xs"
+                            />
+                            <span className="font-mono font-bold text-xs text-slate-600 shrink-0">{row.uom}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <input
+                          type="text"
+                          value={row.notes}
+                          onChange={(e) => handleOpnameNotesChange(row.itemId, e.target.value)}
+                          placeholder="Catatan kondisi fisik (kemasan baik/utuh)..."
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-700 focus:outline-none focus:border-amber-500"
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+
+              {/* Mobile Footer Save/Finalize Action Bar */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-2">
+                <button
+                  type="button"
+                  onClick={handleSaveOpnameDraft}
+                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Simpan Draf Opname</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleFinalizeOpname}
+                  className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Selesaikan &amp; Terapkan Opname</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Desktop Opname Table (hidden md:block) */}
+            <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-black tracking-wider">
@@ -1748,8 +1989,67 @@ export default function StockMonitoringPage() {
               </div>
             </div>
 
-            {/* Table Movements */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            {/* Mobile Movements Cards (md:hidden) */}
+            <div className="md:hidden space-y-2.5">
+              {filteredMovements.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400">
+                  Tidak ada catatan mutasi yang cocok.
+                </div>
+              ) : (
+                filteredMovements.map((m) => (
+                  <div
+                    key={m.id}
+                    className="bg-white rounded-2xl border border-slate-200 p-3.5 shadow-xs space-y-2"
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="font-mono text-[10px] text-slate-500">
+                        <strong>{m.date}</strong> • {m.time} WIB
+                      </div>
+                      <div>
+                        {m.type === 'IN' && (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            + MASUK
+                          </span>
+                        )}
+                        {m.type === 'OUT' && (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-blue-100 text-blue-800 border border-blue-200">
+                            - KELUAR
+                          </span>
+                        )}
+                        {m.type === 'ADJUST' && (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-800 border border-amber-200">
+                            ± OPNAME
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-slate-900 text-xs">{m.itemName}</h4>
+                      <span
+                        className={`font-mono font-black text-sm ${
+                          m.type === 'IN'
+                            ? 'text-emerald-700'
+                            : m.type === 'OUT'
+                            ? 'text-blue-700'
+                            : 'text-amber-700'
+                        }`}
+                      >
+                        {m.type === 'IN' ? '+' : m.type === 'OUT' ? '-' : ''}
+                        {m.qty} {m.uom}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] text-slate-500 border-t border-slate-100 pt-1.5 font-mono">
+                      <span>Ref: <strong className="text-slate-700">{m.reference}</strong></span>
+                      <span>Sisa: <strong className="text-slate-800">{m.balanceAfter} {m.uom}</strong></span>
+                    </div>
+                    {m.notes && <p className="text-[10px] text-slate-500 italic">{m.notes}</p>}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Desktop Table Movements (hidden md:block) */}
+            <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-black tracking-wider">
@@ -2389,143 +2689,164 @@ export default function StockMonitoringPage() {
 
       {/* ============ MODAL 4: CETAK BERITA ACARA STOK OPNAME A4 (TANPA HARGA) ============ */}
       {showPrintModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3 no-print">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 flex flex-col max-h-[95vh] overflow-hidden">
+            {/* Modal Header Toolbar */}
+            <div className="flex items-center justify-between border-b border-slate-200 p-3 sm:p-4 bg-slate-50 no-print shrink-0">
               <div className="flex items-center gap-2">
-                <Printer className="w-5 h-5 text-blue-600" />
-                <h3 className="text-base font-black text-slate-900">
-                  Pratinjau Berita Acara Rekapitulasi Fisik Bahan Baku (A4)
-                </h3>
+                <Printer className="w-5 h-5 text-blue-600 shrink-0" />
+                <div>
+                  <h3 className="text-xs sm:text-sm font-black text-slate-900 leading-tight">
+                    Pratinjau Berita Acara Bahan Baku (A4)
+                  </h3>
+                  <p className="text-[10px] text-slate-500">Format Resmi Standar Badan Gizi Nasional (BGN)</p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-4 py-1.5 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  className="px-3.5 sm:px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
                 >
-                  <Printer className="w-4 h-4" />
-                  <span>Cetak Dokumen</span>
+                  <Printer className="w-4 h-4 shrink-0" />
+                  <span>Cetak / Download PDF</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowPrintModal(false)}
-                  className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                  className="p-2 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+                  title="Tutup Pratinjau"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* Dokumen A4 Print Ready */}
-            <div className="bg-white text-slate-950 p-4 sm:p-8 border border-slate-300 rounded-lg space-y-5 font-serif text-xs">
-              {/* Kop Resmi BGN SPPG */}
-              <div className="border-b-2 border-slate-950 pb-4 flex items-center gap-4">
-                <Image src="/logo.png" alt="Logo BGN" width={60} height={60} className="object-contain" priority />
-                <div className="text-center flex-1">
-                  <h4 className="text-xs uppercase font-bold tracking-widest text-slate-700">Badan Gizi Nasional</h4>
-                  <h2 className="text-base font-black uppercase tracking-tight text-slate-950">
-                    Satuan Pelayanan Pangan Bergizi (SPPG) Wonodri 3
-                  </h2>
-                  <p className="text-[10px] text-slate-600">
-                    Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang, Jawa Tengah
+            {/* Document Body Wrapper with Scroll */}
+            <div className="p-2 sm:p-8 bg-slate-100 overflow-y-auto flex-1">
+              {/* Genuine A4 Document Sheet */}
+              <div className="bg-white text-slate-950 p-4 sm:p-10 border border-slate-300 rounded-xl shadow-md max-w-3xl mx-auto space-y-6 font-serif text-xs">
+                {/* Official KOP BGN SPPG */}
+                <div className="border-b-2 border-slate-950 pb-4 text-center relative">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <Image
+                      src="/logo.png"
+                      alt="Logo BGN"
+                      width={55}
+                      height={55}
+                      className="object-contain shrink-0"
+                      priority
+                    />
+                    <div className="text-center">
+                      <h4 className="text-[11px] sm:text-xs uppercase font-bold tracking-widest text-slate-800">
+                        BADAN GIZI NASIONAL
+                      </h4>
+                      <h2 className="text-sm sm:text-base font-black uppercase tracking-tight text-slate-950">
+                        SATUAN PELAYANAN PROGRAM GIZI (SPPG) WONODRI 3
+                      </h2>
+                      <p className="text-[10px] text-slate-600 mt-0.5">
+                        Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang, Jawa Tengah
+                      </p>
+                      <p className="text-[10px] font-mono text-slate-500">
+                        Pagu Layanan: 1.553 Porsi / Hari • 12 Sekolah &amp; 1 Posyandu • Kode Satpel: SPPG-SMG-003
+                      </p>
+                    </div>
+                  </div>
+                  <div className="border-t border-slate-950 mt-3 pt-0.5" />
+                </div>
+
+                {/* Judul Dokumen */}
+                <div className="text-center space-y-1">
+                  <h3 className="text-sm sm:text-base font-black uppercase underline tracking-wider text-slate-950">
+                    BERITA ACARA REKAPITULASI FISIK BAHAN BAKU MASUK
+                  </h3>
+                  <p className="text-[10px] font-mono text-slate-600">
+                    Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1101
                   </p>
-                  <p className="text-[10px] font-mono text-slate-500">
-                    Pagu Layanan: 1.553 Porsi / Hari • 12 Sekolah &amp; 1 Posyandu • Kode Satpel: SPPG-SMG-003
+                  <p className="text-[11px] text-slate-700 font-bold">
+                    Tanggal Penerimaan: Minggu, 01 November 2026
                   </p>
                 </div>
-              </div>
 
-              {/* Judul Surat */}
-              <div className="text-center space-y-1">
-                <h3 className="text-sm font-black uppercase underline tracking-wider">
-                  Berita Acara Rekapitulasi Fisik Bahan Baku Masuk
-                </h3>
-                <p className="text-[10px] font-mono text-slate-600">
-                  Nomor: BA-SO/SPPG-SMG3/BGN/2026/1101
+                <p className="text-[11px] leading-relaxed text-justify text-slate-800">
+                  Pada hari ini, Minggu tanggal 01 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku makanan bergizi gratis di fasilitas Central Kitchen SPPG Wonodri 3 dengan rincian sebagai berikut:
                 </p>
-                <p className="text-[11px] text-slate-700 font-bold">
-                  Tanggal Penerimaan: Minggu, 01 November 2026
-                </p>
-              </div>
 
-              <p className="text-[11px] leading-relaxed text-justify">
-                Pada hari ini, Minggu tanggal 01 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku makanan bergizi gratis di fasilitas Central Kitchen SPPG Wonodri 3 dengan rincian sebagai berikut:
-              </p>
-
-              {/* Tabel Ringkasan Cetak Tanpa Harga */}
-              <table className="w-full text-left text-[10px] border-collapse border border-slate-400">
-                <thead className="bg-slate-100">
-                  <tr>
-                    <th className="border border-slate-400 p-1.5 text-center w-8">No</th>
-                    <th className="border border-slate-400 p-1.5">Golongan</th>
-                    <th className="border border-slate-400 p-1.5">Nama Bahan Makanan</th>
-                    <th className="border border-slate-400 p-1.5 text-right">Jumlah Fisik</th>
-                    <th className="border border-slate-400 p-1.5 text-center">Satuan</th>
-                    <th className="border border-slate-400 p-1.5">Lokasi Simpan</th>
-                    <th className="border border-slate-400 p-1.5 text-center">Status Buffer</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stockItems.map((item, idx) => {
-                    const status = calculateStockStatus(item);
-                    return (
-                      <tr key={item.id}>
-                        <td className="border border-slate-400 p-1.5 text-center font-mono">{idx + 1}</td>
-                        <td className="border border-slate-400 p-1.5 font-bold">{item.category}</td>
-                        <td className="border border-slate-400 p-1.5 font-bold">{item.name}</td>
-                        <td className="border border-slate-400 p-1.5 text-right font-mono font-bold text-xs">
-                          {item.currentStock}
+                {/* Tabel Rekapitulasi Bahan Masuk (Overflow Guard) */}
+                <div className="overflow-x-auto rounded border border-slate-400">
+                  <table className="w-full text-left text-[10px] border-collapse min-w-[500px]">
+                    <thead className="bg-slate-100 font-bold">
+                      <tr className="border-b border-slate-400">
+                        <th className="p-1.5 border-r border-slate-400 text-center w-8">NO</th>
+                        <th className="p-1.5 border-r border-slate-400">GOLONGAN</th>
+                        <th className="p-1.5 border-r border-slate-400">NAMA BAHAN MAKANAN</th>
+                        <th className="p-1.5 border-r border-slate-400 text-right">JUMLAH</th>
+                        <th className="p-1.5 border-r border-slate-400 text-center">SATUAN</th>
+                        <th className="p-1.5 border-r border-slate-400">LOKASI SIMPAN</th>
+                        <th className="p-1.5 text-center">KONDISI</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-300">
+                      {stockItems.map((item, idx) => (
+                        <tr key={item.id} className="hover:bg-slate-50">
+                          <td className="p-1.5 border-r border-slate-300 text-center font-mono">{idx + 1}</td>
+                          <td className="p-1.5 border-r border-slate-300 font-semibold">{item.category}</td>
+                          <td className="p-1.5 border-r border-slate-300 font-bold">{item.name}</td>
+                          <td className="p-1.5 border-r border-slate-300 text-right font-mono font-bold text-[11px]">
+                            {item.currentStock}
+                          </td>
+                          <td className="p-1.5 border-r border-slate-300 text-center font-mono font-bold">
+                            {item.uom}
+                          </td>
+                          <td className="p-1.5 border-r border-slate-300">{item.storageLocation}</td>
+                          <td className="p-1.5 text-center font-medium text-emerald-800">
+                            Baik &amp; Segar
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-slate-100 font-bold border-t-2 border-slate-400">
+                      <tr>
+                        <td colSpan={3} className="p-2 border-r border-slate-400 text-right uppercase">
+                          Total Muatan Timbangan:
                         </td>
-                        <td className="border border-slate-400 p-1.5 text-center font-mono font-bold">
-                          {item.uom}
+                        <td className="p-2 border-r border-slate-400 text-right font-mono text-xs text-blue-900">
+                          {summary.totalKg} KG
                         </td>
-                        <td className="border border-slate-400 p-1.5">{item.storageLocation}</td>
-                        <td className="border border-slate-400 p-1.5 text-center font-bold">
-                          {status === 'critical' ? 'KRITIS' : status === 'warning' ? 'MENIPIS' : 'AMAN'}
+                        <td colSpan={3} className="p-2 text-left font-mono text-[10px] text-slate-700">
+                          + {summary.totalQtyNonKg} Unit Satuan Lain (L/Pouch/Btl/Papan/Krat)
                         </td>
                       </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-slate-100 font-bold">
-                    <td colSpan={3} className="border border-slate-400 p-2 text-right uppercase">
-                      Total Muatan Timbangan:
-                    </td>
-                    <td className="border border-slate-400 p-2 text-right font-mono text-xs">
-                      {summary.totalKg} KG
-                    </td>
-                    <td colSpan={3} className="border border-slate-400 p-2 text-left text-xs font-mono">
-                      + {summary.totalQtyNonKg} Unit Satuan Lain
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-
-              {/* Tanda Tangan 3 Pihak Sah */}
-              <div className="pt-6 grid grid-cols-3 gap-4 text-center text-[10px]">
-                <div className="space-y-12">
-                  <p>Petugas Logistik / Timbangan,</p>
-                  <div>
-                    <p className="font-bold underline uppercase">Bambang Susanto</p>
-                    <p className="text-slate-500">Staf Logistik SPPG</p>
-                  </div>
+                    </tfoot>
+                  </table>
                 </div>
 
-                <div className="space-y-12">
-                  <p>Ahli Gizi Penanggung Jawab,</p>
-                  <div>
-                    <p className="font-bold underline uppercase">Sintia Mariam, A.Md.Gz</p>
-                    <p className="text-slate-500">Ahli Gizi SPPG Wonodri 3</p>
-                  </div>
-                </div>
+                {/* Formal 3-Signatory Block: Responsive grid (Stacked on mobile screen, 3 cols in print & desktop) */}
+                <div className="pt-6 border-t border-slate-200">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-6 sm:gap-4 text-center text-xs">
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-3 sm:p-0 rounded-xl">
+                      <p className="font-medium text-slate-700">Petugas Logistik / Timbangan,</p>
+                      <div>
+                        <p className="font-bold underline uppercase text-slate-950">Nur Khafidin</p>
+                        <p className="text-[10px] text-slate-500">Staf Logistik SPPG</p>
+                      </div>
+                    </div>
 
-                <div className="space-y-12">
-                  <p>Mengetahui / Mengesahkan,</p>
-                  <div>
-                    <p className="font-bold underline uppercase">Dicky Yusuf Mulyadi, S.M.</p>
-                    <p className="text-slate-500">Kepala SPPG Wonodri 3</p>
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-3 sm:p-0 rounded-xl">
+                      <p className="font-medium text-slate-700">Ahli Gizi Penanggung Jawab,</p>
+                      <div>
+                        <p className="font-bold underline uppercase text-slate-950">Sintia Mariam, A.Md.Gz</p>
+                        <p className="text-[10px] text-slate-500">Ahli Gizi SPPG Wonodri 3</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-3 sm:p-0 rounded-xl">
+                      <p className="font-medium text-slate-700">Mengetahui / Mengesahkan,</p>
+                      <div>
+                        <p className="font-bold underline uppercase text-slate-950">Dicky Yusuf Mulyadi, S.M.</p>
+                        <p className="text-[10px] text-slate-500">Kepala SPPG Wonodri 3</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

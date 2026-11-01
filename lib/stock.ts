@@ -304,7 +304,7 @@ export const DEFAULT_STOCK_MOVEMENTS_16: StockMovement[] = DEFAULT_STOCK_ITEMS_1
   uom: item.uom,
   balanceAfter: item.currentStock,
   reference: 'GRN-20261101-01',
-  loggedBy: 'Petugas Timbangan Logistik',
+  loggedBy: 'Nur Khafidin (Petugas Logistik)',
   notes: 'Penerimaan bahan baku masuk tgl 01 Nov 2026',
 }));
 
@@ -557,7 +557,7 @@ export function loadOpnameDraftFromStorage(items: StockItem[]): OpnameSession {
     id: `OPN-${new Date().toISOString().slice(0, 10)}`,
     date: new Date().toISOString().slice(0, 10),
     title: 'Audit Fisik Berkala Stok Bahan Baku SPPG Wonodri 3',
-    checkerName: 'Bambang Susanto (Staf Logistik)',
+    checkerName: 'Nur Khafidin (Petugas Timbangan)',
     status: 'draft',
     rows: createInitialOpnameRows(items),
     savedAt: new Date().toISOString(),
