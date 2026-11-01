@@ -1023,13 +1023,20 @@ export default function StockMonitoringPage() {
           </div>
 
           {/* Card 2: Total Muatan Masuk (01 Nov) */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
+          <div
+            onClick={() => {
+              setActiveMainTab('movements');
+              setMovementFilterType('IN');
+            }}
+            className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between cursor-pointer hover:border-emerald-300 transition-colors"
+            title="Klik untuk lihat mutasi masuk 01 Nov"
+          >
             <div className="space-y-0.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Masuk (01 Nov 2026)</span>
               <div className="text-xl sm:text-2xl font-black text-emerald-700">
                 {summary.totalKgMasuk} KG
               </div>
-              <span className="text-[10px] text-emerald-600 font-medium">+{summary.totalQtyNonKgMasuk} Unit Satuan Lain</span>
+              <span className="text-[10px] text-emerald-600 font-medium">+{summary.totalQtyNonKgMasuk} Unit &bull; Buka Mutasi &rarr;</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
               <Scale className="w-5 h-5 text-emerald-600" />
@@ -1037,13 +1044,20 @@ export default function StockMonitoringPage() {
           </div>
 
           {/* Card 3: Keluar Masak (02 Nov) */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
+          <div
+            onClick={() => {
+              setActiveMainTab('movements');
+              setMovementFilterType('OUT');
+            }}
+            className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between cursor-pointer hover:border-indigo-300 transition-colors"
+            title="Klik untuk lihat mutasi keluar masak 02 Nov"
+          >
             <div className="space-y-0.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Keluar Masak (02 Nov)</span>
               <div className="text-xl sm:text-2xl font-black text-indigo-700">
                 {summary.totalKgKeluar} KG
               </div>
-              <span className="text-[10px] text-indigo-600 font-medium">1.553 Porsi MBG Selesai</span>
+              <span className="text-[10px] text-indigo-600 font-medium">1.553 Porsi MBG &bull; Buka Mutasi &rarr;</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center shrink-0">
               <ChefHat className="w-5 h-5 text-indigo-600" />
@@ -1066,86 +1080,146 @@ export default function StockMonitoringPage() {
         </div>
 
         {/* ============ 4 WORKFLOW TABS (SUB-NAV) ============ */}
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-2">
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar">
-            {/* Tab 1: Live Inventory */}
+        <div className="space-y-2 border-b border-slate-200 pb-3">
+          {/* Mobile Grid View (2x2) — 100% langsung kelihatan tanpa perlu geser */}
+          <div className="grid grid-cols-2 gap-2 sm:hidden">
+            {/* Tab 1: Stok Bahan */}
             <button
               type="button"
               onClick={() => setActiveMainTab('inventory')}
-              className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer whitespace-nowrap transition-colors ${
+              className={`p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all ${
                 activeMainTab === 'inventory'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
               }`}
             >
-              <Boxes className="w-4 h-4" />
-              <span>Daftar Bahan &amp; Stok Fisik</span>
+              <Boxes className="w-4 h-4 shrink-0" />
+              <span>Stok Bahan</span>
             </button>
 
-            {/* Tab 2: Stock Opname */}
-            <button
-              type="button"
-              onClick={() => setActiveMainTab('opname')}
-              className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer whitespace-nowrap transition-colors ${
-                activeMainTab === 'opname'
-                  ? 'bg-amber-600 text-white shadow-xs'
-                  : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'
-              }`}
-            >
-              <ClipboardCheck className="w-4 h-4" />
-              <span>Stock Opname (Hitung Fisik)</span>
-              {isOpnameDirty && (
-                <span className="w-2 h-2 rounded-full bg-amber-300 animate-pulse" title="Draf Belum Disimpan" />
-              )}
-            </button>
-
-            {/* Tab 3: Riwayat Mutasi */}
+            {/* Tab 2: Mutasi Masuk & Keluar (Langsung Berdampingan & Terlihat) */}
             <button
               type="button"
               onClick={() => setActiveMainTab('movements')}
-              className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer whitespace-nowrap transition-colors ${
+              className={`p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all ${
                 activeMainTab === 'movements'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
               }`}
             >
-              <History className="w-4 h-4" />
-              <span>Mutasi Masuk &amp; Keluar ({movements.length})</span>
+              <History className="w-4 h-4 shrink-0" />
+              <span>Mutasi ({movements.length})</span>
             </button>
 
-            {/* Tab 4: BOM Kebutuhan Masak */}
+            {/* Tab 3: Stock Opname */}
+            <button
+              type="button"
+              onClick={() => setActiveMainTab('opname')}
+              className={`p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all ${
+                activeMainTab === 'opname'
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <ClipboardCheck className="w-4 h-4 shrink-0" />
+              <span>Stock Opname</span>
+              {isOpnameDirty && (
+                <span className="w-2 h-2 rounded-full bg-amber-300 animate-pulse shrink-0" />
+              )}
+            </button>
+
+            {/* Tab 4: BOM Masak */}
             <button
               type="button"
               onClick={() => setActiveMainTab('bom')}
-              className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer whitespace-nowrap transition-colors ${
+              className={`p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all ${
                 activeMainTab === 'bom'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
               }`}
             >
-              <Calculator className="w-4 h-4" />
-              <span className="hidden sm:inline">Kalkulator Kebutuhan Masak</span>
-              <span className="sm:hidden">Kalkulator BOM</span>
+              <Calculator className="w-4 h-4 shrink-0" />
+              <span>Kalkulator BOM</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={handleClearAllInventory}
-              className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer flex items-center gap-1"
-              title="Kosongkan seluruh data inventory"
-            >
-              <span>Kosongkan</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleResetToBaseline}
-              className="text-slate-500 hover:text-slate-800 p-2 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
-              title="Muat Ulang 16 Bahan Masuk 01 Nov & Keluar 02 Nov"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
+          {/* Desktop Tab Row (hidden on mobile, visible on sm and above) */}
+          <div className="hidden sm:flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveMainTab('inventory')}
+                className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 cursor-pointer transition-colors ${
+                  activeMainTab === 'inventory'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                <Boxes className="w-4 h-4" />
+                <span>Daftar Bahan &amp; Stok Fisik</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveMainTab('movements')}
+                className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 cursor-pointer transition-colors ${
+                  activeMainTab === 'movements'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                <History className="w-4 h-4" />
+                <span>Mutasi Masuk &amp; Keluar ({movements.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveMainTab('opname')}
+                className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 cursor-pointer transition-colors ${
+                  activeMainTab === 'opname'
+                    ? 'bg-amber-600 text-white shadow-xs'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                <ClipboardCheck className="w-4 h-4" />
+                <span>Stock Opname (Hitung Fisik)</span>
+                {isOpnameDirty && (
+                  <span className="w-2 h-2 rounded-full bg-amber-300 animate-pulse" />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveMainTab('bom')}
+                className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 cursor-pointer transition-colors ${
+                  activeMainTab === 'bom'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                <Calculator className="w-4 h-4" />
+                <span>Kalkulator Kebutuhan Masak</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleClearAllInventory}
+                className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer flex items-center gap-1"
+                title="Kosongkan seluruh data inventory"
+              >
+                <span>Kosongkan</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleResetToBaseline}
+                className="text-slate-500 hover:text-slate-800 p-2 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+                title="Muat Ulang 16 Bahan Masuk 01 Nov & Keluar 02 Nov"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
