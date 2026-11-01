@@ -863,3 +863,129 @@ export function generateMovementsCSV(movements: StockMovement[]): string {
 
   return [headers.join(','), ...rows].join('\n');
 }
+
+// ============ FITUR STOCK OPNAME BERKALA (DRAF & FINALISASI) ============
+export interface OpnameRow {
+  itemId: string;
+  sku: string;
+  name: string;
+  category: StockCategory;
+  uom: string;
+  storageLocation: string;
+  systemQty: number;
+  physicalQty: number;
+  unitPrice: number;
+  notes: string;
+}
+
+export interface OpnameSession {
+  id: string;
+  date: string;
+  title: string;
+  checkerName: string;
+  status: 'draft' | 'completed';
+  rows: OpnameRow[];
+  savedAt: string;
+}
+
+export const ARSIP_STOCK_OPNAME_DRAFT_KEY = 'sppg_stock_opname_draft_v1';
+
+export function createInitialOpnameRows(items: StockItem[]): OpnameRow[] {
+  return items.map((item) => ({
+    itemId: item.id,
+    sku: item.sku,
+    name: item.name,
+    category: item.category,
+    uom: item.uom,
+    storageLocation: item.storageLocation,
+    systemQty: item.currentStock,
+    physicalQty: item.currentStock,
+    unitPrice: item.unitPrice,
+    notes: 'Kondisi kemasan & fisik baik',
+  }));
+}
+
+export function loadOpnameDraftFromStorage(items: StockItem[]): OpnameSession {
+  const defaultSession: OpnameSession = {
+    id: `OPN-${new Date().toISOString().slice(0, 10)}`,
+    date: new Date().toISOString().slice(0, 10),
+    title: 'Audit Fisik Berkala Stok Gudang SPPG Wonodri 3',
+    checkerName: 'Bambang Susanto (Staf Logistik)',
+    status: 'draft',
+    rows: createInitialOpnameRows(items),
+    savedAt: new Date().toISOString(),
+  };
+
+  if (typeof window === 'undefined') return defaultSession;
+  try {
+    const raw = localStorage.getItem(ARSIP_STOCK_OPNAME_DRAFT_KEY);
+    if (!raw) return defaultSession;
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.rows) && parsed.rows.length > 0) {
+      return parsed;
+    }
+  } catch (err) {
+    console.error('Failed to load opname draft from localStorage:', err);
+  }
+  return defaultSession;
+}
+
+export function saveOpnameDraftToStorage(session: OpnameSession): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(ARSIP_STOCK_OPNAME_DRAFT_KEY, JSON.stringify(session));
+  } catch (err) {
+    console.error('Failed to save opname draft to localStorage:', err);
+  }
+}
+
+export function clearOpnameDraftFromStorage(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(ARSIP_STOCK_OPNAME_DRAFT_KEY);
+  } catch (err) {
+    console.error('Failed to clear opname draft from localStorage:', err);
+  }
+}
+
+export function generateOpnameCSV(session: OpnameSession): string {
+  const headers = [
+    'No',
+    'SKU',
+    'Nama Bahan Baku',
+    'Kategori',
+    'Lokasi Simpan',
+    'Satuan',
+    'Stok Sistem',
+    'Stok Fisik Aktual',
+    'Selisih (Qty)',
+    'Harga Satuan (Rp)',
+    'Nilai Selisih Nominal (Rp)',
+    'Status Kecocokan',
+    'Catatan Pemeriksaan',
+  ];
+
+  const rows = session.rows.map((row, idx) => {
+    const diff = Number((row.physicalQty - row.systemQty).toFixed(2));
+    const diffNominal = diff * row.unitPrice;
+    const statusText = diff === 0 ? 'SESUAI (KLOP)' : diff > 0 ? 'LEBIH (+)' : 'KURANG (-)';
+
+    return [
+      idx + 1,
+      `"${row.sku}"`,
+      `"${row.name.replace(/"/g, '""')}"`,
+      `"${row.category}"`,
+      `"${row.storageLocation}"`,
+      `"${row.uom}"`,
+      row.systemQty,
+      row.physicalQty,
+      diff,
+      row.unitPrice,
+      diffNominal,
+      `"${statusText}"`,
+      `"${(row.notes || '-').replace(/"/g, '""')}"`,
+    ].join(',');
+  });
+
+  return [headers.join(','), ...rows].join('\n');
+}
