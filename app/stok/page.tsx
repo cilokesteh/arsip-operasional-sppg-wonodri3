@@ -927,18 +927,88 @@ export default function StockMonitoringPage() {
                   <Users className="w-4 h-4 text-emerald-400" />
                   <span>Presensi 40 Relawan</span>
                 </Link>
-                <span className="flex items-center gap-3 p-3 rounded-xl bg-blue-600 text-white font-bold">
-                  <Boxes className="w-4 h-4 text-white" />
-                  <span>Monitoring Stok Gudang</span>
-                </span>
-                <Link
-                  href="/admin"
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white"
-                >
-                  <FileSpreadsheet className="w-4 h-4 text-amber-400" />
-                  <span>Panel Operator</span>
-                </Link>
+                <div className="pt-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1 mb-1.5">
+                    Modul Stok &amp; Logistik
+                  </span>
+
+                  <div className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveMainTab('inventory');
+                        setIsDrawerOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
+                        activeMainTab === 'inventory'
+                          ? 'bg-blue-600 text-white font-bold'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <Boxes className="w-4 h-4 shrink-0 text-blue-400" />
+                      <span>Daftar Stok Bahan</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveMainTab('movements');
+                        setIsDrawerOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
+                        activeMainTab === 'movements'
+                          ? 'bg-indigo-600 text-white font-bold'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <History className="w-4 h-4 shrink-0 text-indigo-400" />
+                      <span>Mutasi Masuk &amp; Keluar ({movements.length})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveMainTab('opname');
+                        setIsDrawerOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
+                        activeMainTab === 'opname'
+                          ? 'bg-amber-600 text-white font-bold'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <ClipboardCheck className="w-4 h-4 shrink-0 text-amber-400" />
+                      <span>Stock Opname (Hitung Fisik)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveMainTab('bom');
+                        setIsDrawerOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
+                        activeMainTab === 'bom'
+                          ? 'bg-blue-600 text-white font-bold'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <Calculator className="w-4 h-4 shrink-0 text-purple-400" />
+                      <span>Kalkulator BOM (1.553 Porsi)</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Link
+                    href="/admin"
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-amber-400" />
+                    <span>Panel Operator</span>
+                  </Link>
+                </div>
               </div>
             </div>
 
@@ -2275,6 +2345,90 @@ export default function StockMonitoringPage() {
                   <div className="flex justify-between font-bold">
                     <span>Status Pengolahan:</span>
                     <span className="font-mono text-emerald-700">Selesai 100% (02 Nov)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Box 4: Buah Anggur Merah */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <span className="text-xs font-black uppercase text-purple-800 bg-purple-50 px-2 py-0.5 rounded">
+                    Buah Segar (Anggur Merah)
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400">11 KRAT Keluar</span>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Total Distribusi:</span>
+                    <strong className="font-mono">11 Krat</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Alokasi Titik:</span>
+                    <strong className="font-mono">12 SD/TK + 1 Posyandu</strong>
+                  </div>
+                  <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
+                    <span>Kapasitas Porsi:</span>
+                    <span className="font-mono text-indigo-700">1.553 Siswa</span>
+                  </div>
+                  <div className="flex justify-between font-bold">
+                    <span>Status Buah:</span>
+                    <span className="font-mono text-emerald-700">Teralokasi Penuh</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Box 5: Minyak & Saus Mayo Madu */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <span className="text-xs font-black uppercase text-amber-800 bg-amber-50 px-2 py-0.5 rounded">
+                    Minyak, Bumbu &amp; Saus Mayo
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400">Habis Terpakai</span>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Minyak Goreng:</span>
+                    <strong className="font-mono">54 Liter</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Tepung Terigu &amp; Maizena:</span>
+                    <strong className="font-mono">21.5 KG</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Mayonaise &amp; Madu:</span>
+                    <strong className="font-mono">10 Pouch + 1 Btl</strong>
+                  </div>
+                  <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
+                    <span>Status Pengolahan:</span>
+                    <span className="font-mono text-emerald-700">Selesai 100% (02 Nov)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Box 6: Verifikasi Kepatuhan Standar BGN */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <span className="text-xs font-black uppercase text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
+                    Verifikasi Pagu MBG
+                  </span>
+                  <span className="text-[10px] font-mono text-emerald-700 font-bold">100% Klop</span>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Porsi Besar:</span>
+                    <strong className="font-mono">700 Porsi</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Porsi Kecil:</span>
+                    <strong className="font-mono">853 Porsi</strong>
+                  </div>
+                  <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
+                    <span>Total Realisasi MBG:</span>
+                    <span className="font-mono text-blue-900">1.553 Porsi / Hari</span>
+                  </div>
+                  <div className="flex justify-between font-bold">
+                    <span>Status SPJ Dokumen:</span>
+                    <span className="font-mono text-emerald-700">Sah 4 Pejabat</span>
                   </div>
                 </div>
               </div>
