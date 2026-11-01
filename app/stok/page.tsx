@@ -62,7 +62,7 @@ import {
 } from '@/lib/stock';
 
 export default function StockMonitoringPage() {
-  const [stockItems, setStockItems] = useState<StockItem[]>(DEFAULT_STOCK_ITEMS_32);
+  const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [movements, setMovements] = useState<StockMovement[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
@@ -86,11 +86,25 @@ export default function StockMonitoringPage() {
   const [isOpnameDirty, setIsOpnameDirty] = useState<boolean>(false);
 
   // Interactive Modals
+  const [showAddItemModal, setShowAddItemModal] = useState<boolean>(false);
   const [showRestockModal, setShowRestockModal] = useState<boolean>(false);
   const [showUsageModal, setShowUsageModal] = useState<boolean>(false);
   const [showItemDetailModal, setShowItemDetailModal] = useState<boolean>(false);
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<StockItem | null>(null);
+
+  // Form State for Tambah Master Bahan Baru
+  const [formAddSku, setFormAddSku] = useState<string>('');
+  const [formAddName, setFormAddName] = useState<string>('');
+  const [formAddCategory, setFormAddCategory] = useState<StockCategory>('Gudang Kering');
+  const [formAddUom, setFormAddUom] = useState<string>('kg');
+  const [formAddLocation, setFormAddLocation] = useState<string>('Gudang Kering');
+  const [formAddInitialStock, setFormAddInitialStock] = useState<number>(0);
+  const [formAddMinAlert, setFormAddMinAlert] = useState<number>(10);
+  const [formAddDailyUsage, setFormAddDailyUsage] = useState<number>(5);
+  const [formAddUnitPrice, setFormAddUnitPrice] = useState<number>(15000);
+  const [formAddSupplier, setFormAddSupplier] = useState<string>('');
+  const [formAddNotes, setFormAddNotes] = useState<string>('');
 
   // Form States for Restock
   const [formRestockItemId, setFormRestockItemId] = useState<string>('bhk-001');
@@ -388,13 +402,87 @@ export default function StockMonitoringPage() {
     }
   };
 
+  // Handlers for Add Item Modal
+  const handleOpenAddItem = () => {
+    const nextNum = stockItems.length + 1;
+    setFormAddSku(`BGN-SKU-${String(nextNum).padStart(3, '0')}`);
+    setFormAddName('');
+    setFormAddCategory('Gudang Kering');
+    setFormAddUom('kg');
+    setFormAddLocation('Gudang Kering Rak A');
+    setFormAddInitialStock(0);
+    setFormAddMinAlert(10);
+    setFormAddDailyUsage(5);
+    setFormAddUnitPrice(15000);
+    setFormAddSupplier('');
+    setFormAddNotes('');
+    setShowAddItemModal(true);
+  };
+
+  const handleSubmitAddItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formAddName.trim()) {
+      alert('Nama bahan baku wajib diisi');
+      return;
+    }
+
+    const newItem: StockItem = {
+      id: `item-${Date.now()}`,
+      sku: formAddSku || `BGN-SKU-${Date.now().toString().slice(-4)}`,
+      name: formAddName.trim(),
+      category: formAddCategory,
+      uom: formAddUom,
+      storageLocation: formAddLocation || 'Gudang Utama',
+      currentStock: Number(formAddInitialStock) || 0,
+      minStockAlert: Number(formAddMinAlert) || 0,
+      dailyUsageAvg: Number(formAddDailyUsage) || 0,
+      unitPrice: Number(formAddUnitPrice) || 0,
+      supplierName: formAddSupplier || '-',
+      lastRestockDate: new Date().toISOString().slice(0, 10),
+      notes: formAddNotes || undefined,
+    };
+
+    const updated = [newItem, ...stockItems];
+    setStockItems(updated);
+    saveStockToStorage(updated);
+
+    // Update opname session rows
+    if (opnameSession) {
+      const newRow = {
+        itemId: newItem.id,
+        sku: newItem.sku,
+        name: newItem.name,
+        category: newItem.category,
+        uom: newItem.uom,
+        storageLocation: newItem.storageLocation,
+        systemQty: newItem.currentStock,
+        physicalQty: newItem.currentStock,
+        unitPrice: newItem.unitPrice,
+        notes: 'Item baru ditambahkan',
+      };
+      const updatedOpname = {
+        ...opnameSession,
+        rows: [newRow, ...opnameSession.rows],
+      };
+      setOpnameSession(updatedOpname);
+      saveOpnameDraftToStorage(updatedOpname);
+    }
+
+    setShowAddItemModal(false);
+    showToast(`✅ Bahan baru berhasil ditambahkan: ${newItem.name}`);
+  };
+
   // Handlers for Restock & Usage Modals
   const handleOpenRestock = (item?: StockItem) => {
+    if (stockItems.length === 0) {
+      alert('Inventory masih kosong! Silakan klik "+ Tambah Bahan Baku" terlebih dahulu.');
+      return;
+    }
     if (item) {
       setFormRestockItemId(item.id);
       setFormRestockVendor(item.supplierName);
     } else {
-      setFormRestockItemId(stockItems[0]?.id || 'bhk-001');
+      setFormRestockItemId(stockItems[0]?.id || '');
       setFormRestockVendor(stockItems[0]?.supplierName || '');
     }
     setFormRestockQty(50);
@@ -403,11 +491,15 @@ export default function StockMonitoringPage() {
   };
 
   const handleOpenUsage = (item?: StockItem) => {
+    if (stockItems.length === 0) {
+      alert('Inventory masih kosong! Silakan tambahkan bahan terlebih dahulu.');
+      return;
+    }
     if (item) {
       setFormUsageItemId(item.id);
       setFormUsageQty(item.dailyUsageAvg > 0 ? item.dailyUsageAvg : 10);
     } else {
-      setFormUsageItemId(stockItems[0]?.id || 'bhk-001');
+      setFormUsageItemId(stockItems[0]?.id || '');
       setFormUsageQty(stockItems[0]?.dailyUsageAvg || 20);
     }
     setShowUsageModal(true);
@@ -416,6 +508,24 @@ export default function StockMonitoringPage() {
   const handleOpenDetail = (item: StockItem) => {
     setSelectedItem(item);
     setShowItemDetailModal(true);
+  };
+
+  const handleDeleteItem = (itemId: string, itemName: string) => {
+    if (window.confirm(`Hapus bahan "${itemName}" dari master inventory?`)) {
+      const updated = stockItems.filter((i) => i.id !== itemId);
+      setStockItems(updated);
+      saveStockToStorage(updated);
+      if (opnameSession) {
+        const updatedOpname = {
+          ...opnameSession,
+          rows: opnameSession.rows.filter((r) => r.itemId !== itemId),
+        };
+        setOpnameSession(updatedOpname);
+        saveOpnameDraftToStorage(updatedOpname);
+      }
+      setShowItemDetailModal(false);
+      showToast(`🗑️ Bahan "${itemName}" berhasil dihapus.`);
+    }
   };
 
   // Submit Restock (Penerimaan Bahan Supplier)
@@ -524,11 +634,31 @@ export default function StockMonitoringPage() {
 
   // Reset to Baseline 32 Items
   const handleResetToBaseline = () => {
-    if (window.confirm('Reset seluruh stok ke data master baseline 32 bahan baku resmi SPPG Wonodri 3?')) {
+    if (window.confirm('Muat 32 data master baseline bahan baku rekomendasi SPPG Wonodri 3?')) {
       setStockItems(DEFAULT_STOCK_ITEMS_32);
       saveStockToStorage(DEFAULT_STOCK_ITEMS_32);
       clearOpnameDraftFromStorage();
-      showToast('🔄 Stok berhasil di-reset ke data master baseline resmi.');
+      const newOpname = loadOpnameDraftFromStorage(DEFAULT_STOCK_ITEMS_32);
+      setOpnameSession(newOpname);
+      showToast('📦 32 Bahan master baseline berhasil dimuat.');
+    }
+  };
+
+  // Kosongkan Total Seluruh Inventory
+  const handleClearAllInventory = () => {
+    if (
+      window.confirm(
+        'Apakah Anda yakin ingin MENGOSONGKAN seluruh data inventaris & stok? Semua data lokal akan dibersihkan agar Anda bisa menginput data murni dari awal.'
+      )
+    ) {
+      setStockItems([]);
+      setMovements([]);
+      saveStockToStorage([]);
+      saveMovementsToStorage([]);
+      clearOpnameDraftFromStorage();
+      const emptyOpname = loadOpnameDraftFromStorage([]);
+      setOpnameSession(emptyOpname);
+      showToast('🗑️ Seluruh data stok & inventaris berhasil dikosongkan total.');
     }
   };
 
@@ -862,19 +992,27 @@ export default function StockMonitoringPage() {
           <div className="flex items-center gap-2 flex-wrap shrink-0">
             <button
               type="button"
+              onClick={() => handleOpenAddItem()}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>+ Tambah Bahan Baru</span>
+            </button>
+            <button
+              type="button"
               onClick={() => handleOpenRestock()}
               className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>+ Bahan Masuk (Supplier)</span>
+              <span>+ Bahan Masuk</span>
             </button>
             <button
               type="button"
               onClick={() => handleOpenUsage()}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
             >
               <MinusCircle className="w-4 h-4" />
-              <span>- Pakai Masak Dapur</span>
+              <span>- Pakai Masak</span>
             </button>
             <button
               type="button"
@@ -882,7 +1020,7 @@ export default function StockMonitoringPage() {
               className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1.5 cursor-pointer transition-colors"
             >
               <Printer className="w-4 h-4 text-slate-600" />
-              <span>Cetak Laporan PDF</span>
+              <span>Cetak Laporan</span>
             </button>
           </div>
         </div>
@@ -894,7 +1032,7 @@ export default function StockMonitoringPage() {
             <div className="space-y-0.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Bahan Baku</span>
               <div className="text-xl sm:text-2xl font-black text-slate-900">{summary.totalItems} Item</div>
-              <span className="text-[10px] text-slate-500 font-medium">32 Bahan Utama SPPG</span>
+              <span className="text-[10px] text-slate-500 font-medium">Bahan Baku Terdaftar</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0">
               <Boxes className="w-5 h-5 text-blue-600" />
@@ -906,9 +1044,9 @@ export default function StockMonitoringPage() {
             <div className="space-y-0.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Penerimaan Masuk</span>
               <div className="text-xl sm:text-2xl font-black text-emerald-700">
-                {formatRupiah(totalMasukRp > 0 ? totalMasukRp : 4250000)}
+                {formatRupiah(totalMasukRp)}
               </div>
-              <span className="text-[10px] text-emerald-600 font-medium">+150 kg Daging Ayam Fillet</span>
+              <span className="text-[10px] text-emerald-600 font-medium">Nilai Masuk Dari Supplier</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
               <Warehouse className="w-5 h-5 text-emerald-600" />
@@ -920,7 +1058,7 @@ export default function StockMonitoringPage() {
             <div className="space-y-0.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Pemakaian Dapur</span>
               <div className="text-xl sm:text-2xl font-black text-blue-900">
-                {totalMutasiKeluar > 0 ? `${totalMutasiKeluar} Mutasi` : '34 Mutasi'}
+                {totalMutasiKeluar} Mutasi
               </div>
               <span className="text-[10px] text-blue-600 font-medium">1.553 Porsi MBG Harian</span>
             </div>
@@ -1013,9 +1151,17 @@ export default function StockMonitoringPage() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
+              onClick={handleClearAllInventory}
+              className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer flex items-center gap-1"
+              title="Kosongkan seluruh data inventory untuk input murni dari nol"
+            >
+              <span>Kosongkan Data</span>
+            </button>
+            <button
+              type="button"
               onClick={handleResetToBaseline}
               className="text-slate-500 hover:text-slate-800 p-2 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
-              title="Reset ke Master Baseline Resmi 32 Bahan"
+              title="Muat 32 Bahan Master Rekomendasi BGN"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -1149,9 +1295,30 @@ export default function StockMonitoringPage() {
                   <tbody className="divide-y divide-slate-100">
                     {filteredItems.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="py-10 text-center text-slate-400">
-                          <Boxes className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                          Tidak ada bahan baku yang cocok dengan filter.
+                        <td colSpan={8} className="py-12 text-center text-slate-500">
+                          <Boxes className="w-10 h-10 mx-auto mb-3 text-slate-300" />
+                          <p className="font-bold text-slate-700 text-sm">Inventory Belum Memiliki Data Bahan Baku</p>
+                          <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                            Mulai tambahkan bahan baku dapur Anda secara manual atau muat 32 master data baseline BGN.
+                          </p>
+                          <div className="flex items-center justify-center gap-2 mt-4">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenAddItem()}
+                              className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs cursor-pointer flex items-center gap-1.5"
+                            >
+                              <PlusCircle className="w-4 h-4" />
+                              <span>+ Tambah Bahan Baku Baru</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleResetToBaseline()}
+                              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-300 cursor-pointer flex items-center gap-1.5"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Muat Master Rekomendasi (32 Bahan)</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ) : (
@@ -1413,7 +1580,26 @@ export default function StockMonitoringPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {filteredOpnameRows.map((row, idx) => {
+                    {filteredOpnameRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-10 text-center text-slate-500">
+                          <ClipboardCheck className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                          <p className="font-bold text-slate-700">Belum Ada Item pada Lembar Opname</p>
+                          <p className="text-xs text-slate-400 mt-1">
+                            Tambahkan master bahan baku terlebih dahulu atau muat master baseline.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAddItem()}
+                            className="mt-3 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs cursor-pointer inline-flex items-center gap-1.5"
+                          >
+                            <PlusCircle className="w-4 h-4" />
+                            <span>+ Tambah Bahan Baku Baru</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredOpnameRows.map((row, idx) => {
                       const diff = Number((row.physicalQty - row.systemQty).toFixed(2));
                       const diffNominal = diff * row.unitPrice;
 
@@ -1480,7 +1666,7 @@ export default function StockMonitoringPage() {
                           </td>
                         </tr>
                       );
-                    })}
+                    }))}
                   </tbody>
                 </table>
               </div>
@@ -1780,6 +1966,179 @@ export default function StockMonitoringPage() {
         )}
       </main>
 
+      {/* ============ MODAL 0: TAMBAH MASTER BAHAN BAKU BARU ============ */}
+      {showAddItemModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-xs no-print">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+              <div className="flex items-center gap-2">
+                <PlusCircle className="w-5 h-5 text-blue-600" />
+                <h3 className="text-base font-black text-slate-900">Tambah Master Bahan Baku Baru</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddItemModal(false)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitAddItem} className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Kode SKU</label>
+                  <input
+                    type="text"
+                    required
+                    value={formAddSku}
+                    onChange={(e) => setFormAddSku(e.target.value)}
+                    placeholder="BGN-GDK-001"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Kategori Penyimpanan</label>
+                  <select
+                    value={formAddCategory}
+                    onChange={(e) => setFormAddCategory(e.target.value as StockCategory)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
+                  >
+                    <option value="Gudang Kering">Gudang Kering</option>
+                    <option value="Chiller & Freezer">Chiller &amp; Freezer</option>
+                    <option value="Sayur & Buah">Sayur &amp; Buah</option>
+                    <option value="Bumbu & Rempah">Bumbu &amp; Rempah</option>
+                    <option value="Kemasan & Sanitasi">Kemasan &amp; Sanitasi</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Nama Bahan Makanan *</label>
+                <input
+                  type="text"
+                  required
+                  value={formAddName}
+                  onChange={(e) => setFormAddName(e.target.value)}
+                  placeholder="Cth: Beras Premium Mentik Wangi / Telur Ayam Ras"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Satuan (UoM)</label>
+                  <input
+                    type="text"
+                    required
+                    value={formAddUom}
+                    onChange={(e) => setFormAddUom(e.target.value)}
+                    placeholder="kg, liter, butir, pack, ikat"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Lokasi Penyimpanan</label>
+                  <input
+                    type="text"
+                    value={formAddLocation}
+                    onChange={(e) => setFormAddLocation(e.target.value)}
+                    placeholder="Rak A-01 / Chiller Ruang 1"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Stok Awal Fisik</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={formAddInitialStock}
+                    onChange={(e) => setFormAddInitialStock(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Batas Buffer Min</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={formAddMinAlert}
+                    onChange={(e) => setFormAddMinAlert(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Pakai / Hari</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={formAddDailyUsage}
+                    onChange={(e) => setFormAddDailyUsage(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Harga Satuan Modal (Rp)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formAddUnitPrice}
+                    onChange={(e) => setFormAddUnitPrice(parseInt(e.target.value, 10) || 0)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Suplier / Vendor</label>
+                  <input
+                    type="text"
+                    value={formAddSupplier}
+                    onChange={(e) => setFormAddSupplier(e.target.value)}
+                    placeholder="Nama petani / suplier..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Catatan Tambahan (Opsional)</label>
+                <textarea
+                  rows={2}
+                  value={formAddNotes}
+                  onChange={(e) => setFormAddNotes(e.target.value)}
+                  placeholder="Kriteria QC spesifikasi bahan..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium text-slate-900 focus:outline-none focus:border-blue-600"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAddItemModal(false)}
+                  className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-bold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs cursor-pointer"
+                >
+                  Simpan Bahan Baru
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* ============ MODAL 1: RESTOCK / PENERIMAAN BAHAN (GRN) ============ */}
       {showRestockModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-xs no-print">
@@ -2072,24 +2431,33 @@ export default function StockMonitoringPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
               <button
                 type="button"
-                onClick={() => {
-                  setShowItemDetailModal(false);
-                  handleOpenRestock(selectedItem);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs"
+                onClick={() => handleDeleteItem(selectedItem.id, selectedItem.name)}
+                className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 font-bold text-xs cursor-pointer"
               >
-                + Restock Item Ini
+                Hapus Bahan
               </button>
-              <button
-                type="button"
-                onClick={() => setShowItemDetailModal(false)}
-                className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs"
-              >
-                Tutup
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowItemDetailModal(false);
+                    handleOpenRestock(selectedItem);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs cursor-pointer hover:bg-emerald-700"
+                >
+                  + Restock Item Ini
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowItemDetailModal(false)}
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs cursor-pointer hover:bg-slate-200"
+                >
+                  Tutup
+                </button>
+              </div>
             </div>
           </div>
         </div>

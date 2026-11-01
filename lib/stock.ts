@@ -48,8 +48,8 @@ export interface StockSummary {
   categoryCounts: Record<StockCategory, number>;
 }
 
-export const ARSIP_STOCK_INVENTORY_KEY = 'sppg_stock_inventory_v1';
-export const ARSIP_STOCK_MOVEMENTS_KEY = 'sppg_stock_movements_v1';
+export const ARSIP_STOCK_INVENTORY_KEY = 'sppg_stock_inventory_v2';
+export const ARSIP_STOCK_MOVEMENTS_KEY = 'sppg_stock_movements_v2';
 
 // 32 Master Bahan Baku Resmi SPPG Wonodri 3 (Pagu 1.553 Porsi / Hari)
 export const DEFAULT_STOCK_ITEMS_32: StockItem[] = [
@@ -664,21 +664,21 @@ export function getDaysLeft(item: StockItem): number {
 
 // Client Storage Accessors (Safe for SSR)
 export function loadStockFromStorage(): StockItem[] {
-  if (typeof window === 'undefined') return DEFAULT_STOCK_ITEMS_32;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(ARSIP_STOCK_INVENTORY_KEY);
     if (!raw) {
-      saveStockToStorage(DEFAULT_STOCK_ITEMS_32);
-      return DEFAULT_STOCK_ITEMS_32;
+      saveStockToStorage([]);
+      return [];
     }
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
+    if (Array.isArray(parsed)) {
       return parsed;
     }
   } catch (err) {
     console.error('Failed to load stock from localStorage:', err);
   }
-  return DEFAULT_STOCK_ITEMS_32;
+  return [];
 }
 
 export function saveStockToStorage(items: StockItem[]): void {
@@ -691,12 +691,12 @@ export function saveStockToStorage(items: StockItem[]): void {
 }
 
 export function loadMovementsFromStorage(): StockMovement[] {
-  if (typeof window === 'undefined') return DEFAULT_STOCK_MOVEMENTS;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(ARSIP_STOCK_MOVEMENTS_KEY);
     if (!raw) {
-      saveMovementsToStorage(DEFAULT_STOCK_MOVEMENTS);
-      return DEFAULT_STOCK_MOVEMENTS;
+      saveMovementsToStorage([]);
+      return [];
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
@@ -705,7 +705,7 @@ export function loadMovementsFromStorage(): StockMovement[] {
   } catch (err) {
     console.error('Failed to load movements from localStorage:', err);
   }
-  return DEFAULT_STOCK_MOVEMENTS;
+  return [];
 }
 
 export function saveMovementsToStorage(movements: StockMovement[]): void {
@@ -888,7 +888,7 @@ export interface OpnameSession {
   savedAt: string;
 }
 
-export const ARSIP_STOCK_OPNAME_DRAFT_KEY = 'sppg_stock_opname_draft_v1';
+export const ARSIP_STOCK_OPNAME_DRAFT_KEY = 'sppg_stock_opname_draft_v2';
 
 export function createInitialOpnameRows(items: StockItem[]): OpnameRow[] {
   return items.map((item) => ({
@@ -921,7 +921,7 @@ export function loadOpnameDraftFromStorage(items: StockItem[]): OpnameSession {
     const raw = localStorage.getItem(ARSIP_STOCK_OPNAME_DRAFT_KEY);
     if (!raw) return defaultSession;
     const parsed = JSON.parse(raw);
-    if (parsed && Array.isArray(parsed.rows) && parsed.rows.length > 0) {
+    if (parsed && Array.isArray(parsed.rows)) {
       return parsed;
     }
   } catch (err) {
