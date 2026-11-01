@@ -19,7 +19,6 @@ import {
   Printer,
   X,
   Menu as MenuIcon,
-  AlertTriangle,
   CheckCircle2,
   TrendingDown,
   Warehouse,
@@ -35,6 +34,7 @@ import {
   Save,
   Check,
   Scale,
+  ChefHat,
 } from 'lucide-react';
 import {
   StockItem,
@@ -51,6 +51,7 @@ import {
   generateStockCSV,
   generateMovementsCSV,
   DEFAULT_STOCK_ITEMS_16,
+  DEFAULT_STOCK_MOVEMENTS_32,
   OpnameSession,
   loadOpnameDraftFromStorage,
   saveOpnameDraftToStorage,
@@ -83,6 +84,9 @@ export default function StockMonitoringPage() {
   const [opnameSearch, setOpnameSearch] = useState<string>('');
   const [isOpnameDirty, setIsOpnameDirty] = useState<boolean>(false);
 
+  // Modal Print Type: Masuk (01 Nov), Keluar Masak (02 Nov), atau Rekap Mutasi
+  const [printReportType, setPrintReportType] = useState<'MASUK' | 'KELUAR' | 'MUTASI'>('KELUAR');
+
   // Interactive Modals
   const [showAddItemModal, setShowAddItemModal] = useState<boolean>(false);
   const [showRestockModal, setShowRestockModal] = useState<boolean>(false);
@@ -114,8 +118,8 @@ export default function StockMonitoringPage() {
   // Form States for Usage
   const [formUsageItemId, setFormUsageItemId] = useState<string>('bhk-01');
   const [formUsageQty, setFormUsageQty] = useState<number>(10);
-  const [formUsageMenu, setFormUsageMenu] = useState<string>('Produksi Dapur MBG 1.553 Porsi');
-  const [formUsageNotes, setFormUsageNotes] = useState<string>('Pemotongan masak shift pagi');
+  const [formUsageMenu, setFormUsageMenu] = useState<string>('Produksi Dapur MBG 1.553 Porsi (02 Nov 2026)');
+  const [formUsageNotes, setFormUsageNotes] = useState<string>('Dikeluarkan penuh untuk pengolahan masak dapur');
 
   // Feedback Notification Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -358,7 +362,7 @@ export default function StockMonitoringPage() {
         storageLocation: item.storageLocation,
         systemQty: item.currentStock,
         physicalQty: item.currentStock,
-        notes: 'Kondisi fisik kemasan baik',
+        notes: 'Kondisi fisik kemasan baik / habis terpakai',
       }));
 
       const resetSession: OpnameSession = {
@@ -407,12 +411,15 @@ export default function StockMonitoringPage() {
       name: formAddName.trim().toUpperCase(),
       category: formAddCategory,
       uom: formAddUom.trim().toUpperCase(),
-      storageLocation: formAddLocation || 'Gudang Utama',
+      storageLocation: formAddLocation || 'Gudang Kering',
       currentStock: Number(formAddInitialStock) || 0,
+      initialStock: Number(formAddInitialStock) || 0,
+      usedStock: 0,
       minStockAlert: Number(formAddMinAlert) || 0,
       dailyUsageAvg: Number(formAddDailyUsage) || 0,
       supplierName: formAddSupplier || 'Supplier SPPG',
       lastRestockDate: '2026-11-01',
+      lastUsageDate: '2026-11-02',
       notes: formAddNotes || undefined,
     };
 
@@ -470,10 +477,10 @@ export default function StockMonitoringPage() {
     }
     if (item) {
       setFormUsageItemId(item.id);
-      setFormUsageQty(item.dailyUsageAvg > 0 ? item.dailyUsageAvg : 5);
+      setFormUsageQty(item.currentStock > 0 ? item.currentStock : 10);
     } else {
       setFormUsageItemId(stockItems[0]?.id || '');
-      setFormUsageQty(stockItems[0]?.dailyUsageAvg || 10);
+      setFormUsageQty(10);
     }
     setShowUsageModal(true);
   };
@@ -518,6 +525,7 @@ export default function StockMonitoringPage() {
         return {
           ...item,
           currentStock: Number((item.currentStock + qty).toFixed(2)),
+          initialStock: Number((item.initialStock + qty).toFixed(2)),
           lastRestockDate: formRestockDate || '2026-11-01',
           supplierName: formRestockVendor || item.supplierName,
         };
@@ -574,6 +582,8 @@ export default function StockMonitoringPage() {
         return {
           ...item,
           currentStock: newBalance,
+          usedStock: Number((item.usedStock + qty).toFixed(2)),
+          lastUsageDate: '2026-11-02',
         };
       }
       return item;
@@ -581,7 +591,7 @@ export default function StockMonitoringPage() {
 
     const newMovement: StockMovement = {
       id: `mov-${Date.now()}`,
-      date: new Date().toISOString().slice(0, 10),
+      date: '2026-11-02',
       time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       itemId: target.id,
       itemName: target.name,
@@ -589,9 +599,9 @@ export default function StockMonitoringPage() {
       qty: qty,
       uom: target.uom,
       balanceAfter: newBalance,
-      reference: formUsageMenu || 'BOM Dapur MBG 1.553 Porsi',
-      loggedBy: 'Chef In Charge (Seksi Pengolahan)',
-      notes: formUsageNotes || 'Pemotongan bahan masak',
+      reference: formUsageMenu || 'BOM-MSK-20261102',
+      loggedBy: 'Seksi Pengolahan Dapur',
+      notes: formUsageNotes || 'Pemakaian bahan masak MBG tgl 02 Nov 2026',
     };
 
     const updatedMovements = [newMovement, ...movements];
@@ -605,15 +615,17 @@ export default function StockMonitoringPage() {
     showToast(`🍳 Pemakaian dapur dicatat: -${qty} ${target.uom} ${target.name}`);
   };
 
-  // Reset to Baseline 16 Items Masuk 01 Nov 2026
+  // Reset to Baseline 16 Items (Masuk 01 Nov -> Keluar 02 Nov)
   const handleResetToBaseline = () => {
-    if (window.confirm('Muat ulang 16 bahan baku masuk tgl 01 Nov 2026?')) {
+    if (window.confirm('Muat ulang 16 bahan baku masuk 01 Nov & pengeluaran masak tgl 02 Nov 2026?')) {
       setStockItems(DEFAULT_STOCK_ITEMS_16);
+      setMovements(DEFAULT_STOCK_MOVEMENTS_32);
       saveStockToStorage(DEFAULT_STOCK_ITEMS_16);
+      saveMovementsToStorage(DEFAULT_STOCK_MOVEMENTS_32);
       clearOpnameDraftFromStorage();
       const newOpname = loadOpnameDraftFromStorage(DEFAULT_STOCK_ITEMS_16);
       setOpnameSession(newOpname);
-      showToast('📦 16 Bahan baku masuk tgl 01 Nov 2026 berhasil dimuat.');
+      showToast('📦 Data mutasi 01 Nov (Masuk) & 02 Nov (Keluar Masak) berhasil dimuat.');
     }
   };
 
@@ -638,7 +650,7 @@ export default function StockMonitoringPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `SPPG_Wonodri3_Stok_01Nov2026.csv`);
+    link.setAttribute('download', `SPPG_Wonodri3_Stok_01_02_Nov2026.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -651,7 +663,7 @@ export default function StockMonitoringPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `SPPG_Wonodri3_Mutasi_01Nov2026.csv`);
+    link.setAttribute('download', `SPPG_Wonodri3_Mutasi_01_02_Nov2026.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -665,7 +677,7 @@ export default function StockMonitoringPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `SPPG_Wonodri3_Stock_Opname_01Nov2026.csv`);
+    link.setAttribute('download', `SPPG_Wonodri3_Stock_Opname_02Nov2026.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -694,9 +706,9 @@ export default function StockMonitoringPage() {
   const getStatusBadge = (status: StockStatus, daysLeft: number) => {
     if (status === 'critical') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-300">
-          <AlertTriangle className="w-3 h-3 text-rose-600 animate-pulse" />
-          KRITIS ({daysLeft} Hari)
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+          SELESAI DIMASAK (02 NOV)
         </span>
       );
     }
@@ -709,9 +721,9 @@ export default function StockMonitoringPage() {
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-        AMAN ({daysLeft} Hari)
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300">
+        <CheckCircle2 className="w-3 h-3 text-blue-600" />
+        STANDBY GUDANG
       </span>
     );
   };
@@ -741,7 +753,7 @@ export default function StockMonitoringPage() {
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
               </span>
               <span className="font-bold text-emerald-300">Sistem Aktif</span>
-              <span className="hidden md:inline text-blue-300/60">• Logistik Bahan Baku &amp; Timbangan Masuk</span>
+              <span className="hidden md:inline text-blue-300/60">• Logistik Bahan Masuk (01 Nov) &amp; Masak (02 Nov)</span>
             </span>
           </div>
         </div>
@@ -777,7 +789,7 @@ export default function StockMonitoringPage() {
                     </span>
                   </div>
                   <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium block truncate">
-                    Monitoring Stok &amp; Kuantitas Bahan Masuk (01 Nov 2026)
+                    Monitoring Stok: Masuk 01 Nov &bull; Masak 02 Nov 2026 (1.553 Porsi)
                   </span>
                 </div>
               </div>
@@ -821,7 +833,7 @@ export default function StockMonitoringPage() {
           </div>
         </div>
 
-        {/* Primary nav: modul utama bar */}
+        {/* Primary nav bar */}
         <div className="border-t border-slate-100 bg-slate-50/80">
           <div className="max-w-7xl mx-auto px-3 sm:px-6">
             <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1.5">
@@ -944,18 +956,18 @@ export default function StockMonitoringPage() {
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-800 border border-blue-200">
-                Penerimaan Bahan Baku 01 Nov 2026
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
+                Selesai Dimasak (02 Nov 2026)
               </span>
               <span className="text-xs text-slate-400">•</span>
-              <span className="text-xs text-slate-500 font-medium">BGN TA 2026 — Dapur Mandiri Wonodri 3</span>
+              <span className="text-xs text-slate-500 font-medium">BGN TA 2026 — SPPG Wonodri 3 Kota Semarang</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
               <Boxes className="w-6 h-6 text-blue-600" />
-              Monitoring Stok &amp; Kuantitas Bahan Masuk
+              Monitoring Stok &amp; Kuantitas Bahan Masak
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Pencatatan kuantitas fisik riil (Kg &amp; Satuan) bahan baku makanan masuk tgl <strong>01 November 2026</strong>, mutasi pemakaian dapur <strong>1.553 Porsi MBG</strong>, dan lembar hitung stock opname berkala.
+              Barang datang tgl <strong>01 Nov 2026</strong> (158.6 KG + 156 Unit) telah <strong>dikeluarkan penuh pada tgl 02 Nov 2026</strong> untuk memasak <strong>1.553 Porsi MBG</strong>.
             </p>
           </div>
 
@@ -975,7 +987,7 @@ export default function StockMonitoringPage() {
               className="px-3 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
               <PlusCircle className="w-4 h-4 shrink-0" />
-              <span>+ Masuk (01 Nov)</span>
+              <span>+ Masuk (Supplier)</span>
             </button>
             <button
               type="button"
@@ -1003,56 +1015,52 @@ export default function StockMonitoringPage() {
             <div className="space-y-0.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Bahan Baku</span>
               <div className="text-xl sm:text-2xl font-black text-slate-900">{summary.totalItems} Item</div>
-              <span className="text-[10px] text-slate-500 font-medium">Masuk 01 Nov 2026</span>
+              <span className="text-[10px] text-slate-500 font-medium">Masuk 01 &bull; Keluar 02 Nov</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0">
               <Boxes className="w-5 h-5 text-blue-600" />
             </div>
           </div>
 
-          {/* Card 2: Total Muatan Berat (Kg) */}
+          {/* Card 2: Total Muatan Masuk (01 Nov) */}
           <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Muatan Berat</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Masuk (01 Nov 2026)</span>
               <div className="text-xl sm:text-2xl font-black text-emerald-700">
-                {summary.totalKg} KG
+                {summary.totalKgMasuk} KG
               </div>
-              <span className="text-[10px] text-emerald-600 font-medium">Bahan Timbangan Kg</span>
+              <span className="text-[10px] text-emerald-600 font-medium">+{summary.totalQtyNonKgMasuk} Unit Satuan Lain</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
               <Scale className="w-5 h-5 text-emerald-600" />
             </div>
           </div>
 
-          {/* Card 3: Zonasi Penyimpanan (Gudang Basah & Kering) */}
+          {/* Card 3: Keluar Masak (02 Nov) */}
           <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Zonasi Gudang</span>
-              <div className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-1.5">
-                <span className="text-cyan-700" title="Gudang Basah: Hewani, Sayur, Buah">{summary.gudangBasahCount} Basah</span>
-                <span className="text-slate-300 font-normal">•</span>
-                <span className="text-amber-700" title="Gudang Kering: Sisanya">{summary.gudangKeringCount} Kering</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Keluar Masak (02 Nov)</span>
+              <div className="text-xl sm:text-2xl font-black text-indigo-700">
+                {summary.totalKgKeluar} KG
               </div>
-              <span className="text-[10px] text-slate-500 font-medium">Basah: Hewani/Sayur/Buah • Kering: Sisanya</span>
+              <span className="text-[10px] text-indigo-600 font-medium">1.553 Porsi MBG Selesai</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 flex items-center justify-center shrink-0">
-              <Warehouse className="w-5 h-5 text-cyan-700" />
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center shrink-0">
+              <ChefHat className="w-5 h-5 text-indigo-600" />
             </div>
           </div>
 
-          {/* Card 4: Akurasi Opname */}
+          {/* Card 4: Sisa Stok Saat Ini */}
           <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Akurasi Opname</span>
-              <div className="text-xl sm:text-2xl font-black text-amber-700">
-                {opnameStats.matchPct}%
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Sisa Stok Fisik</span>
+              <div className="text-xl sm:text-2xl font-black text-slate-900">
+                {summary.currentKgSisa} KG
               </div>
-              <span className="text-[10px] text-amber-600 font-medium">
-                {opnameStats.itemsDiff === 0 ? 'Fisik & Sistem Klop 100%' : `${opnameStats.itemsDiff} Item Selisih`}
-              </span>
+              <span className="text-[10px] text-emerald-600 font-bold">Habis Terpakai Masak 100%</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
-              <ClipboardCheck className="w-5 h-5 text-amber-600" />
+            <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
             </div>
           </div>
         </div>
@@ -1102,7 +1110,7 @@ export default function StockMonitoringPage() {
               }`}
             >
               <History className="w-4 h-4" />
-              <span>Mutasi Masuk &amp; Keluar</span>
+              <span>Mutasi Masuk &amp; Keluar ({movements.length})</span>
             </button>
 
             {/* Tab 4: BOM Kebutuhan Masak */}
@@ -1134,14 +1142,14 @@ export default function StockMonitoringPage() {
               type="button"
               onClick={handleResetToBaseline}
               className="text-slate-500 hover:text-slate-800 p-2 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
-              title="Muat Ulang 16 Bahan Masuk 01 Nov 2026"
+              title="Muat Ulang 16 Bahan Masuk 01 Nov & Keluar 02 Nov"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* ============ TAB 1: DAFTAR BAHAN & STOK FISIK (TANPA HARGA SATUAN) ============ */}
+        {/* ============ TAB 1: DAFTAR BAHAN & STOK FISIK ============ */}
         {activeMainTab === 'inventory' && (
           <div className="space-y-4">
             {/* Toolbar Filters */}
@@ -1185,10 +1193,10 @@ export default function StockMonitoringPage() {
                     onChange={(e) => setSelectedStatus(e.target.value)}
                     className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer"
                   >
-                    <option value="ALL">Semua Status Buffer</option>
-                    <option value="critical">Kritis (&lt; 1 Hari)</option>
-                    <option value="warning">Menipis (1 - 2.5 Hari)</option>
-                    <option value="safe">Stok Aman (&gt; 2.5 Hari)</option>
+                    <option value="ALL">Semua Status</option>
+                    <option value="critical">Selesai Dimasak</option>
+                    <option value="warning">Menipis</option>
+                    <option value="safe">Standby Gudang</option>
                   </select>
 
                   <select
@@ -1295,10 +1303,6 @@ export default function StockMonitoringPage() {
                 filteredItems.map((item) => {
                   const status = calculateStockStatus(item);
                   const daysLeft = getDaysLeft(item);
-                  const pctOfMin =
-                    item.minStockAlert > 0
-                      ? Math.min(100, Math.round((item.currentStock / item.minStockAlert) * 100))
-                      : 100;
 
                   return (
                     <div
@@ -1330,41 +1334,30 @@ export default function StockMonitoringPage() {
                         <div className="shrink-0">{getStatusBadge(status, daysLeft)}</div>
                       </div>
 
-                      <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 flex items-center justify-between">
-                        <div>
-                          <span className="text-[10px] uppercase font-bold text-slate-500 block">Jumlah Stok Fisik</span>
-                          <div className="flex items-baseline gap-1.5 mt-0.5">
-                            <span className="font-mono font-black text-2xl text-slate-900">{item.currentStock}</span>
-                            <span className="font-mono font-black text-xs px-2 py-0.5 rounded bg-white text-slate-800 border border-slate-200">
-                              {item.uom}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-[10px] uppercase font-bold text-slate-500 block">Pemakaian Dapur</span>
-                          <span className="font-mono font-bold text-xs text-slate-700">
-                            {item.dailyUsageAvg} {item.uom} / hari
+                      <div className="grid grid-cols-3 gap-2 bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
+                        <div className="border-r border-slate-200 pr-1">
+                          <span className="text-[9px] uppercase font-bold text-emerald-700 block">Masuk (01 Nov)</span>
+                          <span className="font-mono font-black text-sm text-slate-800 mt-0.5 block">
+                            {item.initialStock} {item.uom}
                           </span>
-                          <span className="text-[10px] text-slate-400 block mt-0.5">
-                            Lokasi: {item.storageLocation}
+                        </div>
+                        <div className="border-r border-slate-200 px-1">
+                          <span className="text-[9px] uppercase font-bold text-indigo-700 block">Keluar (02 Nov)</span>
+                          <span className="font-mono font-black text-sm text-indigo-900 mt-0.5 block">
+                            {item.usedStock} {item.uom}
+                          </span>
+                        </div>
+                        <div className="pl-1">
+                          <span className="text-[9px] uppercase font-bold text-slate-500 block">Sisa Stok</span>
+                          <span className="font-mono font-black text-sm text-slate-900 mt-0.5 block">
+                            {item.currentStock} {item.uom}
                           </span>
                         </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
-                          <span>Ketahanan: <strong className="text-slate-800">{daysLeft} Hari</strong></span>
-                          <span>Batas Min: {item.minStockAlert} {item.uom} ({pctOfMin}%)</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                          <div
-                            className={`h-full rounded-full transition-all ${
-                              status === 'critical' ? 'bg-rose-500' : status === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'
-                            }`}
-                            style={{ width: `${Math.min(100, Math.max(10, (daysLeft / 5) * 100))}%` }}
-                          />
-                        </div>
-                      </div>
+                      <p className="text-[10px] text-slate-500 italic bg-slate-50/50 p-2 rounded-lg border border-slate-100">
+                        {item.notes}
+                      </p>
 
                       <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-100 text-xs">
                         <button
@@ -1405,12 +1398,12 @@ export default function StockMonitoringPage() {
                   <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-black tracking-wider">
                     <tr>
                       <th className="py-3 px-4">Bahan Makanan &amp; SKU</th>
-                      <th className="py-3 px-3">Golongan / Lokasi</th>
-                      <th className="py-3 px-4 text-right">Jumlah Stok</th>
+                      <th className="py-3 px-3">Lokasi / Golongan</th>
+                      <th className="py-3 px-3 text-right">Masuk (01 Nov)</th>
+                      <th className="py-3 px-3 text-right">Keluar (02 Nov)</th>
+                      <th className="py-3 px-3 text-right">Sisa Stok</th>
                       <th className="py-3 px-3 text-center">Satuan</th>
-                      <th className="py-3 px-3 text-right">Pakai / Hari</th>
-                      <th className="py-3 px-3 text-center">Ketahanan Buffer</th>
-                      <th className="py-3 px-3 text-center">Status</th>
+                      <th className="py-3 px-3 text-center">Status Penggunaan</th>
                       <th className="py-3 px-4 text-center">Aksi Cepat</th>
                     </tr>
                   </thead>
@@ -1420,9 +1413,6 @@ export default function StockMonitoringPage() {
                         <td colSpan={8} className="py-12 text-center text-slate-500">
                           <Boxes className="w-10 h-10 mx-auto mb-3 text-slate-300" />
                           <p className="font-bold text-slate-700 text-sm">Inventory Belum Memiliki Data Bahan Baku</p>
-                          <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                            Mulai tambahkan bahan baru atau muat 16 bahan masuk 01 Nov 2026.
-                          </p>
                           <div className="flex items-center justify-center gap-2 mt-4">
                             <button
                               type="button"
@@ -1447,10 +1437,6 @@ export default function StockMonitoringPage() {
                       filteredItems.map((item) => {
                         const status = calculateStockStatus(item);
                         const daysLeft = getDaysLeft(item);
-                        const pctOfMin =
-                          item.minStockAlert > 0
-                            ? Math.min(100, Math.round((item.currentStock / item.minStockAlert) * 100))
-                            : 100;
 
                         return (
                           <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
@@ -1462,7 +1448,7 @@ export default function StockMonitoringPage() {
                                 <span className="font-mono text-[10px] font-bold text-blue-700 bg-blue-50 px-1 rounded">
                                   {item.sku}
                                 </span>
-                                <span className="text-[10px] text-slate-400">Masuk: {item.lastRestockDate}</span>
+                                <span className="text-[10px] text-slate-400">Masuk: 01 Nov &bull; Masak: 02 Nov</span>
                               </div>
                             </td>
 
@@ -1484,50 +1470,32 @@ export default function StockMonitoringPage() {
                               </div>
                             </td>
 
-                            {/* Jumlah Stok (Besar & Jelas) */}
-                            <td className="py-3.5 px-4 text-right">
-                              <span className="font-mono font-black text-base text-slate-900">
-                                {item.currentStock}
-                              </span>
+                            {/* Masuk (01 Nov) */}
+                            <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-700 text-sm">
+                              +{item.initialStock}
                             </td>
 
-                            {/* Satuan / UoM (Badge Tegas) */}
+                            {/* Keluar (02 Nov) */}
+                            <td className="py-3.5 px-3 text-right font-mono font-bold text-indigo-700 text-sm">
+                              -{item.usedStock}
+                            </td>
+
+                            {/* Sisa Stok */}
+                            <td className="py-3.5 px-3 text-right font-mono font-black text-sm text-slate-900">
+                              {item.currentStock}
+                            </td>
+
+                            {/* Satuan */}
                             <td className="py-3.5 px-3 text-center">
                               <span className="font-black text-xs px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 border border-slate-200 font-mono">
                                 {item.uom}
                               </span>
                             </td>
 
-                            <td className="py-3.5 px-3 text-right font-mono">
-                              <div className="font-bold text-slate-700">
-                                {item.dailyUsageAvg} {item.uom}
-                              </div>
-                              <div className="text-[9px] text-slate-400">/ hari</div>
-                            </td>
-
-                            <td className="py-3.5 px-3">
-                              <div className="w-24 mx-auto space-y-1">
-                                <div className="flex items-center justify-between text-[10px] font-mono">
-                                  <span className="font-bold text-slate-700">{daysLeft} Hari</span>
-                                  <span className="text-slate-400">{pctOfMin}%</span>
-                                </div>
-                                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                                  <div
-                                    className={`h-full rounded-full transition-all ${
-                                      status === 'critical'
-                                        ? 'bg-rose-500'
-                                        : status === 'warning'
-                                        ? 'bg-amber-500'
-                                        : 'bg-emerald-500'
-                                    }`}
-                                    style={{ width: `${Math.min(100, Math.max(10, (daysLeft / 5) * 100))}%` }}
-                                  />
-                                </div>
-                              </div>
-                            </td>
-
+                            {/* Status */}
                             <td className="py-3.5 px-3 text-center">{getStatusBadge(status, daysLeft)}</td>
 
+                            {/* Aksi Cepat */}
                             <td className="py-3.5 px-4 text-center">
                               <div className="flex items-center justify-center gap-1">
                                 <button
@@ -1541,7 +1509,7 @@ export default function StockMonitoringPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleOpenUsage(item)}
-                                  className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors cursor-pointer"
+                                  className="p-1.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer"
                                   title="- Catat Pakai Masak"
                                 >
                                   <MinusCircle className="w-3.5 h-3.5" />
@@ -1567,17 +1535,17 @@ export default function StockMonitoringPage() {
               {/* Table Footer */}
               <div className="bg-slate-50 border-t border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
                 <div>
-                  Menampilkan <strong>{filteredItems.length}</strong> dari <strong>{stockItems.length}</strong> bahan baku terdaftar
+                  Menampilkan <strong>{filteredItems.length}</strong> bahan baku terdaftar
                 </div>
                 <div className="font-mono text-[11px] text-slate-500">
-                  Total Berat: <strong>{summary.totalKg} KG</strong> • Non-Kg: <strong>{summary.totalQtyNonKg} Unit</strong>
+                  Total Masuk 01 Nov: <strong>{summary.totalKgMasuk} KG</strong> &bull; Total Masak 02 Nov: <strong>{summary.totalKgKeluar} KG</strong> (1.553 Porsi MBG)
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* ============ TAB 2: STOCK OPNAME & HITUNG FISIK (TANPA HARGA) ============ */}
+        {/* ============ TAB 2: STOCK OPNAME & HITUNG FISIK ============ */}
         {activeMainTab === 'opname' && opnameSession && (
           <div className="space-y-4">
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
@@ -1591,10 +1559,10 @@ export default function StockMonitoringPage() {
                     <span className="text-xs font-mono text-slate-500">{opnameSession.id}</span>
                   </div>
                   <h3 className="text-base sm:text-lg font-black text-slate-900">
-                    Stock Opname Timbangan Fisik Berkala
+                    Stock Opname Timbangan Fisik Dapur (Paska Masak 02 Nov)
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Petugas: <strong>{opnameSession.checkerName}</strong> • Tanggal: <strong>{opnameSession.date}</strong>
+                    Petugas: <strong>{opnameSession.checkerName}</strong> &bull; Tanggal: <strong>{opnameSession.date}</strong>
                   </p>
                 </div>
 
@@ -1688,13 +1656,6 @@ export default function StockMonitoringPage() {
                 <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500 shadow-xs">
                   <ClipboardCheck className="w-10 h-10 mx-auto mb-2 text-slate-300" />
                   <p className="font-bold text-slate-700">Belum Ada Item pada Lembar Opname</p>
-                  <button
-                    type="button"
-                    onClick={() => handleOpenAddItem()}
-                    className="mt-3 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs"
-                  >
-                    + Tambah Bahan Baru
-                  </button>
                 </div>
               ) : (
                 filteredOpnameRows.map((row, idx) => {
@@ -1712,7 +1673,7 @@ export default function StockMonitoringPage() {
                           <div>
                             <h4 className="font-black text-slate-900 text-sm leading-snug">{row.name}</h4>
                             <span className="text-[10px] text-slate-500 font-medium">
-                              {row.category} • {row.storageLocation}
+                              {row.category} &bull; {row.storageLocation}
                             </span>
                           </div>
                         </div>
@@ -1720,7 +1681,7 @@ export default function StockMonitoringPage() {
                         <div>
                           {diff === 0 ? (
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                              KLOP
+                              KLOP (0 {row.uom})
                             </span>
                           ) : diff > 0 ? (
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
@@ -1815,104 +1776,87 @@ export default function StockMonitoringPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {filteredOpnameRows.length === 0 ? (
-                      <tr>
-                        <td colSpan={9} className="py-10 text-center text-slate-500">
-                          <ClipboardCheck className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-                          <p className="font-bold text-slate-700">Belum Ada Item pada Lembar Opname</p>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenAddItem()}
-                            className="mt-3 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs cursor-pointer inline-flex items-center gap-1.5"
-                          >
-                            <PlusCircle className="w-4 h-4" />
-                            <span>+ Tambah Bahan Baru</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredOpnameRows.map((row, idx) => {
-                        const diff = Number((row.physicalQty - row.systemQty).toFixed(2));
+                    {filteredOpnameRows.map((row, idx) => {
+                      const diff = Number((row.physicalQty - row.systemQty).toFixed(2));
 
-                        return (
-                          <tr key={row.itemId} className="hover:bg-slate-50/80 transition-colors">
-                            <td className="py-3 px-4 text-center font-mono text-slate-400">{idx + 1}</td>
-                            <td className="py-3 px-4">
-                              <div className="font-bold text-slate-900">{row.name}</div>
-                              <div className="font-mono text-[10px] text-blue-700">{row.sku}</div>
-                            </td>
-                            <td className="py-3 px-3 text-[11px] text-slate-600">
-                              <span className="font-bold block">{row.category}</span>
-                              <span className="text-[10px] text-slate-400">{row.storageLocation}</span>
-                            </td>
-                            <td className="py-3 px-3 text-center">
-                              <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                                {row.uom}
-                              </span>
-                            </td>
-                            <td className="py-3 px-3 text-right font-mono font-bold text-slate-700">
-                              {row.systemQty}
-                            </td>
+                      return (
+                        <tr key={row.itemId} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-3 px-4 text-center font-mono text-slate-400">{idx + 1}</td>
+                          <td className="py-3 px-4">
+                            <div className="font-bold text-slate-900">{row.name}</div>
+                            <div className="font-mono text-[10px] text-blue-700">{row.sku}</div>
+                          </td>
+                          <td className="py-3 px-3 text-[11px] text-slate-600">
+                            <span className="font-bold block">{row.category}</span>
+                            <span className="text-[10px] text-slate-400">{row.storageLocation}</span>
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                              {row.uom}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-right font-mono font-bold text-slate-700">
+                            {row.systemQty}
+                          </td>
 
-                            {/* Input Fisik Riil */}
-                            <td className="py-2 px-4 text-center">
-                              <div className="flex items-center gap-1 justify-center">
-                                <input
-                                  type="number"
-                                  step="0.1"
-                                  min="0"
-                                  value={row.physicalQty}
-                                  onChange={(e) =>
-                                    handleOpnamePhysicalChange(row.itemId, parseFloat(e.target.value) || 0)
-                                  }
-                                  className="w-20 bg-slate-50 border border-slate-300 rounded-lg py-1 px-2 text-right font-mono font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white"
-                                />
-                                <span className="text-[10px] text-slate-500 font-mono">{row.uom}</span>
-                              </div>
-                            </td>
-
-                            {/* Selisih Otomatis */}
-                            <td className="py-3 px-3 text-right font-mono font-black">
-                              {diff === 0 ? (
-                                <span className="text-slate-400">0</span>
-                              ) : diff > 0 ? (
-                                <span className="text-emerald-600">+{diff}</span>
-                              ) : (
-                                <span className="text-rose-600">{diff}</span>
-                              )}
-                            </td>
-
-                            {/* Status Kecocokan */}
-                            <td className="py-3 px-3 text-center">
-                              {diff === 0 ? (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">
-                                  KLOP
-                                </span>
-                              ) : diff > 0 ? (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-100 text-blue-800">
-                                  LEBIH
-                                </span>
-                              ) : (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-100 text-rose-800">
-                                  KURANG
-                                </span>
-                              )}
-                            </td>
-
-                            {/* Catatan Checker */}
-                            <td className="py-2 px-4">
+                          {/* Input Fisik Riil */}
+                          <td className="py-2 px-4 text-center">
+                            <div className="flex items-center gap-1 justify-center">
                               <input
-                                type="text"
-                                value={row.notes}
-                                onChange={(e) => handleOpnameNotesChange(row.itemId, e.target.value)}
-                                placeholder="Catatan fisik..."
-                                className="w-full bg-transparent border-b border-slate-200 py-1 text-[11px] text-slate-700 focus:outline-none focus:border-amber-500"
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                value={row.physicalQty}
+                                onChange={(e) =>
+                                  handleOpnamePhysicalChange(row.itemId, parseFloat(e.target.value) || 0)
+                                }
+                                className="w-20 bg-slate-50 border border-slate-300 rounded-lg py-1 px-2 text-right font-mono font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white"
                               />
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
+                              <span className="text-[10px] text-slate-500 font-mono">{row.uom}</span>
+                            </div>
+                          </td>
+
+                          {/* Selisih Otomatis */}
+                          <td className="py-3 px-3 text-right font-mono font-black">
+                            {diff === 0 ? (
+                              <span className="text-slate-400">0</span>
+                            ) : diff > 0 ? (
+                              <span className="text-emerald-600">+{diff}</span>
+                            ) : (
+                              <span className="text-rose-600">{diff}</span>
+                            )}
+                          </td>
+
+                          {/* Status Kecocokan */}
+                          <td className="py-3 px-3 text-center">
+                            {diff === 0 ? (
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">
+                                KLOP
+                              </span>
+                            ) : diff > 0 ? (
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-100 text-blue-800">
+                                LEBIH
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-100 text-rose-800">
+                                KURANG
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Catatan Checker */}
+                          <td className="py-2 px-4">
+                            <input
+                              type="text"
+                              value={row.notes}
+                              onChange={(e) => handleOpnameNotesChange(row.itemId, e.target.value)}
+                              placeholder="Catatan fisik..."
+                              className="w-full bg-transparent border-b border-slate-200 py-1 text-[11px] text-slate-700 focus:outline-none focus:border-amber-500"
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1957,7 +1901,7 @@ export default function StockMonitoringPage() {
               <div className="space-y-1">
                 <h3 className="text-sm font-black text-slate-900">Buku Register Mutasi Stok (Audit Trail)</h3>
                 <p className="text-xs text-slate-500">
-                  Pencatatan kuantitas masuk (supplier) dan keluar (masak dapur 1.553 porsi).
+                  Daftar transaksi barang masuk tgl 01 Nov 2026 dan barang keluar masak dapur tgl 02 Nov 2026.
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -1967,15 +1911,15 @@ export default function StockMonitoringPage() {
                   className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs flex items-center gap-1 cursor-pointer"
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
-                  <span>+ Masuk</span>
+                  <span>+ Masuk (Supplier)</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleOpenUsage()}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs flex items-center gap-1 cursor-pointer"
                 >
                   <MinusCircle className="w-3.5 h-3.5" />
-                  <span>- Pakai</span>
+                  <span>- Pakai Masak</span>
                 </button>
                 <button
                   type="button"
@@ -2014,11 +1958,11 @@ export default function StockMonitoringPage() {
                     }`}
                   >
                     {t === 'ALL'
-                      ? 'Semua Mutasi'
+                      ? `Semua Mutasi (${movements.length})`
                       : t === 'IN'
-                      ? '+ Masuk'
+                      ? `+ Masuk 01 Nov (${movements.filter((m) => m.type === 'IN').length})`
                       : t === 'OUT'
-                      ? '- Keluar'
+                      ? `- Keluar Masak 02 Nov (${movements.filter((m) => m.type === 'OUT').length})`
                       : '± Opname'}
                   </button>
                 ))}
@@ -2039,17 +1983,17 @@ export default function StockMonitoringPage() {
                   >
                     <div className="flex items-center justify-between text-xs">
                       <div className="font-mono text-[10px] text-slate-500">
-                        <strong>{m.date}</strong> • {m.time} WIB
+                        <strong>{m.date}</strong> &bull; {m.time} WIB
                       </div>
                       <div>
                         {m.type === 'IN' && (
                           <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            + MASUK
+                            + MASUK (01 NOV)
                           </span>
                         )}
                         {m.type === 'OUT' && (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-blue-100 text-blue-800 border border-blue-200">
-                            - KELUAR
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-indigo-100 text-indigo-800 border border-indigo-200">
+                            - KELUAR MASAK (02 NOV)
                           </span>
                         )}
                         {m.type === 'ADJUST' && (
@@ -2066,7 +2010,7 @@ export default function StockMonitoringPage() {
                           m.type === 'IN'
                             ? 'text-emerald-700'
                             : m.type === 'OUT'
-                            ? 'text-blue-700'
+                            ? 'text-indigo-700'
                             : 'text-amber-700'
                         }`}
                       >
@@ -2110,17 +2054,17 @@ export default function StockMonitoringPage() {
                         <tr key={m.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-3 px-4 font-mono text-[11px]">
                             <div className="font-bold text-slate-800">{m.date}</div>
-                            <div className="text-slate-400 text-[10px]">{m.time} WIB • {m.reference}</div>
+                            <div className="text-slate-400 text-[10px]">{m.time} WIB &bull; {m.reference}</div>
                           </td>
                           <td className="py-3 px-3">
                             {m.type === 'IN' && (
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                + MASUK
+                                + MASUK (01 NOV)
                               </span>
                             )}
                             {m.type === 'OUT' && (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-800 border border-blue-200">
-                                - KELUAR
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                - KELUAR MASAK (02 NOV)
                               </span>
                             )}
                             {m.type === 'ADJUST' && (
@@ -2136,7 +2080,7 @@ export default function StockMonitoringPage() {
                                 m.type === 'IN'
                                   ? 'text-emerald-700'
                                   : m.type === 'OUT'
-                                  ? 'text-blue-700'
+                                  ? 'text-indigo-700'
                                   : 'text-amber-700'
                               }
                             >
@@ -2168,11 +2112,11 @@ export default function StockMonitoringPage() {
               <div className="flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-blue-600" />
                 <h3 className="text-base font-black text-slate-900">
-                  Kalkulator Simulasi Kebutuhan Bahan (BOM 1.553 Porsi)
+                  Kalkulator Kebutuhan Bahan Masak Dapur (BOM 1.553 Porsi)
                 </h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Tabel di bawah menghitung estimasi kebutuhan gramasi bersih bahan pokok harian untuk pagu 1.553 porsi makanan dibandingkan dengan stok aktual di gudang saat ini.
+                Kebutuhan bahan pangan untuk pengolahan menu sajian 1.553 Porsi MBG tanggal <strong>Senin, 02 November 2026</strong> telah terpenuhi 100% dari penerimaan logistik tgl 01 November 2026.
               </p>
             </div>
 
@@ -2183,7 +2127,7 @@ export default function StockMonitoringPage() {
                   <span className="text-xs font-black uppercase text-blue-800 bg-blue-50 px-2 py-0.5 rounded">
                     Protein Hewani (Dorry Fillet)
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">65 KG Masuk</span>
+                  <span className="text-[10px] font-mono text-slate-400">65 KG Keluar Masak</span>
                 </div>
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between">
@@ -2195,14 +2139,12 @@ export default function StockMonitoringPage() {
                     <strong className="font-mono">30 KG</strong>
                   </div>
                   <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
-                    <span>Total Masuk:</span>
-                    <span className="font-mono text-blue-700">65 KG</span>
+                    <span>Total Dimasak:</span>
+                    <span className="font-mono text-indigo-700">65 KG</span>
                   </div>
                   <div className="flex justify-between font-bold">
-                    <span>Stok Saat Ini:</span>
-                    <span className="font-mono text-emerald-700">
-                      {stockItems.find((i) => i.id === 'prh-01')?.currentStock || 0} KG
-                    </span>
+                    <span>Status Pengolahan:</span>
+                    <span className="font-mono text-emerald-700">Selesai 100% (02 Nov)</span>
                   </div>
                 </div>
               </div>
@@ -2213,7 +2155,7 @@ export default function StockMonitoringPage() {
                   <span className="text-xs font-black uppercase text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
                     Protein Nabati (Tempe)
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">80 PAPAN Masuk</span>
+                  <span className="text-[10px] font-mono text-slate-400">80 PAPAN Keluar Masak</span>
                 </div>
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between">
@@ -2225,14 +2167,12 @@ export default function StockMonitoringPage() {
                     <strong className="font-mono">1.600 Potong</strong>
                   </div>
                   <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
-                    <span>Target MBG:</span>
-                    <span className="font-mono text-blue-700">1.553 Porsi</span>
+                    <span>Target MBG Terpenuhi:</span>
+                    <span className="font-mono text-indigo-700">1.553 Porsi</span>
                   </div>
                   <div className="flex justify-between font-bold">
-                    <span>Stok Tersedia:</span>
-                    <span className="font-mono text-emerald-700">
-                      {stockItems.find((i) => i.id === 'prn-01')?.currentStock || 0} PAPAN
-                    </span>
+                    <span>Status Pengolahan:</span>
+                    <span className="font-mono text-emerald-700">Selesai 100% (02 Nov)</span>
                   </div>
                 </div>
               </div>
@@ -2243,24 +2183,24 @@ export default function StockMonitoringPage() {
                   <span className="text-xs font-black uppercase text-green-800 bg-green-50 px-2 py-0.5 rounded">
                     Sayur Mayur Segar
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">60 KG Masuk</span>
+                  <span className="text-[10px] font-mono text-slate-400">60 KG Keluar Masak</span>
                 </div>
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Buncis Segar:</span>
+                    <span className="text-slate-500">Buncis Dimasak:</span>
                     <strong className="font-mono">30 KG</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Labu Siam:</span>
+                    <span className="text-slate-500">Labu Siam Dimasak:</span>
                     <strong className="font-mono">30 KG</strong>
                   </div>
                   <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
-                    <span>Total Sayur Masuk:</span>
-                    <span className="font-mono text-blue-700">60 KG</span>
+                    <span>Total Sayur MBG:</span>
+                    <span className="font-mono text-indigo-700">60 KG</span>
                   </div>
                   <div className="flex justify-between font-bold">
-                    <span>Porsi Tercukupi:</span>
-                    <span className="font-mono text-emerald-700">1.553 Porsi (100%)</span>
+                    <span>Status Pengolahan:</span>
+                    <span className="font-mono text-emerald-700">Selesai 100% (02 Nov)</span>
                   </div>
                 </div>
               </div>
@@ -2269,7 +2209,7 @@ export default function StockMonitoringPage() {
         )}
       </main>
 
-      {/* ============ MODAL 0: TAMBAH MASTER BAHAN BAKU BARU (TANPA HARGA) ============ */}
+      {/* ============ MODAL 0: TAMBAH MASTER BAHAN BAKU BARU ============ */}
       {showAddItemModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-xs no-print">
           <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
@@ -2429,7 +2369,7 @@ export default function StockMonitoringPage() {
         </div>
       )}
 
-      {/* ============ MODAL 1: RESTOCK / PENERIMAAN BAHAN MASUK (01 NOV 2026) ============ */}
+      {/* ============ MODAL 1: RESTOCK / PENERIMAAN BAHAN MASUK ============ */}
       {showRestockModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-xs no-print">
           <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
@@ -2564,7 +2504,7 @@ export default function StockMonitoringPage() {
                   onChange={(e) => {
                     setFormUsageItemId(e.target.value);
                     const item = stockItems.find((i) => i.id === e.target.value);
-                    if (item && item.dailyUsageAvg > 0) setFormUsageQty(item.dailyUsageAvg);
+                    if (item && item.currentStock > 0) setFormUsageQty(item.currentStock);
                   }}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
                 >
@@ -2671,16 +2611,25 @@ export default function StockMonitoringPage() {
                 <strong className="text-slate-900">{selectedItem.storageLocation}</strong>
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase font-bold block">Jumlah Stok Fisik</span>
-                <strong className="text-emerald-700 text-base font-mono font-black">
-                  {selectedItem.currentStock} {selectedItem.uom}
+                <span className="text-[10px] text-slate-500 uppercase font-bold block">Masuk (01 Nov 2026)</span>
+                <strong className="text-emerald-700 text-sm font-mono font-black">
+                  {selectedItem.initialStock} {selectedItem.uom}
                 </strong>
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase font-bold block">Pemakaian Harian</span>
-                <strong className="text-slate-900 font-mono">
-                  {selectedItem.dailyUsageAvg} {selectedItem.uom} / hari
+                <span className="text-[10px] text-slate-500 uppercase font-bold block">Keluar Masak (02 Nov)</span>
+                <strong className="text-indigo-700 text-sm font-mono font-black">
+                  {selectedItem.usedStock} {selectedItem.uom}
                 </strong>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 col-span-2">
+                <span className="text-[10px] text-slate-500 uppercase font-bold block">Sisa Stok Fisik Gudang</span>
+                <strong className="text-slate-900 text-base font-mono font-black">
+                  {selectedItem.currentStock} {selectedItem.uom}
+                </strong>
+                <span className="text-[10px] text-emerald-600 font-bold block mt-0.5">
+                  ✓ Selesai dimasak untuk 1.553 Porsi MBG tgl 02 Nov 2026
+                </span>
               </div>
             </div>
 
@@ -2688,6 +2637,10 @@ export default function StockMonitoringPage() {
               <div className="flex justify-between">
                 <span className="text-slate-500">Tanggal Masuk:</span>
                 <span className="font-mono font-bold text-slate-800">{selectedItem.lastRestockDate}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Tanggal Selesai Masak:</span>
+                <span className="font-mono font-bold text-indigo-700">{selectedItem.lastUsageDate}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Suplier / Petani:</span>
@@ -2717,7 +2670,7 @@ export default function StockMonitoringPage() {
                   }}
                   className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs cursor-pointer hover:bg-emerald-700"
                 >
-                  + Restock Item Ini
+                  + Restock
                 </button>
                 <button
                   type="button"
@@ -2732,21 +2685,59 @@ export default function StockMonitoringPage() {
         </div>
       )}
 
-      {/* ============ MODAL 4: CETAK BERITA ACARA STOK OPNAME A4 (TANPA HARGA) ============ */}
+      {/* ============ MODAL 4: CETAK BERITA ACARA STOK A4 (PILIHAN: MASUK 01 NOV / KELUAR 02 NOV / REKAP MUTASI) ============ */}
       {showPrintModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs print:static print:p-0 print:bg-white print:z-auto print:block">
           <div className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 flex flex-col max-h-[95vh] overflow-hidden print:max-h-none print:shadow-none print:border-none print:overflow-visible print:w-full print:max-w-none print:rounded-none">
             {/* Modal Header Toolbar */}
-            <div className="flex items-center justify-between border-b border-slate-200 p-3 sm:p-4 bg-slate-50 no-print shrink-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 p-3 sm:p-4 bg-slate-50 no-print gap-3 shrink-0">
               <div className="flex items-center gap-2">
                 <Printer className="w-5 h-5 text-blue-600 shrink-0" />
                 <div>
                   <h3 className="text-xs sm:text-sm font-black text-slate-900 leading-tight">
-                    Pratinjau Berita Acara Bahan Baku (A4)
+                    Pratinjau Dokumen Berita Acara Logistik (A4)
                   </h3>
-                  <p className="text-[10px] text-slate-500">Format Resmi Standar Badan Gizi Nasional (BGN)</p>
+                  <p className="text-[10px] text-slate-500">Standar Resmi Badan Gizi Nasional (BGN)</p>
                 </div>
               </div>
+
+              {/* Selector Jenis Dokumen */}
+              <div className="flex items-center gap-1.5 bg-slate-200/80 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setPrintReportType('KELUAR')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    printReportType === 'KELUAR'
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'text-slate-700 hover:text-slate-900'
+                  }`}
+                >
+                  Masak (02 Nov)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrintReportType('MASUK')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    printReportType === 'MASUK'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-700 hover:text-slate-900'
+                  }`}
+                >
+                  Masuk (01 Nov)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrintReportType('MUTASI')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    printReportType === 'MUTASI'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-700 hover:text-slate-900'
+                  }`}
+                >
+                  Rekap Mutasi
+                </button>
+              </div>
+
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -2754,7 +2745,7 @@ export default function StockMonitoringPage() {
                   className="px-3.5 sm:px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
                 >
                   <Printer className="w-4 h-4 shrink-0" />
-                  <span>Cetak / Download PDF</span>
+                  <span>Cetak / PDF</span>
                 </button>
                 <button
                   type="button"
@@ -2793,31 +2784,43 @@ export default function StockMonitoringPage() {
                         Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang, Jawa Tengah
                       </p>
                       <p className="text-[10px] font-mono text-slate-500">
-                        Pagu Layanan: 1.553 Porsi / Hari • 12 Sekolah &amp; 1 Posyandu • Kode Satpel: SPPG-SMG-003
+                        Pagu Layanan: 1.553 Porsi / Hari &bull; 12 Sekolah &amp; 1 Posyandu &bull; Kode Satpel: SPPG-SMG-003
                       </p>
                     </div>
                   </div>
                   <div className="border-t border-slate-950 mt-3 pt-0.5" />
                 </div>
 
-                {/* Judul Dokumen */}
+                {/* Judul Dokumen Sesuai Pilihan */}
                 <div className="text-center space-y-1">
                   <h3 className="text-sm sm:text-base font-black uppercase underline tracking-wider text-slate-950">
-                    BERITA ACARA REKAPITULASI FISIK BAHAN BAKU MASUK
+                    {printReportType === 'MASUK' && 'BERITA ACARA REKAPITULASI FISIK BAHAN BAKU MASUK'}
+                    {printReportType === 'KELUAR' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (BOM)'}
+                    {printReportType === 'MUTASI' && 'BUKU REGISTER REKAPITULASI MUTASI BAHAN BAKU (01 - 02 NOV 2026)'}
                   </h3>
                   <p className="text-[10px] font-mono text-slate-600">
-                    Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1101
+                    {printReportType === 'MASUK' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1101'}
+                    {printReportType === 'KELUAR' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1102'}
+                    {printReportType === 'MUTASI' && 'Nomor: REG-MUTASI/SPPG-SMG3/BGN/2026/11'}
                   </p>
                   <p className="text-[11px] text-slate-700 font-bold">
-                    Tanggal Penerimaan: Minggu, 01 November 2026
+                    {printReportType === 'MASUK' && 'Tanggal Penerimaan: Minggu, 01 November 2026'}
+                    {printReportType === 'KELUAR' && 'Tanggal Pengolahan Masak: Senin, 02 November 2026'}
+                    {printReportType === 'MUTASI' && 'Periode Mutasi: 01 s/d 02 November 2026'}
                   </p>
                 </div>
 
+                {/* Narasi Resmi Sesuai Pilihan */}
                 <p className="text-[11px] leading-relaxed text-justify text-slate-800">
-                  Pada hari ini, Minggu tanggal 01 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku makanan bergizi gratis di fasilitas Central Kitchen SPPG Wonodri 3 dengan rincian sebagai berikut:
+                  {printReportType === 'MASUK' &&
+                    'Pada hari ini, Minggu tanggal 01 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku makanan bergizi gratis di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra suplier/petani dengan rincian sebagai berikut:'}
+                  {printReportType === 'KELUAR' &&
+                    'Pada hari ini, Senin tanggal 02 November 2026 pukul 05:00 WIB, telah dikeluarkan dan dialokasikan seluruh stok bahan baku dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Nasi Putih, Ikan Dorry Fillet Crispy Saus Mayo Madu, Tempe, Sayur Buncis & Labu Siam, Buah Anggur Merah) dengan rincian sebagai berikut:'}
+                  {printReportType === 'MUTASI' &&
+                    'Rekapitulasi mutasi siklus bahan baku makanan Program MBG 1.553 Porsi SPPG Wonodri 3 periode 01 s/d 02 November 2026, mencakup kuantitas penerimaan barang masuk dan pengeluaran masak dapur secara penuh dengan saldo akhir stok fisik sebagai berikut:'}
                 </p>
 
-                {/* Tabel Rekapitulasi Bahan Masuk (Overflow Guard) */}
+                {/* Tabel Dokumen A4 */}
                 <div className="overflow-x-auto rounded border border-slate-400">
                   <table className="w-full text-left text-[10px] border-collapse min-w-[500px]">
                     <thead className="bg-slate-100 font-bold">
@@ -2825,10 +2828,20 @@ export default function StockMonitoringPage() {
                         <th className="p-1.5 border-r border-slate-400 text-center w-8">NO</th>
                         <th className="p-1.5 border-r border-slate-400">GOLONGAN</th>
                         <th className="p-1.5 border-r border-slate-400">NAMA BAHAN MAKANAN</th>
-                        <th className="p-1.5 border-r border-slate-400 text-right">JUMLAH</th>
+                        {printReportType === 'MUTASI' ? (
+                          <>
+                            <th className="p-1.5 border-r border-slate-400 text-right">MASUK (01 NOV)</th>
+                            <th className="p-1.5 border-r border-slate-400 text-right">KELUAR (02 NOV)</th>
+                            <th className="p-1.5 border-r border-slate-400 text-right">SISA FISIK</th>
+                          </>
+                        ) : (
+                          <th className="p-1.5 border-r border-slate-400 text-right">
+                            {printReportType === 'MASUK' ? 'JUMLAH MASUK' : 'JUMLAH MASAK'}
+                          </th>
+                        )}
                         <th className="p-1.5 border-r border-slate-400 text-center">SATUAN</th>
                         <th className="p-1.5 border-r border-slate-400">LOKASI SIMPAN</th>
-                        <th className="p-1.5 text-center">KONDISI</th>
+                        <th className="p-1.5 text-center">KETERANGAN</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-300">
@@ -2837,15 +2850,31 @@ export default function StockMonitoringPage() {
                           <td className="p-1.5 border-r border-slate-300 text-center font-mono">{idx + 1}</td>
                           <td className="p-1.5 border-r border-slate-300 font-semibold">{item.category}</td>
                           <td className="p-1.5 border-r border-slate-300 font-bold">{item.name}</td>
-                          <td className="p-1.5 border-r border-slate-300 text-right font-mono font-bold text-[11px]">
-                            {item.currentStock}
-                          </td>
+                          {printReportType === 'MUTASI' ? (
+                            <>
+                              <td className="p-1.5 border-r border-slate-300 text-right font-mono font-bold text-emerald-800">
+                                {item.initialStock}
+                              </td>
+                              <td className="p-1.5 border-r border-slate-300 text-right font-mono font-bold text-indigo-800">
+                                {item.usedStock}
+                              </td>
+                              <td className="p-1.5 border-r border-slate-300 text-right font-mono font-bold text-slate-900">
+                                {item.currentStock}
+                              </td>
+                            </>
+                          ) : (
+                            <td className="p-1.5 border-r border-slate-300 text-right font-mono font-bold text-[11px]">
+                              {printReportType === 'MASUK' ? item.initialStock : item.usedStock}
+                            </td>
+                          )}
                           <td className="p-1.5 border-r border-slate-300 text-center font-mono font-bold">
                             {item.uom}
                           </td>
                           <td className="p-1.5 border-r border-slate-300">{item.storageLocation}</td>
                           <td className="p-1.5 text-center font-medium text-emerald-800">
-                            Baik &amp; Segar
+                            {printReportType === 'MASUK' && 'Diterima Baik'}
+                            {printReportType === 'KELUAR' && '1.553 Porsi MBG'}
+                            {printReportType === 'MUTASI' && 'Selesai Dimasak'}
                           </td>
                         </tr>
                       ))}
@@ -2853,13 +2882,30 @@ export default function StockMonitoringPage() {
                     <tfoot className="bg-slate-100 font-bold border-t-2 border-slate-400">
                       <tr>
                         <td colSpan={3} className="p-2 border-r border-slate-400 text-right uppercase">
-                          Total Muatan Timbangan:
+                          {printReportType === 'MUTASI' ? 'Total Mutasi (Kg):' : 'Total Muatan Timbangan:'}
                         </td>
-                        <td className="p-2 border-r border-slate-400 text-right font-mono text-xs text-blue-900">
-                          {summary.totalKg} KG
-                        </td>
-                        <td colSpan={3} className="p-2 text-left font-mono text-[10px] text-slate-700">
-                          + {summary.totalQtyNonKg} Unit Satuan Lain (L/Pouch/Btl/Papan/Krat)
+                        {printReportType === 'MUTASI' ? (
+                          <>
+                            <td className="p-2 border-r border-slate-400 text-right font-mono text-xs text-emerald-900">
+                              {summary.totalKgMasuk} KG
+                            </td>
+                            <td className="p-2 border-r border-slate-400 text-right font-mono text-xs text-indigo-900">
+                              {summary.totalKgKeluar} KG
+                            </td>
+                            <td className="p-2 border-r border-slate-400 text-right font-mono text-xs text-slate-900">
+                              {summary.currentKgSisa} KG
+                            </td>
+                          </>
+                        ) : (
+                          <td className="p-2 border-r border-slate-400 text-right font-mono text-xs text-blue-900">
+                            {printReportType === 'MASUK' ? summary.totalKgMasuk : summary.totalKgKeluar} KG
+                          </td>
+                        )}
+                        <td
+                          colSpan={printReportType === 'MUTASI' ? 2 : 3}
+                          className="p-2 text-left font-mono text-[10px] text-slate-700"
+                        >
+                          + {summary.totalQtyNonKgMasuk} Unit Satuan Lain (L/Pouch/Btl/Papan/Krat)
                         </td>
                       </tr>
                     </tfoot>
@@ -2931,7 +2977,7 @@ export default function StockMonitoringPage() {
             Satuan Pelayanan Pangan Bergizi (SPPG) Wonodri 3 — Kota Semarang
           </p>
           <p className="text-[11px]">
-            Badan Gizi Nasional (BGN) Republik Indonesia • Logistik Bahan Baku Masuk 01 Nov 2026
+            Badan Gizi Nasional (BGN) Republik Indonesia &bull; Logistik Masuk 01 Nov &bull; Masak 02 Nov 2026 (1.553 Porsi)
           </p>
         </div>
       </footer>
