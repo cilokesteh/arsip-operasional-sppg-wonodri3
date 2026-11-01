@@ -2821,30 +2821,54 @@ export default function StockMonitoringPage() {
                   </table>
                 </div>
 
-                {/* Formal 3-Signatory Block: Responsive grid (Stacked on mobile screen, 3 cols in print & desktop) */}
+                {/* Formal 4-Signatory Block: Responsive grid (2x2 on mobile, 4 cols in print & desktop) */}
                 <div className="pt-6 border-t border-slate-200">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-6 sm:gap-4 text-center text-xs">
-                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-3 sm:p-0 rounded-xl">
-                      <p className="font-medium text-slate-700">Petugas Logistik / Timbangan,</p>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 sm:gap-3 text-center text-xs">
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                      <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
+                        Petugas Logistik / Timbangan,
+                      </p>
                       <div>
-                        <p className="font-bold underline uppercase text-slate-950">Nur Khafidin</p>
-                        <p className="text-[10px] text-slate-500">Staf Logistik SPPG</p>
+                        <p className="font-bold underline uppercase text-slate-950 text-[11px] sm:text-xs">
+                          Nur Khafidin
+                        </p>
+                        <p className="text-[9px] sm:text-[10px] text-slate-500">Staf Logistik SPPG</p>
                       </div>
                     </div>
 
-                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-3 sm:p-0 rounded-xl">
-                      <p className="font-medium text-slate-700">Ahli Gizi Penanggung Jawab,</p>
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                      <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
+                        Ahli Gizi Penanggung Jawab,
+                      </p>
                       <div>
-                        <p className="font-bold underline uppercase text-slate-950">Sintia Mariam, A.Md.Gz</p>
-                        <p className="text-[10px] text-slate-500">Ahli Gizi SPPG Wonodri 3</p>
+                        <p className="font-bold underline uppercase text-slate-950 text-[11px] sm:text-xs">
+                          Sintia Mariam, A.Md.Gz
+                        </p>
+                        <p className="text-[9px] sm:text-[10px] text-slate-500">Ahli Gizi SPPG</p>
                       </div>
                     </div>
 
-                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-3 sm:p-0 rounded-xl">
-                      <p className="font-medium text-slate-700">Mengetahui / Mengesahkan,</p>
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                      <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
+                        Petugas Akuntansi / Keuangan,
+                      </p>
                       <div>
-                        <p className="font-bold underline uppercase text-slate-950">Dicky Yusuf Mulyadi, S.M.</p>
-                        <p className="text-[10px] text-slate-500">Kepala SPPG Wonodri 3</p>
+                        <p className="font-bold underline uppercase text-slate-950 text-[11px] sm:text-xs">
+                          Salsabiila Zainima, S.Ak
+                        </p>
+                        <p className="text-[9px] sm:text-[10px] text-slate-500">Akuntan SPPG</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                      <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
+                        Mengetahui / Mengesahkan,
+                      </p>
+                      <div>
+                        <p className="font-bold underline uppercase text-slate-950 text-[11px] sm:text-xs">
+                          Dicky Yusuf Mulyadi, S.M.
+                        </p>
+                        <p className="text-[9px] sm:text-[10px] text-slate-500">Kepala SPPG Wonodri 3</p>
                       </div>
                     </div>
                   </div>
