@@ -43,15 +43,17 @@ export interface StockSummary {
   totalItems: number;
   totalKg: number;
   totalQtyNonKg: number;
+  gudangBasahCount: number;
+  gudangKeringCount: number;
   safeCount: number;
   warningCount: number;
   criticalCount: number;
   categoryCounts: Record<StockCategory, number>;
 }
 
-export const ARSIP_STOCK_INVENTORY_KEY = 'sppg_stock_inventory_v4';
-export const ARSIP_STOCK_MOVEMENTS_KEY = 'sppg_stock_movements_v4';
-export const ARSIP_STOCK_OPNAME_DRAFT_KEY = 'sppg_stock_opname_draft_v4';
+export const ARSIP_STOCK_INVENTORY_KEY = 'sppg_stock_inventory_v5';
+export const ARSIP_STOCK_MOVEMENTS_KEY = 'sppg_stock_movements_v5';
+export const ARSIP_STOCK_OPNAME_DRAFT_KEY = 'sppg_stock_opname_draft_v5';
 
 // 16 Master Bahan Baku Masuk Resmi Tanggal 01 November 2026
 export const DEFAULT_STOCK_ITEMS_16: StockItem[] = [
@@ -176,7 +178,7 @@ export const DEFAULT_STOCK_ITEMS_16: StockItem[] = [
     name: 'LADA BUBUK',
     category: 'Rempah',
     uom: 'KG',
-    storageLocation: 'Area Rempah',
+    storageLocation: 'Gudang Kering',
     currentStock: 0.1,
     minStockAlert: 0.05,
     dailyUsageAvg: 0.05,
@@ -190,7 +192,7 @@ export const DEFAULT_STOCK_ITEMS_16: StockItem[] = [
     name: 'BAWANG PUTIH',
     category: 'Rempah',
     uom: 'KG',
-    storageLocation: 'Area Rempah',
+    storageLocation: 'Gudang Kering',
     currentStock: 2,
     minStockAlert: 1,
     dailyUsageAvg: 1,
@@ -199,14 +201,14 @@ export const DEFAULT_STOCK_ITEMS_16: StockItem[] = [
     notes: 'Penerimaan masuk 01 Nov 2026',
   },
 
-  // 3. Protein Hewani
+  // 3. Protein Hewani (Gudang Basah)
   {
     id: 'prh-01',
     sku: 'BGN-PRH-001',
     name: 'DORRY FILLET GLASSING 30%',
     category: 'Protein Hewani',
     uom: 'KG',
-    storageLocation: 'Freezer Daging/Ikan',
+    storageLocation: 'Gudang Basah',
     currentStock: 65,
     minStockAlert: 20,
     dailyUsageAvg: 45,
@@ -220,7 +222,7 @@ export const DEFAULT_STOCK_ITEMS_16: StockItem[] = [
     name: 'TELUR AYAM',
     category: 'Protein Hewani',
     uom: 'KG',
-    storageLocation: 'Chiller Telur',
+    storageLocation: 'Gudang Basah',
     currentStock: 3,
     minStockAlert: 1,
     dailyUsageAvg: 1.5,
@@ -229,14 +231,14 @@ export const DEFAULT_STOCK_ITEMS_16: StockItem[] = [
     notes: 'Penerimaan masuk 01 Nov 2026',
   },
 
-  // 4. Protein Nabati
+  // 4. Protein Nabati (Gudang Kering)
   {
     id: 'prn-01',
     sku: 'BGN-PRN-001',
     name: 'TEMPE',
     category: 'Protein Nabati',
     uom: 'PAPAN',
-    storageLocation: 'Chiller Nabati',
+    storageLocation: 'Gudang Kering',
     currentStock: 80,
     minStockAlert: 20,
     dailyUsageAvg: 40,
@@ -245,14 +247,14 @@ export const DEFAULT_STOCK_ITEMS_16: StockItem[] = [
     notes: 'Penerimaan masuk 01 Nov 2026',
   },
 
-  // 5. Sayur
+  // 5. Sayur (Gudang Basah)
   {
     id: 'syr-01',
     sku: 'BGN-SYR-001',
     name: 'BUNCIS',
     category: 'Sayur',
     uom: 'KG',
-    storageLocation: 'Chiller Sayur',
+    storageLocation: 'Gudang Basah',
     currentStock: 30,
     minStockAlert: 10,
     dailyUsageAvg: 15,
@@ -266,7 +268,7 @@ export const DEFAULT_STOCK_ITEMS_16: StockItem[] = [
     name: 'LABU SIAM',
     category: 'Sayur',
     uom: 'KG',
-    storageLocation: 'Chiller Sayur',
+    storageLocation: 'Gudang Basah',
     currentStock: 30,
     minStockAlert: 10,
     dailyUsageAvg: 15,
@@ -275,14 +277,14 @@ export const DEFAULT_STOCK_ITEMS_16: StockItem[] = [
     notes: 'Penerimaan masuk 01 Nov 2026',
   },
 
-  // 6. Buah
+  // 6. Buah (Gudang Basah)
   {
     id: 'buh-01',
     sku: 'BGN-BUH-001',
     name: 'ANGGUR MERAH',
     category: 'Buah',
     uom: 'KRAT',
-    storageLocation: 'Ruang Buah',
+    storageLocation: 'Gudang Basah',
     currentStock: 11,
     minStockAlert: 3,
     dailyUsageAvg: 5,
@@ -385,6 +387,8 @@ export function saveMovementsToStorage(movements: StockMovement[]): void {
 export function calculateStockSummary(items: StockItem[]): StockSummary {
   let totalKg = 0;
   let totalQtyNonKg = 0;
+  let gudangBasahCount = 0;
+  let gudangKeringCount = 0;
   let safeCount = 0;
   let warningCount = 0;
   let criticalCount = 0;
@@ -405,6 +409,12 @@ export function calculateStockSummary(items: StockItem[]): StockSummary {
       totalQtyNonKg += item.currentStock;
     }
 
+    if (item.storageLocation === 'Gudang Basah') {
+      gudangBasahCount++;
+    } else {
+      gudangKeringCount++;
+    }
+
     categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
 
     const status = calculateStockStatus(item);
@@ -417,6 +427,8 @@ export function calculateStockSummary(items: StockItem[]): StockSummary {
     totalItems: items.length,
     totalKg: Number(totalKg.toFixed(2)),
     totalQtyNonKg: Number(totalQtyNonKg.toFixed(2)),
+    gudangBasahCount,
+    gudangKeringCount,
     safeCount,
     warningCount,
     criticalCount,

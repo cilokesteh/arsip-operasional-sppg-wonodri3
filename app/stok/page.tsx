@@ -69,6 +69,7 @@ export default function StockMonitoringPage() {
   // Filters & Search for Inventory Tab
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [selectedLocation, setSelectedLocation] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [sortBy, setSortBy] = useState<'name' | 'daysLeft' | 'currentStock'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -148,6 +149,10 @@ export default function StockMonitoringPage() {
           return false;
         }
 
+        if (selectedLocation !== 'ALL' && item.storageLocation !== selectedLocation) {
+          return false;
+        }
+
         const status = calculateStockStatus(item);
         if (selectedStatus !== 'ALL') {
           if (selectedStatus === 'critical' && status !== 'critical') return false;
@@ -188,7 +193,7 @@ export default function StockMonitoringPage() {
 
         return sortDirection === 'asc' ? (valA as number) - (valB as number) : (valB as number) - (valA as number);
       });
-  }, [stockItems, selectedCategory, selectedStatus, searchQuery, sortBy, sortDirection]);
+  }, [stockItems, selectedCategory, selectedLocation, selectedStatus, searchQuery, sortBy, sortDirection]);
 
   // Filtered Movements for Log Tab
   const filteredMovements = useMemo(() => {
@@ -1019,17 +1024,19 @@ export default function StockMonitoringPage() {
             </div>
           </div>
 
-          {/* Card 3: Satuan Non-Kg */}
+          {/* Card 3: Zonasi Penyimpanan (Gudang Basah & Kering) */}
           <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Satuan Lain (L/Krat/Papan)</span>
-              <div className="text-xl sm:text-2xl font-black text-blue-900">
-                {summary.totalQtyNonKg} Unit
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Zonasi Gudang</span>
+              <div className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-1.5">
+                <span className="text-cyan-700" title="Gudang Basah: Hewani, Sayur, Buah">{summary.gudangBasahCount} Basah</span>
+                <span className="text-slate-300 font-normal">•</span>
+                <span className="text-amber-700" title="Gudang Kering: Sisanya">{summary.gudangKeringCount} Kering</span>
               </div>
-              <span className="text-[10px] text-blue-600 font-medium">Minyak, Tempe, Pouch, Krat</span>
+              <span className="text-[10px] text-slate-500 font-medium">Basah: Hewani/Sayur/Buah • Kering: Sisanya</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center shrink-0">
-              <Warehouse className="w-5 h-5 text-purple-600" />
+            <div className="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 flex items-center justify-center shrink-0">
+              <Warehouse className="w-5 h-5 text-cyan-700" />
             </div>
           </div>
 
@@ -1161,8 +1168,18 @@ export default function StockMonitoringPage() {
                   )}
                 </div>
 
-                {/* Status & Sort Controls */}
+                {/* Status, Location & Sort Controls */}
                 <div className="flex items-center gap-2 flex-wrap">
+                  <select
+                    value={selectedLocation}
+                    onChange={(e) => setSelectedLocation(e.target.value)}
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer"
+                  >
+                    <option value="ALL">Semua Lokasi</option>
+                    <option value="Gudang Basah">Gudang Basah ({summary.gudangBasahCount})</option>
+                    <option value="Gudang Kering">Gudang Kering ({summary.gudangKeringCount})</option>
+                  </select>
+
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
@@ -1298,6 +1315,15 @@ export default function StockMonitoringPage() {
                             <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
                               {getCategoryIcon(item.category)}
                               <span>{item.category}</span>
+                            </span>
+                            <span
+                              className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                                item.storageLocation === 'Gudang Basah'
+                                  ? 'bg-cyan-50 text-cyan-800 border-cyan-200'
+                                  : 'bg-amber-50 text-amber-800 border-amber-200'
+                              }`}
+                            >
+                              {item.storageLocation}
                             </span>
                           </div>
                         </div>
@@ -1445,7 +1471,17 @@ export default function StockMonitoringPage() {
                                 {getCategoryIcon(item.category)}
                                 <span>{item.category}</span>
                               </div>
-                              <div className="text-[10px] text-slate-500 font-medium">{item.storageLocation}</div>
+                              <div className="mt-1">
+                                <span
+                                  className={`inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                                    item.storageLocation === 'Gudang Basah'
+                                      ? 'bg-cyan-50 text-cyan-800 border-cyan-200'
+                                      : 'bg-amber-50 text-amber-800 border-amber-200'
+                                  }`}
+                                >
+                                  {item.storageLocation}
+                                </span>
+                              </div>
                             </td>
 
                             {/* Jumlah Stok (Besar & Jelas) */}
@@ -2268,15 +2304,23 @@ export default function StockMonitoringPage() {
                   <label className="font-bold text-slate-700 block mb-1">Golongan / Kategori</label>
                   <select
                     value={formAddCategory}
-                    onChange={(e) => setFormAddCategory(e.target.value as StockCategory)}
+                    onChange={(e) => {
+                      const cat = e.target.value as StockCategory;
+                      setFormAddCategory(cat);
+                      if (cat === 'Protein Hewani' || cat === 'Sayur' || cat === 'Buah') {
+                        setFormAddLocation('Gudang Basah');
+                      } else {
+                        setFormAddLocation('Gudang Kering');
+                      }
+                    }}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
                   >
-                    <option value="Bahan Kering">Bahan Kering</option>
-                    <option value="Rempah">Rempah</option>
-                    <option value="Protein Hewani">Protein Hewani</option>
-                    <option value="Protein Nabati">Protein Nabati</option>
-                    <option value="Sayur">Sayur</option>
-                    <option value="Buah">Buah</option>
+                    <option value="Bahan Kering">Bahan Kering (Gudang Kering)</option>
+                    <option value="Rempah">Rempah (Gudang Kering)</option>
+                    <option value="Protein Hewani">Protein Hewani (Gudang Basah)</option>
+                    <option value="Protein Nabati">Protein Nabati (Gudang Kering)</option>
+                    <option value="Sayur">Sayur (Gudang Basah)</option>
+                    <option value="Buah">Buah (Gudang Basah)</option>
                   </select>
                 </div>
               </div>
@@ -2307,13 +2351,14 @@ export default function StockMonitoringPage() {
                 </div>
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Lokasi Penyimpanan</label>
-                  <input
-                    type="text"
+                  <select
                     value={formAddLocation}
                     onChange={(e) => setFormAddLocation(e.target.value)}
-                    placeholder="Gudang Kering / Chiller / Freezer"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium text-slate-900 focus:outline-none focus:border-blue-600"
-                  />
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
+                  >
+                    <option value="Gudang Basah">Gudang Basah (Protein Hewani, Buah &amp; Sayur)</option>
+                    <option value="Gudang Kering">Gudang Kering (Bahan Kering, Rempah, Nabati / Sisanya)</option>
+                  </select>
                 </div>
               </div>
 
