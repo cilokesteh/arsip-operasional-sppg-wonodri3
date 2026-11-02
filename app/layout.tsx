@@ -37,7 +37,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" className={`${lexend.variable} ${sourceSans.variable}`}>
-      <body className="min-h-screen bg-slate-50 text-[#0d1b2e] antialiased selection:bg-[#1759ab] selection:text-white font-sans">
+      <body className="min-h-screen bg-paper text-ink antialiased selection:bg-gold selection:text-white font-sans">
         {children}
       </body>
     </html>

@@ -30,11 +30,11 @@ import {
   UserCheck,
   Archive,
   Table as TableIcon,
-  Menu,
   ArrowUpRight,
   ExternalLink,
   Boxes,
 } from 'lucide-react';
+import { TopNav, BottomTabs } from '@/components/SiteNav';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
 import staticMenusData from '@/lib/staticMenus.json';
 import {
@@ -998,69 +998,23 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   const printableSummary = useMemo(() => calculatePeriodSummary(printableEntries), [printableEntries]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans antialiased w-full overflow-x-hidden">
+    <div className="min-h-screen bg-paper text-ink flex flex-col font-sans antialiased w-full overflow-x-hidden has-bottom-tabs">
       {/* 1. MASTER UNIFIED NAVBAR */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 no-print shadow-2xs">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 h-14 sm:h-15 flex items-center justify-between gap-2 sm:gap-3">
-          {/* Left: Hamburger + Logo & Title */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0">
-            <button
-              onClick={() => setIsDrawerOpen(true)}
-              className="p-1.5 sm:p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer border border-slate-200 flex items-center justify-center shrink-0"
-              aria-label="Buka Menu Kontrol Panel"
-              title="Menu Kontrol Panel Portal"
-            >
-              <Menu className="w-4 h-4 text-slate-700" />
-            </button>
-
-            <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 p-0.5 flex items-center justify-center shrink-0">
-              <Image src="/logo.png" alt="Logo BGN" width={24} height={24} className="object-contain" priority />
-            </div>
-
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-xs sm:text-sm text-slate-900 tracking-tight truncate block">
-                  SPPG Wonodri 3
-                </span>
-                <span className="text-[9px] text-blue-700 font-bold bg-blue-50 px-1.5 py-0.2 rounded-full border border-blue-200 font-mono hidden md:inline-block">
-                  Portal Terpadu
-                </span>
-              </div>
-              <span className="text-[10px] text-slate-400 block truncate -mt-0.5">Central Kitchen Semarang Selatan</span>
-            </div>
-          </div>
-
-          {/* Center Links (Desktop) */}
-          <div className="hidden md:flex items-center gap-1.5 text-xs font-bold">
-            <Link
-              href="/"
-              className="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition-colors"
-            >
-              <Utensils className="w-3.5 h-3.5 text-slate-500" />
-              <span>Laporan MBG</span>
-            </Link>
-
-            <Link
-              href="/arsip"
-              className="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition-colors"
-            >
-              <Archive className="w-3.5 h-3.5 text-slate-500" />
-              <span>Katalog Arsip</span>
-            </Link>
-
-            <Link
-              href="/stok"
-              className="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition-colors"
-            >
-              <Boxes className="w-3.5 h-3.5 text-slate-500" />
-              <span>Stok Gudang</span>
-            </Link>
-
-            <span className="px-3.5 py-1.5 rounded-lg bg-blue-600 text-white shadow-xs flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5" />
-              <span>Presensi Relawan</span>
+      <header className="bg-white border-b border-line sticky top-0 z-40 no-print">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-2.5 min-w-0" aria-label="SPPG Wonodri 3, beranda">
+            <Image src="/logo.png" alt="" width={32} height={32} className="object-contain shrink-0" priority />
+            <span className="min-w-0">
+              <span className="block font-heading font-bold text-[15px] leading-tight truncate">
+                SPPG Wonodri 3
+              </span>
+              <span className="block text-xs text-slate-600 leading-tight truncate">
+                Dapur MBG, Semarang Selatan
+              </span>
             </span>
-          </div>
+          </Link>
+
+          <TopNav />
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
@@ -1068,7 +1022,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               <button
                 type="button"
                 onClick={handleLockSalary}
-                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
+                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
                 title="Kunci kembali tampilan upah"
               >
                 <Unlock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
@@ -1079,7 +1033,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               <button
                 type="button"
                 onClick={() => handleOpenPinModalSalary('unlock')}
-                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1 cursor-pointer transition-colors"
+                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1 cursor-pointer transition-colors"
                 title="Buka tampilan upah dengan PIN"
               >
                 <Lock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
@@ -1090,20 +1044,21 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
             <button
               onClick={handleExportCsv}
-              className="flex px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+              className="flex px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-line items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
               title="Unduh Rekap CSV (Sesuai Tab / Periode Aktif)"
             >
               <Download className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-              <span className="text-[11px] font-bold">Unduh CSV</span>
+              <span className="hidden sm:inline font-bold">Unduh CSV</span>
             </button>
 
             <button
               onClick={() => handleOpenPrintForDate(selectedDate)}
-              className="hidden sm:flex px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 items-center gap-1 cursor-pointer shadow-xs transition-colors"
-              title="Cetak Berita Acara & SPJ A4"
+              className="inline-flex items-center gap-1.5 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft shrink-0 cursor-pointer"
+              title="Cetak Berita Acara &amp; SPJ A4"
             >
-              <Printer className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden sm:inline">SPJ</span>
+              <Printer className="w-4 h-4 shrink-0" aria-hidden="true" />
+              <span className="hidden sm:inline">Cetak SPJ</span>
+              <span className="sr-only sm:hidden">Cetak SPJ</span>
             </button>
           </div>
         </div>
@@ -2901,9 +2856,14 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       )}
 
       {/* Footer */}
-      <footer className="py-4 text-center text-[11px] text-slate-400 border-t border-slate-200 bg-white no-print">
-        Portal Terpadu Operasional & SDM • SPPG Wonodri 3 Kota Semarang
+      <footer className="no-print border-t border-line bg-white mt-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 text-sm text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <span>Portal transparansi operasional SPPG Wonodri 3, Kota Semarang</span>
+          <span>Badan Gizi Nasional, Republik Indonesia</span>
+        </div>
       </footer>
+
+      <BottomTabs />
     </div>
   );
 }

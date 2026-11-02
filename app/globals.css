@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+/* Warna mengikuti logo BGN: biru tua, emas, hijau daun. */
+@theme {
+  --color-ink: #10223f;
+  --color-ink-soft: #1c3763;
+  --color-paper: #f5f7f4;
+  --color-line: #dde2dc;
+  --color-leaf: #2b7a4b;
+  --color-leaf-soft: #e4f1e8;
+  --color-gold: #b6821a;
+  --color-gold-soft: #f7ecd2;
+  --color-gold-ink: #7a5600;
+  --color-tray: #e3e8ea;
+}
+
 @layer base {
   :root {
     --font-heading: var(--font-lexend), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -7,9 +21,11 @@
   }
 
   body {
-    background-color: #f1f5f9;
-    color: #0f172a;
+    background-color: var(--color-paper);
+    color: var(--color-ink);
     font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -17,12 +33,50 @@
     font-family: var(--font-heading);
     letter-spacing: -0.02em;
   }
+
+  /* Fokus keyboard yang selalu terlihat */
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Cegah iOS memperbesar layar saat mengetik di kolom isian */
+  input, select, textarea {
+    font-size: max(16px, 1em);
+  }
+}
+
+/* Panel datar: garis tipis, tanpa bayangan */
+.panel {
+  background-color: #ffffff;
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
 }
 
 .app-card {
   background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
+}
+
+/* Ruang aman di bawah untuk tab navigasi mobile */
+.has-bottom-tabs {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+}
+@media (min-width: 768px) {
+  .has-bottom-tabs {
+    padding-bottom: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @layer utilities {

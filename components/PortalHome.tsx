@@ -15,7 +15,6 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  FileSpreadsheet,
   Search,
   Clock,
   PlusCircle,
@@ -41,8 +40,6 @@ import {
   Gauge,
   Package,
   Timer,
-  BadgeCheck,
-  Landmark,
   CalendarCheck,
   CircleCheck,
   Info,
@@ -52,23 +49,22 @@ import {
   ArrowRight,
   Sparkles,
   Flame,
-  Archive,
-  Boxes,
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';
 import { toIsoDateLocal } from '@/lib/attendance';
 import { fetchMenusFromCloud, saveSingleMenuToCloud } from '@/lib/cloudSync';
 import staticMenusData from '@/lib/staticMenus.json';
 import OfficialReport from '@/components/OfficialReport';
+import { TopNav, BottomTabs } from '@/components/SiteNav';
 
 type WorkspaceTab = 'overview' | 'menu' | 'akg' | 'dapur' | 'distribusi' | 'dokumen';
 
 const WORKSPACE_TABS: { id: WorkspaceTab; label: string; short: string; icon: React.ElementType }[] = [
   { id: 'overview', label: 'Ringkasan Eksekutif', short: 'Ringkasan', icon: LayoutDashboard },
   { id: 'menu', label: 'Menu & Sajian Harian', short: 'Menu', icon: Utensils },
-  { id: 'akg', label: 'Analisis Kandungan Gizi', short: 'AKG', icon: Activity },
+  { id: 'akg', label: 'Analisis Kandungan Gizi', short: 'Gizi', icon: Activity },
   { id: 'dapur', label: 'Dapur, HACCP & Distribusi', short: 'Dapur', icon: ChefHat },
-  { id: 'distribusi', label: 'Direktori Titik Layanan', short: 'Distribusi', icon: Truck },
+  { id: 'distribusi', label: 'Direktori Titik Layanan', short: 'Layanan', icon: Truck },
   { id: 'dokumen', label: 'Dokumen Resmi (Cetak)', short: 'Dokumen', icon: FileText },
 ];
 
@@ -306,23 +302,31 @@ export default function PortalHome() {
     .filter((b) => b.type === 'Posyandu')
     .reduce((a, b) => a + b.masterCount, 0);
 
-  const publishedCount = menuHistory.filter((m) => m.status === 'published').length;
-  const totalPhotoCoverage = menuHistory.reduce((a, m) => a + m.photos.length, 0);
 
-  /* menuHistory terurut DESC (terbaru di index 0).
-     "Sebelumnya" = tanggal lebih lama => index + 1
-     "Berikutnya"   = tanggal lebih baru => index - 1 */
-  const dateIndex = menuHistory.findIndex((m) => m.date === selectedDate);
+  /* menuHistory terurut DESC (terbaru di index 0). Tanggal dibandingkan sebagai
+     teks ISO (YYYY-MM-DD), jadi tombol tetap bekerja walau tanggal yang dipilih
+     belum punya laporan. */
+  const olderMenu = menuHistory.find((m) => m.date < selectedDate);
+  const newerMenu = [...menuHistory].reverse().find((m) => m.date > selectedDate);
   const goOlder = () => {
-    const next = menuHistory[dateIndex + 1];
-    if (next) setSelectedDate(next.date);
+    if (olderMenu) setSelectedDate(olderMenu.date);
   };
   const goNewer = () => {
-    const next = menuHistory[dateIndex - 1];
-    if (next) setSelectedDate(next.date);
+    if (newerMenu) setSelectedDate(newerMenu.date);
   };
-  const hasOlder = dateIndex >= 0 && dateIndex < menuHistory.length - 1;
-  const hasNewer = dateIndex > 0;
+  const hasOlder = Boolean(olderMenu);
+  const hasNewer = Boolean(newerMenu);
+  const latestDate = menuHistory[0]?.date;
+  const statusLabel =
+    currentMenu?.status === 'published' ? 'Diterbitkan' : currentMenu ? 'Draf' : 'Belum ada laporan';
+  const statusClass =
+    currentMenu?.status === 'published'
+      ? 'bg-leaf-soft text-leaf'
+      : currentMenu
+      ? 'bg-gold-soft text-gold-ink'
+      : 'bg-slate-200 text-slate-700';
+  const statusDot =
+    currentMenu?.status === 'published' ? 'bg-leaf' : currentMenu ? 'bg-gold' : 'bg-slate-500';
 
   /* ============ ESC untuk tutup modal (PIN & Kalender) ============ */
   useEffect(() => {
@@ -364,432 +368,238 @@ export default function PortalHome() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans antialiased w-full overflow-x-hidden">
-      {/* ============ INSTITUTIONAL MASTHEAD ============ */}
-      <div className="bg-[#0b1f3a] text-white no-print">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6">
-          <div className="flex items-center justify-between gap-3 py-1.5 text-[10px] sm:text-[11px] font-medium text-blue-200/80">
-            <span className="flex items-center gap-1.5">
-              <Landmark className="w-3 h-3" />
-              <span className="hidden sm:inline">Badan Gizi Nasional — Republik Indonesia</span>
-              <span className="sm:hidden">Badan Gizi Nasional</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+    <div className="min-h-screen bg-paper text-ink flex flex-col w-full overflow-x-hidden has-bottom-tabs">
+      {/* ============ HEADER ============ */}
+      <header className="bg-white border-b border-line sticky top-0 z-40 no-print">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-2.5 min-w-0" aria-label="SPPG Wonodri 3, beranda">
+            <Image src="/logo.png" alt="" width={32} height={32} className="object-contain shrink-0" priority />
+            <span className="min-w-0">
+              <span className="block font-heading font-bold text-[15px] leading-tight truncate">
+                SPPG Wonodri 3
               </span>
-              <span className="font-bold text-emerald-300">Sistem Aktif</span>
-              <span className="hidden md:inline text-blue-300/60">• Sinkronisasi BGN Terjaga</span>
+              <span className="block text-xs text-slate-600 leading-tight truncate">
+                Dapur MBG, Semarang Selatan
+              </span>
             </span>
-          </div>
-        </div>
-      </div>
+          </Link>
 
-      {/* ============ APP SHELL HEADER ============ */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 no-print shadow-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6">
-          <div className="h-16 flex items-center justify-between gap-3">
-            {/* Brand */}
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm p-1 flex items-center justify-center shrink-0">
-                <Image src="/logo.png" alt="Logo BGN" width={30} height={30} className="object-contain" priority />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-black text-sm sm:text-base text-slate-900 tracking-tight truncate leading-tight">
-                    SPPG Wonodri 3
-                  </span>
-                  <span className="hidden md:inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-blue-800 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
-                    <ShieldCheck className="w-2.5 h-2.5" /> Terverifikasi BGN
-                  </span>
-                </div>
-                <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium block truncate">
-                  Portal Sistem Informasi Operasional MBG • Semarang Selatan
-                </span>
-              </div>
-            </div>
+          <TopNav />
 
-            {/* Actions */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <button
-                onClick={goOlder}
-                disabled={!hasOlder}
-                className="hidden sm:flex p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
-                title="Laporan sebelumnya (tanggal lebih lama)"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              <button
-                onClick={openCalendar}
-                className="px-2.5 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-bold text-slate-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center gap-1.5 cursor-pointer transition-colors"
-                title="Pilih tanggal laporan"
-              >
-                <CalendarIcon className="w-3.5 h-3.5 text-blue-700 shrink-0" />
-                <span className="hidden sm:inline">{formatTanggalIndo(selectedDate)}</span>
-                <span className="sm:hidden">{selectedDate.slice(8)}/{selectedDate.slice(5, 7)}</span>
-              </button>
-
-              <button
-                onClick={goNewer}
-                disabled={!hasNewer}
-                className="hidden sm:flex p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
-                title="Laporan berikutnya (tanggal lebih baru)"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-
-              <button
-                onClick={handleOpenPrintModal}
-                title="Cetak Dokumen Resmi (Wajib PIN)"
-                className="px-2.5 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-bold text-white bg-[#0b1f3a] hover:bg-[#14315c] flex items-center gap-1.5 cursor-pointer shadow-sm transition-colors"
-              >
-                <Lock className="w-3 h-3 text-blue-300 shrink-0" />
-                <span className="hidden sm:inline">Cetak Resmi</span>
-                <Printer className="w-3.5 h-3.5 sm:hidden" />
-              </button>
-
-              <Link
-                href="/admin"
-                className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100"
-                title="Panel Operator"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Primary nav: modul utama */}
-        <div className="border-t border-slate-100 bg-slate-50/80">
-          <div className="max-w-7xl mx-auto px-3 sm:px-6">
-            <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1.5">
-              <Link
-                href="/"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 flex items-center gap-1.5 whitespace-nowrap shadow-sm"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                Portal
-              </Link>
-              <Link
-                href="/arsip"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
-              >
-                <Archive className="w-3.5 h-3.5" />
-                Arsip Operasional
-              </Link>
-              <Link
-                href="/absensi"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
-              >
-                <Users className="w-3.5 h-3.5" />
-                Absensi Relawan
-              </Link>
-              <Link
-                href="/stok"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
-              >
-                <Boxes className="w-3.5 h-3.5" />
-                Monitoring Stok
-              </Link>
-              <Link
-                href="/admin"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                Panel Operator
-              </Link>
-            </nav>
-          </div>
+          <button
+            type="button"
+            onClick={handleOpenPrintModal}
+            title="Cetak dokumen resmi (perlu PIN operator)"
+            className="inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft shrink-0 cursor-pointer"
+          >
+            <Printer className="w-4 h-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Cetak resmi</span>
+            <span className="sr-only sm:hidden">Cetak resmi</span>
+          </button>
         </div>
       </header>
 
       {/* ============ MAIN ============ */}
-      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-6 flex-1 space-y-4 sm:space-y-5">
-        {/* ---------- PAGE HEAD ---------- */}
-        <div className="no-print flex flex-col lg:flex-row lg:items-end justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-lg sm:text-2xl font-black tracking-tight text-slate-900">
-                Dashboard Operasional SPPG
-              </h1>
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
-                Real-time
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 font-medium">
-              Ringkasan -{formatTanggalIndo(selectedDate)} • Laporan #
-              {currentMenu?.menuNumber || '-'} • Status:{' '}
-              <span className={currentMenu?.status === 'published' ? 'text-emerald-700 font-bold' : 'text-amber-700 font-bold'}>
-                {currentMenu?.status === 'published' ? 'Diterbitkan' : currentMenu ? 'Draf' : 'Belum Ada'}
-              </span>
+      <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6">
+        {/* ---------- JUDUL + PEMILIH TANGGAL ---------- */}
+        <div className="no-print flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm text-slate-600">
+              Laporan harian{currentMenu ? ` nomor ${currentMenu.menuNumber || 1}` : ''}
             </p>
+            <h1 className="font-heading text-2xl sm:text-4xl font-bold leading-tight mt-0.5">
+              {formatTanggalIndo(selectedDate)}
+            </h1>
+            <span
+              className={`inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full text-xs font-semibold ${statusClass}`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${statusDot}`} aria-hidden="true" />
+              {statusLabel}
+            </span>
           </div>
-          <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium">
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white border border-slate-200">
-              <FileText className="w-3 h-3 text-slate-400" /> {publishedCount} laporan terbit
-            </span>
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white border border-slate-200">
-              <BadgeCheck className="w-3 h-3 text-slate-400" /> {totalPhotoCoverage} foto terverifikasi
-            </span>
+
+          <div className="flex items-stretch gap-2" role="group" aria-label="Pilih tanggal laporan">
+            <button
+              type="button"
+              onClick={goOlder}
+              disabled={!hasOlder}
+              aria-label="Laporan sebelumnya"
+              title="Laporan sebelumnya"
+              className="w-11 min-h-11 inline-flex items-center justify-center rounded-lg border border-line bg-white text-slate-700 hover:bg-ink/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={openCalendar}
+              className="flex-1 sm:flex-none px-4 min-h-11 inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-white text-sm font-semibold hover:bg-ink/5 cursor-pointer"
+            >
+              <CalendarIcon className="w-4 h-4 text-gold" aria-hidden="true" />
+              Pilih tanggal
+            </button>
+            <button
+              type="button"
+              onClick={goNewer}
+              disabled={!hasNewer}
+              aria-label="Laporan berikutnya"
+              title="Laporan berikutnya"
+              className="w-11 min-h-11 inline-flex items-center justify-center rounded-lg border border-line bg-white text-slate-700 hover:bg-ink/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <ChevronRight className="w-5 h-5" aria-hidden="true" />
+            </button>
           </div>
         </div>
 
-        {/* ---------- EXECUTIVE KPI STRIP ---------- */}
-        <section className="no-print grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        {/* ---------- RINGKASAN ANGKA ---------- */}
+        <dl className="no-print panel grid grid-cols-3 divide-x divide-line">
           {[
             {
-              label: 'Total Alokasi Porsi',
+              label: 'Porsi hari ini',
               value: totalMaster.toLocaleString('id-ID'),
-              unit: 'porsi/hari',
-              sub: `${activeBeneficiaries.length} titik layanan aktif`,
-              icon: Package,
-              accent: 'from-blue-600 to-blue-700',
-              iconBg: 'bg-blue-50 text-blue-700 border-blue-200',
+              unit: 'porsi',
+              detail: 'Seluruh titik layanan aktif',
             },
             {
-              label: 'Titik Distribusi',
+              label: 'Titik layanan',
               value: String(activeBeneficiaries.length),
-              unit: 'lembaga',
-              sub: `${totalPorsiSD} SD • ${totalPorsiTK} TK • ${totalPorsiPosyandu} Posyandu`,
-              icon: Truck,
-              accent: 'from-emerald-600 to-emerald-700',
-              iconBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+              unit: 'lokasi',
+              detail: `${totalPorsiSD} porsi SD, ${totalPorsiTK} TK, ${totalPorsiPosyandu} Posyandu`,
             },
             {
-              label: 'Dokumentasi Dapur',
+              label: 'Foto dapur',
               value: String(currentMenu?.photos.length || 0),
-              unit: 'tahap terfoto',
-              sub: currentMenu ? `Tercatat ${formatTanggalIndo(currentMenu.date)}` : 'Belum ada data',
-              icon: ChefHat,
-              accent: 'from-amber-500 to-amber-600',
-              iconBg: 'bg-amber-50 text-amber-700 border-amber-200',
+              unit: 'tahap',
+              detail: 'Dari persiapan sampai distribusi',
             },
-            {
-              label: 'Kelompok Porsi Aktif',
-              value: String(nutrition.length),
-              unit: 'kategori penerima',
-              sub: 'Besar • Kecil • Balita • Busui • Bumil',
-              icon: Users,
-              accent: 'from-violet-600 to-violet-700',
-              iconBg: 'bg-violet-50 text-violet-700 border-violet-200',
-            },
-          ].map((kpi) => (
-            <div
-              key={kpi.label}
-              className="bg-white rounded-xl border border-slate-200 shadow-sm p-3 sm:p-4 flex items-start gap-3"
-            >
-              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg border flex items-center justify-center shrink-0 ${kpi.iconBg}`}>
-                <kpi.icon className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-400 block leading-tight">
-                  {kpi.label}
-                </span>
-                <div className="flex items-baseline gap-1.5 mt-0.5">
-                  <span className="text-xl sm:text-2xl font-black text-slate-900 tabular-nums leading-none">
-                    {kpi.value}
-                  </span>
-                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-500">{kpi.unit}</span>
-                </div>
-                <span className="text-[9px] sm:text-[10px] text-slate-500 font-medium block mt-1 truncate">
-                  {kpi.sub}
-                </span>
-              </div>
+          ].map((stat) => (
+            <div key={stat.label} className="px-3 py-3 sm:px-5 sm:py-4 min-w-0">
+              <dt className="text-xs sm:text-sm text-slate-600">{stat.label}</dt>
+              <dd className="mt-0.5">
+                <span className="font-heading text-2xl sm:text-3xl font-bold tabular-nums">{stat.value}</span>
+                <span className="ml-1.5 text-xs sm:text-sm text-slate-600">{stat.unit}</span>
+                <span className="hidden sm:block text-xs text-slate-600 mt-1">{stat.detail}</span>
+              </dd>
             </div>
           ))}
-        </section>
+        </dl>
 
-        {/* ---------- WORKSPACE TAB NAV ---------- */}
-        <div className="no-print bg-white rounded-xl border border-slate-200 shadow-sm p-1.5 overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-1 min-w-max">
+        {/* ---------- TAB ---------- */}
+        <div className="no-print sticky top-14 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-paper/95 backdrop-blur border-b border-line">
+          <div role="tablist" aria-label="Bagian laporan" className="flex gap-1 overflow-x-auto no-scrollbar">
             {WORKSPACE_TABS.map((tab) => {
               const active = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  title={tab.label}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all whitespace-nowrap ${
+                  className={`shrink-0 px-4 min-h-11 text-sm border-b-2 -mb-px cursor-pointer transition-colors ${
                     active
-                      ? 'bg-[#0b1f3a] text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      ? 'border-gold text-ink font-semibold'
+                      : 'border-transparent text-slate-600 hover:text-ink font-medium'
                   }`}
                 >
-                  <tab.icon className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">{tab.label}</span>
-                  <span className="md:hidden">{tab.short}</span>
+                  {tab.short}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* ---------- WORKSPACE CONTENT ---------- */}
+        {/* ---------- ISI ---------- */}
         {!currentMenu ? (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 sm:p-16 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 text-slate-400 flex items-center justify-center mx-auto">
-              <Clock className="w-6 h-6" />
+          <div className="panel p-8 sm:p-12 text-center">
+            <Clock className="w-8 h-8 text-slate-400 mx-auto" aria-hidden="true" />
+            <h2 className="font-heading text-lg font-bold mt-3">
+              Belum ada laporan untuk {formatTanggalIndo(selectedDate)}
+            </h2>
+            <p className="text-sm text-slate-600 max-w-md mx-auto mt-2">
+              Laporan tampil di sini setelah operator menerbitkannya. Anda bisa melihat laporan terbaru
+              atau memilih tanggal lain.
+            </p>
+            <div className="mt-5 flex flex-col sm:flex-row gap-2 justify-center">
+              {latestDate && latestDate !== selectedDate && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(latestDate)}
+                  className="px-4 min-h-11 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft cursor-pointer"
+                >
+                  Lihat laporan terbaru ({formatTanggalIndo(latestDate)})
+                </button>
+              )}
+              <Link
+                href="/admin"
+                className="inline-flex items-center justify-center gap-2 px-4 min-h-11 rounded-lg text-sm font-semibold border border-line bg-white hover:bg-ink/5"
+              >
+                <PlusCircle className="w-4 h-4" aria-hidden="true" />
+                Input laporan (operator)
+              </Link>
             </div>
-            <div className="space-y-1.5 max-w-md mx-auto">
-              <h3 className="font-extrabold text-base text-slate-900">
-                Laporan Belum Diterbitkan untuk {formatTanggalIndo(selectedDate)}
-              </h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Operator dapat mengisi rincian menu, komposisi gizi, dan foto tahapan dapur melalui panel
-                operator. Laporan akan otomatis tayang di portal ini setelah diterbitkan.
-              </p>
-            </div>
-            <Link
-              href="/admin"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Input Laporan di Panel Operator</span>
-            </Link>
           </div>
         ) : (
           <>
             {/* ==================== TAB: RINGKASAN ==================== */}
             {activeTab === 'overview' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
-                {/* Hero Menu */}
-                <section className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-200 bg-slate-50">
-                    <div className="flex items-center gap-2">
-                      <Utensils className="w-4 h-4 text-blue-700" />
-                      <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                        Menu Sajian Hari Ini
-                      </h2>
+                {/* Menu hari ini, disajikan seperti isi ompreng */}
+                <section className="lg:col-span-12 panel overflow-hidden">
+                  <div className="grid grid-cols-1 md:grid-cols-5">
+                    <div className="md:col-span-2 relative aspect-[4/3] md:aspect-auto md:min-h-72 bg-slate-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={currentMenu.menuPhotoUrl || '/gallery-1.jpg'}
+                        alt={currentMenu.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500">
-                      Menu #{currentMenu.menuNumber || 1}
-                    </span>
-                  </div>
-                  <div className="p-4 sm:p-5">
-                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-                      <div className="sm:col-span-2">
-                        <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-[4/3] w-full">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={currentMenu.menuPhotoUrl || '/gallery-1.jpg'}
-                            alt={currentMenu.title}
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute bottom-0 inset-x-0 px-3 py-2 bg-gradient-to-t from-black/80 to-transparent">
-                            <span className="text-[10px] font-bold text-white">
-                              {formatTanggalIndo(currentMenu.date)}
+                    <div className="md:col-span-3 p-4 sm:p-6 flex flex-col">
+                      <p className="text-sm text-slate-600">Menu hari ini</p>
+                      <h2 className="font-heading text-xl sm:text-2xl font-bold leading-snug mt-1">
+                        {currentMenu.title}
+                      </h2>
+                      <ul className="mt-4 grid grid-cols-6 gap-2 p-2 rounded-xl bg-tray" aria-label="Isi ompreng">
+                        {COMPONENT_META.map((c, i) => (
+                          <li
+                            key={c.key}
+                            className={`${i < 2 ? 'col-span-3' : 'col-span-2'} bg-white rounded-lg p-2.5 min-w-0`}
+                          >
+                            <span className={`flex items-center gap-1.5 text-xs font-medium ${c.tint}`}>
+                              <c.icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                              {c.label}
                             </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="sm:col-span-3 space-y-2.5">
-                        <div>
-                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-                            Nama Menu
-                          </span>
-                          <h3 className="text-base sm:text-lg font-black text-slate-900 leading-tight mt-0.5">
-                            {currentMenu.title}
-                          </h3>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                          {COMPONENT_META.map((c) => (
-                            <div
-                              key={c.key}
-                              className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border ${c.ring}`}
-                            >
-                              <c.icon className={`w-3.5 h-3.5 shrink-0 ${c.tint}`} />
-                              <div className="min-w-0">
-                                <span className="text-[9px] font-bold uppercase text-slate-500 block leading-none">
-                                  {c.label}
-                                </span>
-                                <span className="text-[11px] sm:text-xs font-extrabold text-slate-900 truncate block leading-tight">
-                                  {currentMenu.components[c.key]}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        <button
-                          onClick={() => setActiveTab('menu')}
-                          className="w-full sm:w-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold text-blue-800 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
-                        >
-                          <span>Detail Komposisi Porsi</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                            <span className="block text-sm font-semibold leading-snug mt-1 break-words">
+                              {currentMenu.components[c.key]}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('menu')}
+                        className="mt-3 self-start inline-flex items-center gap-1.5 min-h-11 text-sm font-semibold text-ink underline underline-offset-4 decoration-gold decoration-2 cursor-pointer"
+                      >
+                        Lihat uraian kegiatan
+                        <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                      </button>
                     </div>
-                  </div>
-                </section>
-
-                {/* Status & Timeline ringkasan */}
-                <section className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-200 bg-slate-50">
-                    <div className="flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-emerald-700" />
-                      <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                        Status Alur Operasional
-                      </h2>
-                    </div>
-                  </div>
-                  <div className="p-4 sm:p-5 space-y-3">
-                    {currentMenu.photos.length > 0 ? (
-                      <ol className="space-y-2.5">
-                        {currentMenu.photos.map((p, idx) => {
-                          const StepIcon = STEP_ICONS[p.step] || Package;
-                          return (
-                            <li key={idx} className="flex items-start gap-3">
-                              <div className="flex flex-col items-center shrink-0">
-                                <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center">
-                                  <StepIcon className="w-3.5 h-3.5" />
-                                </div>
-                                {idx < currentMenu.photos.length - 1 && (
-                                  <div className="w-px flex-1 min-h-[10px] bg-emerald-200 mt-1" />
-                                )}
-                              </div>
-                              <div className="min-w-0 pb-1 flex-1">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-[11px] font-black text-slate-900 uppercase">
-                                    {p.step}
-                                  </span>
-                                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
-                                    <CheckCircle2 className="w-2.5 h-2.5 inline -mt-0.5" /> Selesai
-                                  </span>
-                                  {p.timeEstimate && (
-                                    <span className="text-[10px] font-semibold text-slate-400 inline-flex items-center gap-0.5">
-                                      <Timer className="w-3 h-3" /> {p.timeEstimate}
-                                    </span>
-                                  )}
-                                </div>
-                                <span className="text-[11px] text-slate-600 block leading-snug">{p.title}</span>
-                              </div>
-                            </li>
-                          );
-                        })}
-                      </ol>
-                    ) : (
-                      <div className="p-6 text-center space-y-2">
-                        <AlertCircle className="w-6 h-6 text-amber-500 mx-auto" />
-                        <p className="text-xs text-slate-500">
-                          Dokumentasi foto tahapan dapur belum diunggah untuk tanggal ini.
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </section>
 
                 {/* Komposisi porsi ringkas */}
-                <section className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-200 bg-slate-50">
+                <section className="lg:col-span-7 bg-white rounded-xl border border-line">
+                  <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-line bg-slate-50">
                     <div className="flex items-center gap-2">
                       <Gauge className="w-4 h-4 text-violet-700" />
-                      <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                      <h2 className="text-base font-semibold text-slate-900">
                         Sebaran Energi per Kelompok Porsi
                       </h2>
                     </div>
                     <button
                       onClick={() => setActiveTab('akg')}
-                      className="text-[10px] font-bold text-blue-700 hover:text-blue-900 cursor-pointer"
+                      className="text-xs font-bold text-ink hover:text-ink cursor-pointer"
                     >
                       Analisis Lengkap →
                     </button>
@@ -802,18 +612,18 @@ export default function PortalHome() {
                       return (
                         <div key={item.groupName}>
                           <div className="flex items-center justify-between gap-2 mb-1">
-                            <span className="text-[11px] font-extrabold text-slate-900">
+                            <span className="text-[13px] font-semibold text-slate-900">
                               {item.groupName}
-                              <span className="text-[10px] font-medium text-slate-400 ml-1.5">
+                              <span className="text-xs font-medium text-slate-400 ml-1.5">
                                 {item.targetCategory}
                               </span>
                             </span>
-                            <span className="text-[11px] font-black tabular-nums text-slate-900 shrink-0">
+                            <span className="text-[13px] font-bold tabular-nums text-slate-900 shrink-0">
                               {item.energyKcal.toFixed(1)}
-                              <span className="text-[9px] text-slate-400 font-bold ml-0.5">Kkal</span>
+                              <span className="text-[11px] text-slate-400 font-bold ml-0.5">Kkal</span>
                               {std && (
                                 <span
-                                  className={`ml-1.5 text-[9px] font-bold ${
+                                  className={`ml-1.5 text-[11px] font-bold ${
                                     delta >= 0 ? 'text-emerald-600' : 'text-amber-600'
                                   }`}
                                 >
@@ -823,7 +633,7 @@ export default function PortalHome() {
                               )}
                             </span>
                           </div>
-                          <div className="h-2.5 rounded-full overflow-hidden bg-slate-100 border border-slate-200 flex">
+                          <div className="h-2.5 rounded-full overflow-hidden bg-slate-100 border border-line flex">
                             <div className="h-full bg-sky-500" style={{ width: `${split.protein}%` }} title={`Protein ${split.protein}%`} />
                             <div className="h-full bg-amber-400" style={{ width: `${split.fat}%` }} title={`Lemak ${split.fat}%`} />
                             <div className="h-full bg-emerald-500" style={{ width: `${split.carbs}%` }} title={`Karbohidrat ${split.carbs}%`} />
@@ -831,7 +641,7 @@ export default function PortalHome() {
                         </div>
                       );
                     })}
-                    <div className="flex items-center gap-4 pt-1 text-[10px] font-semibold text-slate-500">
+                    <div className="flex items-center gap-4 pt-1 text-xs font-semibold text-slate-500">
                       <span className="flex items-center gap-1">
                         <span className="w-2.5 h-2.5 rounded-sm bg-sky-500" /> Protein
                       </span>
@@ -846,37 +656,37 @@ export default function PortalHome() {
                 </section>
 
                 {/* Sebaran penerima */}
-                <section className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-200 bg-slate-50">
+                <section className="lg:col-span-5 bg-white rounded-xl border border-line">
+                  <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-line bg-slate-50">
                     <div className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-blue-700" />
-                      <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                      <Building2 className="w-4 h-4 text-ink" />
+                      <h2 className="text-base font-semibold text-slate-900">
                         Sebaran Penerima Manfaat
                       </h2>
                     </div>
                     <button
                       onClick={() => setActiveTab('distribusi')}
-                      className="text-[10px] font-bold text-blue-700 hover:text-blue-900 cursor-pointer"
+                      className="text-xs font-bold text-ink hover:text-ink cursor-pointer"
                     >
                       Direktori →
                     </button>
                   </div>
                   <div className="p-4 sm:p-5 space-y-3">
                     {[
-                      { label: 'Sekolah Dasar (SD)', value: totalPorsiSD, icon: School, tint: 'bg-blue-500' },
+                      { label: 'Sekolah Dasar (SD)', value: totalPorsiSD, icon: School, tint: 'bg-ink/50' },
                       { label: 'Taman Kanak-kanak (TK)', value: totalPorsiTK, icon: Baby, tint: 'bg-emerald-500' },
                       { label: 'Posyandu', value: totalPorsiPosyandu, icon: Users, tint: 'bg-amber-500' },
                     ].map((row) => (
                       <div key={row.label}>
-                        <div className="flex items-center justify-between text-[11px] mb-1">
+                        <div className="flex items-center justify-between text-[13px] mb-1">
                           <span className="font-bold text-slate-700 flex items-center gap-1.5">
                             <row.icon className="w-3.5 h-3.5 text-slate-400" /> {row.label}
                           </span>
-                          <span className="font-black tabular-nums text-slate-900">
+                          <span className="font-bold tabular-nums text-slate-900">
                             {row.value.toLocaleString('id-ID')}
                           </span>
                         </div>
-                        <div className="h-2 rounded-full bg-slate-100 border border-slate-200 overflow-hidden">
+                        <div className="h-2 rounded-full bg-slate-100 border border-line overflow-hidden">
                           <div
                             className={`h-full ${row.tint}`}
                             style={{ width: `${totalMaster ? (row.value / totalMaster) * 100 : 0}%` }}
@@ -885,30 +695,86 @@ export default function PortalHome() {
                       </div>
                     ))}
                     <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      <span className="text-xs font-bold text-slate-400">
                         Total Kumulatif
                       </span>
-                      <span className="text-sm font-black text-blue-800 tabular-nums">
+                      <span className="text-sm font-bold text-ink tabular-nums">
                         {totalMaster.toLocaleString('id-ID')} Porsi
                       </span>
                     </div>
                   </div>
                 </section>
+                {/* Status & Timeline ringkasan */}
+                <section className="lg:col-span-12 bg-white rounded-xl border border-line">
+                  <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-line bg-slate-50">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-emerald-700" />
+                      <h2 className="text-base font-semibold text-slate-900">
+                        Status Alur Operasional
+                      </h2>
+                    </div>
+                  </div>
+                  <div className="p-4 sm:p-5 space-y-3">
+                    {currentMenu.photos.length > 0 ? (
+                      <ol className="grid gap-x-10 gap-y-3 md:grid-cols-2">
+                        {currentMenu.photos.map((p, idx) => {
+                          const StepIcon = STEP_ICONS[p.step] || Package;
+                          return (
+                            <li key={idx} className="flex items-start gap-3">
+                              <div className="flex flex-col items-center shrink-0">
+                                <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center">
+                                  <StepIcon className="w-3.5 h-3.5" />
+                                </div>
+                                {idx < currentMenu.photos.length - 1 && (
+                                  <div className="w-px flex-1 min-h-[10px] bg-emerald-200 mt-1" />
+                                )}
+                              </div>
+                              <div className="min-w-0 pb-1 flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-[13px] font-bold text-slate-900 ">
+                                    {p.step}
+                                  </span>
+                                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                                    <CheckCircle2 className="w-2.5 h-2.5 inline -mt-0.5" /> Selesai
+                                  </span>
+                                  {p.timeEstimate && (
+                                    <span className="text-xs font-semibold text-slate-400 inline-flex items-center gap-0.5">
+                                      <Timer className="w-3 h-3" /> {p.timeEstimate}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[13px] text-slate-600 block leading-snug">{p.title}</span>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    ) : (
+                      <div className="p-6 text-center space-y-2">
+                        <AlertCircle className="w-6 h-6 text-amber-500 mx-auto" />
+                        <p className="text-sm text-slate-500">
+                          Dokumentasi foto tahapan dapur belum diunggah untuk tanggal ini.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+
               </div>
             )}
 
             {/* ==================== TAB: MENU ==================== */}
             {activeTab === 'menu' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
-                <section className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="px-4 sm:px-5 py-3 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-                    <Utensils className="w-4 h-4 text-blue-700" />
-                    <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                <section className="lg:col-span-5 bg-white rounded-xl border border-line overflow-hidden">
+                  <div className="px-4 sm:px-5 py-3 border-b border-line bg-slate-50 flex items-center gap-2">
+                    <Utensils className="w-4 h-4 text-ink" />
+                    <h2 className="text-base font-semibold text-slate-900">
                       Sajian & Komposisi
                     </h2>
                   </div>
                   <div className="p-4 sm:p-5 space-y-4">
-                    <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-[16/10] w-full">
+                    <div className="relative rounded-xl overflow-hidden border border-line bg-slate-100 aspect-[16/10] w-full">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={currentMenu.menuPhotoUrl || '/gallery-1.jpg'}
@@ -917,35 +783,35 @@ export default function PortalHome() {
                       />
                     </div>
                     <div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                      <span className="text-xs font-bold text-slate-400 block">
                         Nama Menu
                       </span>
-                      <h3 className="text-lg font-black text-slate-900 leading-tight mt-0.5">
+                      <h3 className="text-lg font-bold text-slate-900 leading-tight mt-0.5">
                         {currentMenu.title}
                       </h3>
                       {currentMenu.publishedAt && (
-                        <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                        <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
                           <CalendarCheck className="w-3 h-3" /> Dipublikasikan {currentMenu.publishedAt}
                         </span>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                      <span className="text-xs font-bold text-slate-400 block">
                         Komposisi 5 Komponen
                       </span>
                       {COMPONENT_META.map((c, i) => (
                         <div
                           key={c.key}
-                          className="flex items-center gap-3 p-2.5 rounded-lg border border-slate-200 bg-slate-50"
+                          className="flex items-center gap-3 p-2.5 rounded-lg border border-line bg-slate-50"
                         >
-                          <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                          <div className="w-7 h-7 rounded-lg bg-white border border-line flex items-center justify-center shrink-0">
                             <c.icon className={`w-3.5 h-3.5 ${c.tint}`} />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <span className="text-[9px] font-black uppercase text-slate-400 block leading-none">
+                            <span className="text-[11px] font-bold text-slate-400 block leading-none">
                               {i + 1}. {c.label}
                             </span>
-                            <span className="text-xs font-extrabold text-slate-900 truncate block leading-tight">
+                            <span className="text-sm font-semibold text-slate-900 truncate block leading-tight">
                               {currentMenu.components[c.key]}
                             </span>
                           </div>
@@ -955,15 +821,15 @@ export default function PortalHome() {
                   </div>
                 </section>
 
-                <section className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="px-4 sm:px-5 py-3 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
+                <section className="lg:col-span-7 bg-white rounded-xl border border-line">
+                  <div className="px-4 sm:px-5 py-3 border-b border-line bg-slate-50 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-slate-600" />
-                    <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                    <h2 className="text-base font-semibold text-slate-900">
                       Uraian Kegiatan Operasional
                     </h2>
                   </div>
                   <div className="p-4 sm:p-5">
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-[11px] sm:text-xs text-slate-800 leading-relaxed whitespace-pre-line font-mono">
+                    <div className="p-4 rounded-xl bg-slate-50 border border-line text-[13px] sm:text-sm text-slate-800 leading-relaxed whitespace-pre-line font-mono">
                       {currentMenu.uraianPekerjaan ||
                         'Uraian kegiatan belum diisi untuk tanggal ini.'}
                     </div>
@@ -975,14 +841,14 @@ export default function PortalHome() {
                       ].map((s) => (
                         <div
                           key={s.label}
-                          className="p-3 rounded-xl border border-slate-200 bg-white flex items-center gap-2.5"
+                          className="p-3 rounded-xl border border-line bg-white flex items-center gap-2.5"
                         >
                           <s.icon className={`w-4 h-4 shrink-0 ${s.tint}`} />
                           <div className="min-w-0">
-                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block leading-none">
+                            <span className="text-[11px] font-bold text-slate-400 block leading-none">
                               {s.label}
                             </span>
-                            <span className="text-xs font-black text-slate-900">{s.value}</span>
+                            <span className="text-sm font-bold text-slate-900">{s.value}</span>
                           </div>
                         </div>
                       ))}
@@ -995,10 +861,10 @@ export default function PortalHome() {
             {/* ==================== TAB: AKG ==================== */}
             {activeTab === 'akg' && (
               <div className="space-y-3 sm:space-y-4">
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5">
-                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-blue-50 border border-blue-200">
-                    <Info className="w-4 h-4 text-blue-700 shrink-0 mt-0.5" />
-                    <p className="text-[11px] sm:text-xs text-blue-900 leading-relaxed">
+                <div className="bg-white rounded-xl border border-line p-4 sm:p-5">
+                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-ink/5 border border-ink/15">
+                    <Info className="w-4 h-4 text-ink shrink-0 mt-0.5" />
+                    <p className="text-[13px] sm:text-sm text-ink leading-relaxed">
                       Nilai energi di bawah dihitung dari komposisi menu hari ini berdasarkan standar
                       acuan BGN. Persentase energi menampilkan sebaran makronutrien (protein, lemak,
                       karbohidrat), sedangkan perbandingan tiap kelompok diukur terhadap standar acuan
@@ -1016,28 +882,28 @@ export default function PortalHome() {
                     return (
                       <div
                         key={item.groupName}
-                        className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+                        className="bg-white rounded-xl border border-line overflow-hidden"
                       >
                         <div
-                          className="px-4 py-3 border-b border-slate-200 flex items-center justify-between"
+                          className="px-4 py-3 border-b border-line flex items-center justify-between"
                           style={{ backgroundColor: item.bgLight }}
                         >
                           <div className="min-w-0">
                             <span
-                              className="text-sm font-black block leading-tight"
+                              className="text-sm font-bold block leading-tight"
                               style={{ color: item.color }}
                             >
                               Porsi {item.groupName}
                             </span>
-                            <span className="text-[10px] font-semibold text-slate-600 block truncate">
+                            <span className="text-xs font-semibold text-slate-600 block truncate">
                               {item.targetCategory}
                             </span>
                           </div>
                           <div className="text-right shrink-0 pl-2">
-                            <span className="text-base font-black text-slate-900 tabular-nums leading-none">
+                            <span className="text-base font-bold text-slate-900 tabular-nums leading-none">
                               {item.energyKcal.toFixed(1)}
                             </span>
-                            <span className="text-[9px] font-black text-slate-500 block">KKAL</span>
+                            <span className="text-[11px] font-bold text-slate-500 block">KKAL</span>
                           </div>
                         </div>
 
@@ -1045,21 +911,21 @@ export default function PortalHome() {
                           {/* Energi vs standar */}
                           {std && (
                             <div>
-                              <div className="flex items-center justify-between text-[10px] font-bold mb-1">
+                              <div className="flex items-center justify-between text-xs font-bold mb-1">
                                 <span className="text-slate-500">Energi vs Standar BGN</span>
                                 <span className={delta >= 0 ? 'text-emerald-600' : 'text-amber-600'}>
                                   {delta >= 0 ? '+' : ''}
                                   {delta.toFixed(1)}%
                                 </span>
                               </div>
-                              <div className="h-2 rounded-full bg-slate-100 border border-slate-200 overflow-hidden relative">
+                              <div className="h-2 rounded-full bg-slate-100 border border-line overflow-hidden relative">
                                 <div
                                   className={`h-full ${delta >= 0 ? 'bg-emerald-500' : 'bg-amber-500'}`}
                                   style={{ width: `${Math.min(100, (item.energyKcal / std) * 100)}%` }}
                                 />
                                 <div className="absolute top-0 bottom-0 w-0.5 bg-slate-500/60" style={{ left: '100%' }} />
                               </div>
-                              <span className="text-[9px] text-slate-400 font-semibold">
+                              <span className="text-[11px] text-slate-400 font-semibold">
                                 Standar acuan: {std.toFixed(1)} Kkal
                               </span>
                             </div>
@@ -1072,47 +938,47 @@ export default function PortalHome() {
                               { l: 'Lemak', v: item.fatG, pct: split.fat, c: 'bg-amber-400' },
                               { l: 'Karbo', v: item.carbsG, pct: split.carbs, c: 'bg-emerald-500' },
                             ].map((m) => (
-                              <div key={m.l} className="p-2 rounded-lg border border-slate-200 bg-slate-50">
-                                <span className="text-[9px] font-black uppercase text-slate-400 block leading-none">
+                              <div key={m.l} className="p-2 rounded-lg border border-line bg-slate-50">
+                                <span className="text-[11px] font-bold text-slate-400 block leading-none">
                                   {m.l}
                                 </span>
-                                <span className="text-xs font-black text-slate-900 tabular-nums">
+                                <span className="text-sm font-bold text-slate-900 tabular-nums">
                                   {m.v.toFixed(1)}g
                                 </span>
                                 <div className="h-1.5 rounded-full bg-slate-200 mt-1 overflow-hidden">
                                   <div className={`h-full ${m.c}`} style={{ width: `${m.pct}%` }} />
                                 </div>
-                                <span className="text-[9px] font-bold text-slate-400">{m.pct}% energi</span>
+                                <span className="text-[11px] font-bold text-slate-400">{m.pct}% energi</span>
                               </div>
                             ))}
                           </div>
 
                           {/* Serat relatif */}
                           <div>
-                            <div className="flex items-center justify-between text-[10px] font-bold mb-1">
+                            <div className="flex items-center justify-between text-xs font-bold mb-1">
                               <span className="text-slate-500">Serat</span>
                               <span className="text-slate-900 tabular-nums">{item.fiberG.toFixed(1)} g</span>
                             </div>
-                            <div className="h-2 rounded-full bg-slate-100 border border-slate-200 overflow-hidden">
+                            <div className="h-2 rounded-full bg-slate-100 border border-line overflow-hidden">
                               <div
                                 className="h-full bg-violet-500"
                                 style={{ width: `${Math.max(4, fiberPct)}%` }}
                               />
                             </div>
-                            <span className="text-[9px] text-slate-400 font-semibold">
+                            <span className="text-[11px] text-slate-400 font-semibold">
                               Perbandingan relatif antar kelompok
                             </span>
                           </div>
 
                           <div className="pt-2 border-t border-slate-100">
-                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block">
+                            <span className="text-[11px] font-bold text-slate-400 block">
                               Target Makronutrien (%)
                             </span>
                             <div className="flex flex-wrap gap-1.5 mt-1">
                               {Object.entries(item.recommendedPct).map(([k, v]) => (
                                 <span
                                   key={k}
-                                  className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 capitalize"
+                                  className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-line capitalize"
                                 >
                                   {k}: {v}%
                                 </span>
@@ -1130,15 +996,15 @@ export default function PortalHome() {
             {/* ==================== TAB: DAPUR ==================== */}
             {activeTab === 'dapur' && (
               <div className="space-y-3 sm:space-y-4">
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5">
+                <div className="bg-white rounded-xl border border-line p-4 sm:p-5">
                   <div className="flex items-center gap-2 mb-3">
                     <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                    <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                    <h2 className="text-base font-semibold text-slate-900">
                       Timeline Alur Dapur & Distribusi
                     </h2>
                   </div>
                   {currentMenu.photos.length === 0 ? (
-                    <p className="text-xs text-slate-500 py-6 text-center">
+                    <p className="text-sm text-slate-500 py-6 text-center">
                       Dokumentasi tahapan dapur belum tersedia untuk tanggal ini.
                     </p>
                   ) : (
@@ -1149,33 +1015,33 @@ export default function PortalHome() {
                           const StepIcon = STEP_ICONS[p.step] || Package;
                           return (
                             <li key={idx} className="relative flex gap-4">
-                              <div className="relative z-10 w-10 h-10 rounded-xl bg-white border-2 border-emerald-300 text-emerald-700 flex items-center justify-center shrink-0 shadow-sm">
+                              <div className="relative z-10 w-10 h-10 rounded-xl bg-white border-2 border-emerald-300 text-emerald-700 flex items-center justify-center shrink-0">
                                 <StepIcon className="w-4.5 h-4.5" />
                               </div>
                               <div className="flex-1 min-w-0 pb-1">
                                 <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                                  <span className="text-[9px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
                                     Tahap {idx + 1}
                                   </span>
-                                  <span className="text-xs font-black text-slate-900 uppercase">{p.step}</span>
+                                  <span className="text-sm font-bold text-slate-900 ">{p.step}</span>
                                   {p.timeEstimate && (
-                                    <span className="text-[10px] font-bold text-slate-500 inline-flex items-center gap-0.5">
+                                    <span className="text-xs font-bold text-slate-500 inline-flex items-center gap-0.5">
                                       <Timer className="w-3 h-3" /> {p.timeEstimate}
                                     </span>
                                   )}
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
                                   <div className="sm:col-span-2">
-                                    <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-[4/3] w-full">
+                                    <div className="relative rounded-xl overflow-hidden border border-line bg-slate-100 aspect-[4/3] w-full">
                                       {/* eslint-disable-next-line @next/next/no-img-element */}
                                       <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover" />
                                     </div>
                                   </div>
                                   <div className="sm:col-span-3">
-                                    <h4 className="text-sm font-extrabold text-slate-900 leading-tight">
+                                    <h4 className="text-sm font-semibold text-slate-900 leading-tight">
                                       {p.title}
                                     </h4>
-                                    <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1">
+                                    <p className="text-[13px] sm:text-sm text-slate-600 leading-relaxed mt-1">
                                       {p.description}
                                     </p>
                                   </div>
@@ -1194,11 +1060,11 @@ export default function PortalHome() {
             {/* ==================== TAB: DISTRIBUSI ==================== */}
             {activeTab === 'distribusi' && (
               <div className="space-y-3 sm:space-y-4">
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="px-4 sm:px-5 py-3 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="bg-white rounded-xl border border-line">
+                  <div className="px-4 sm:px-5 py-3 border-b border-line bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <Truck className="w-4 h-4 text-blue-700" />
-                      <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                      <Truck className="w-4 h-4 text-ink" />
+                      <h2 className="text-base font-semibold text-slate-900">
                         Direktori Titik Layanan ({activeBeneficiaries.length} Lokasi)
                       </h2>
                     </div>
@@ -1210,7 +1076,7 @@ export default function PortalHome() {
                           placeholder="Cari lembaga..."
                           value={searchBeneficiary}
                           onChange={(e) => setSearchBeneficiary(e.target.value)}
-                          className="w-full pl-7 pr-2 py-1.5 text-[11px] border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          className="w-full pl-7 pr-2 py-1.5 text-[13px] border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-gold focus:outline-none"
                         />
                       </div>
                     </div>
@@ -1229,10 +1095,10 @@ export default function PortalHome() {
                         <button
                           key={t}
                           onClick={() => setTypeFilter(t)}
-                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer ${
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
                             active
-                              ? 'bg-[#0b1f3a] text-white border-[#0b1f3a]'
-                              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                              ? 'bg-ink text-white border-ink'
+                              : 'bg-white text-slate-600 border-line hover:bg-slate-50'
                           }`}
                         >
                           {label} ({count})
@@ -1249,31 +1115,31 @@ export default function PortalHome() {
                         <div
                           key={site.id}
                           className={`p-2.5 rounded-lg border flex items-center justify-between ${
-                            isLibur ? 'bg-amber-50/70 border-amber-200' : 'bg-slate-50 border-slate-200'
+                            isLibur ? 'bg-amber-50/70 border-amber-200' : 'bg-slate-50 border-line'
                           }`}
                         >
                           <div className="min-w-0 pr-2">
                             <span
-                              className={`font-extrabold block truncate text-xs ${
+                              className={`font-semibold block truncate text-sm ${
                                 isLibur ? 'text-slate-500 line-through' : 'text-slate-900'
                               }`}
                             >
                               {index + 1}. {site.name}
                             </span>
-                            <span className="text-[9px] text-slate-500 uppercase font-semibold">
+                            <span className="text-[11px] text-slate-500 font-semibold">
                               Kategori {site.type} {isLibur && `• ${site.reason || 'Libur'}`}
                             </span>
                           </div>
                           <div className="text-right shrink-0">
                             <span
-                              className={`font-black text-xs block tabular-nums ${
-                                isLibur ? 'text-amber-800' : 'text-blue-900'
+                              className={`font-bold text-sm block tabular-nums ${
+                                isLibur ? 'text-amber-800' : 'text-ink'
                               }`}
                             >
                               {site.masterCount} Porsi
                             </span>
                             <span
-                              className={`text-[9px] font-bold ${
+                              className={`text-[11px] font-bold ${
                                 isLibur ? 'text-amber-700' : 'text-emerald-700'
                               }`}
                             >
@@ -1287,8 +1153,8 @@ export default function PortalHome() {
 
                   {/* Desktop table */}
                   <div className="hidden sm:block overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-100 border-b border-slate-200 text-slate-800 font-bold text-[10px] uppercase">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-slate-100 border-b border-line text-slate-800 font-bold text-xs ">
                         <tr>
                           <th className="py-2.5 px-4 w-10">No</th>
                           <th className="py-2.5 px-3">Nama Lembaga Sekolah / Posyandu</th>
@@ -1306,18 +1172,18 @@ export default function PortalHome() {
                               <td className="py-2.5 px-4 text-slate-400 font-semibold tabular-nums">
                                 {index + 1}
                               </td>
-                              <td className="py-2.5 px-3 font-extrabold text-slate-900">
+                              <td className="py-2.5 px-3 font-semibold text-slate-900">
                                 <span className={isLibur ? 'line-through text-slate-500' : ''}>
                                   {site.name}
                                 </span>
                                 {isLibur && (
-                                  <span className="ml-2 px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded text-[9px] font-bold">
+                                  <span className="ml-2 px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded text-[11px] font-bold">
                                     {site.reason || 'Libur Sekolah'}
                                   </span>
                                 )}
                               </td>
                               <td className="py-2.5 px-3">
-                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200">
+                                <span className="px-1.5 py-0.2 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-line">
                                   {site.type}
                                 </span>
                               </td>
@@ -1325,7 +1191,7 @@ export default function PortalHome() {
                                 <MapPin className="w-3.5 h-3.5 inline" />
                               </td>
                               <td
-                                className={`py-2.5 px-3 text-right font-black tabular-nums ${
+                                className={`py-2.5 px-3 text-right font-bold tabular-nums ${
                                   isLibur ? 'text-amber-800' : 'text-slate-900'
                                 }`}
                               >
@@ -1333,11 +1199,11 @@ export default function PortalHome() {
                               </td>
                               <td className="py-2.5 px-3 text-center">
                                 {isLibur ? (
-                                  <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                                  <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
                                     Libur (0)
                                   </span>
                                 ) : (
-                                  <span className="text-[10px] font-bold text-emerald-700 inline-flex items-center gap-1">
+                                  <span className="text-xs font-bold text-emerald-700 inline-flex items-center gap-1">
                                     <CircleCheck className="w-3 h-3" /> Tersalurkan
                                   </span>
                                 )}
@@ -1346,15 +1212,15 @@ export default function PortalHome() {
                           );
                         })}
                       </tbody>
-                      <tfoot className="bg-slate-100 border-t-2 border-slate-300 font-black text-slate-900 text-xs">
+                      <tfoot className="bg-slate-100 border-t-2 border-slate-300 font-bold text-slate-900 text-sm">
                         <tr>
                           <td colSpan={4} className="py-3 px-4">
                             TOTAL AKUMULASI DISTRIBUSI HARIAN
                           </td>
-                          <td className="py-3 px-3 text-right text-sm font-black text-blue-900 tabular-nums">
+                          <td className="py-3 px-3 text-right text-sm font-bold text-ink tabular-nums">
                             {totalMaster} Porsi
                           </td>
-                          <td className="py-3 px-3 text-center text-emerald-800 font-extrabold text-[10px]">
+                          <td className="py-3 px-3 text-center text-emerald-800 font-semibold text-xs">
                             100% LENGKAP
                           </td>
                         </tr>
@@ -1368,16 +1234,16 @@ export default function PortalHome() {
             {/* ==================== TAB: DOKUMEN RESMI ==================== */}
             {activeTab === 'dokumen' && (
               <div className="space-y-3">
-                <div className="no-print bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="no-print bg-white rounded-xl border border-line p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-start gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-lg bg-slate-900 text-white flex items-center justify-center shrink-0">
                       <FileText className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                      <h3 className="text-base font-semibold text-slate-900">
                         Pratinjau Dokumen Resmi
                       </h3>
-                      <p className="text-[11px] text-slate-500 leading-snug">
+                      <p className="text-[13px] text-slate-500 leading-snug">
                         Format KOP operasional BGN — sama persis dengan naskah cetak resmi (Berita Acara
                         &amp; SPJ A4). Seluruh nominal dan data keuangan tetap terproteksi.
                       </p>
@@ -1385,9 +1251,9 @@ export default function PortalHome() {
                   </div>
                   <button
                     onClick={handleOpenPrintModal}
-                    className="px-4 py-2.5 rounded-lg text-xs font-black text-white bg-[#0b1f3a] hover:bg-[#14315c] flex items-center gap-1.5 justify-center cursor-pointer shadow-sm shrink-0"
+                    className="px-4 py-2.5 rounded-lg text-sm font-bold text-white bg-ink hover:bg-ink-soft flex items-center gap-1.5 justify-center cursor-pointer shrink-0"
                   >
-                    <Lock className="w-3.5 h-3.5 text-blue-300" />
+                    <Lock className="w-3.5 h-3.5 text-gold" />
                     <span>Cetak / Simpan PDF</span>
                   </button>
                 </div>
@@ -1404,57 +1270,63 @@ export default function PortalHome() {
       </main>
 
       {/* ============ FOOTER ============ */}
-      <footer className="no-print mt-4 bg-[#0b1f3a] text-blue-200/70">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] sm:text-[11px] font-medium">
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            Portal Transparansi Operasional • SPPG Wonodri 3 Kota Semarang
-          </span>
-          <span className="flex items-center gap-3">
-            <span>Badan Gizi Nasional</span>
-            <span className="hidden sm:inline text-blue-400/40">•</span>
-            <span>Semarang Selatan</span>
-          </span>
+      <footer className="no-print border-t border-line bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 text-sm text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <span>Portal transparansi operasional SPPG Wonodri 3, Kota Semarang</span>
+          <span>Badan Gizi Nasional, Republik Indonesia</span>
         </div>
       </footer>
 
+      <BottomTabs />
+
       {/* ============ MODAL PIN ============ */}
       {showPinModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 space-y-4">
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 no-print"
+          onClick={() => setShowPinModal(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="pin-modal-title"
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-t-2xl sm:rounded-xl border border-line shadow-2xl max-w-sm w-full p-6 space-y-4"
+          >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-lg bg-slate-900 text-white flex items-center justify-center">
                   <Lock className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm text-slate-900 leading-tight">
+                  <h3 id="pin-modal-title" className="font-semibold text-base text-slate-900 leading-tight">
                     Otorisasi Cetak Dokumen
                   </h3>
-                  <span className="text-[10px] text-slate-500 block">Khusus Tim & Operator SPPG</span>
+                  <span className="text-xs text-slate-500 block">Khusus Tim & Operator SPPG</span>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowPinModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
+                aria-label="Tutup"
+                className="p-2.5 -m-1 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-sm text-slate-600 leading-relaxed">
               Dokumen ini memuat pengesahan resmi SPPG Wonodri 3 Kota Semarang. Masukkan{' '}
               <strong>Kode PIN Operator</strong> untuk mengunduh / mencetak PDF:
             </p>
 
             <form onSubmit={handleVerifyPin} className="space-y-3.5">
               <div>
-                <label className="text-[10px] font-black uppercase text-slate-600 block mb-1">
+                <label htmlFor="pin-input" className="text-sm font-semibold text-slate-700 block mb-1.5">
                   Masukkan PIN (5 Digit):
                 </label>
                 <div className="relative">
                   <input
+                    id="pin-input"
                     type="password"
                     inputMode="numeric"
                     maxLength={10}
@@ -1470,7 +1342,7 @@ export default function PortalHome() {
               </div>
 
               {pinError && (
-                <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 flex items-center gap-1.5">
+                <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-sm font-bold text-rose-700 flex items-center gap-1.5">
                   <ShieldAlert className="w-4 h-4 shrink-0 text-rose-600" />
                   <span>{pinError}</span>
                 </div>
@@ -1480,13 +1352,13 @@ export default function PortalHome() {
                 <button
                   type="button"
                   onClick={() => setShowPinModal(false)}
-                  className="w-1/2 py-2.5 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+                  className="w-1/2 min-h-11 rounded-xl text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 rounded-xl text-xs font-black text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-1/2 min-h-11 rounded-xl text-sm font-semibold text-white bg-ink hover:bg-ink-soft transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Buka Cetak</span>
@@ -1499,35 +1371,45 @@ export default function PortalHome() {
 
       {/* ============ MODAL KALENDER ============ */}
       {showCalendarModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 no-print">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-xs w-full p-4 space-y-3">
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 no-print"
+          onClick={() => setShowCalendarModal(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pilih tanggal laporan"
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-t-2xl sm:rounded-xl border border-line shadow-xl max-w-sm w-full p-4 pb-6 sm:pb-4 space-y-3"
+          >
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <span className="font-extrabold text-sm text-slate-900">
+              <span className="font-semibold text-sm text-slate-900">
                 {monthNames[calendarMonth]} {calendarYear}
               </span>
               <div className="flex items-center gap-1">
-                <button onClick={prevMonth} className="p-1 rounded hover:bg-slate-100 cursor-pointer">
+                <button type="button" onClick={prevMonth} aria-label="Bulan sebelumnya" className="p-2.5 rounded-lg hover:bg-slate-100 cursor-pointer">
                   <ChevronLeft className="w-4 h-4 text-slate-600" />
                 </button>
-                <button onClick={nextMonth} className="p-1 rounded hover:bg-slate-100 cursor-pointer">
+                <button type="button" onClick={nextMonth} aria-label="Bulan berikutnya" className="p-2.5 rounded-lg hover:bg-slate-100 cursor-pointer">
                   <ChevronRight className="w-4 h-4 text-slate-600" />
                 </button>
                 <button
                   onClick={() => setShowCalendarModal(false)}
-                  className="p-1 rounded hover:bg-slate-100 cursor-pointer ml-1"
+                  aria-label="Tutup kalender"
+                  className="p-2.5 rounded-lg hover:bg-slate-100 cursor-pointer ml-1"
                 >
                   <X className="w-4 h-4 text-slate-400" />
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 uppercase">
+            <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400 ">
               <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
             </div>
 
             <div className="grid grid-cols-7 gap-1">
               {Array.from({ length: firstDayOfWeek }).map((_, i) => (
-                <div key={`empty-${i}`} className="h-8" />
+                <div key={`empty-${i}`} className="h-10" />
               ))}
               {Array.from({ length: daysInMonth }).map((_, i) => {
                 const day = i + 1;
@@ -1542,11 +1424,13 @@ export default function PortalHome() {
                       setSelectedDate(dateStr);
                       setShowCalendarModal(false);
                     }}
-                    className={`h-8 rounded text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
+                    aria-label={`${day} ${monthNames[calendarMonth]} ${calendarYear}${hasMenu ? ", ada laporan" : ""}`}
+                    aria-pressed={isSelected}
+                    className={`h-10 rounded-lg text-sm font-semibold transition-all flex items-center justify-center cursor-pointer ${
                       isSelected
-                        ? 'bg-slate-900 text-white shadow-sm'
+                        ? 'bg-ink text-white'
                         : hasMenu
-                        ? 'bg-blue-50 text-blue-900 hover:bg-blue-100 font-black border border-blue-200'
+                        ? 'bg-gold-soft text-gold-ink hover:bg-gold-soft/70 font-bold border border-gold/30'
                         : 'text-slate-600 hover:bg-slate-100'
                     }`}
                   >
@@ -1556,12 +1440,12 @@ export default function PortalHome() {
               })}
             </div>
 
-            <div className="flex items-center gap-3 pt-1 text-[10px] font-semibold text-slate-500">
+            <div className="flex items-center gap-3 pt-1 text-xs font-semibold text-slate-500">
               <span className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded bg-blue-50 border border-blue-200" /> Ada laporan
+                <span className="w-3 h-3 rounded bg-gold-soft border border-gold/30" /> Ada laporan
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded bg-slate-900" /> Dipilih
+                <span className="w-3 h-3 rounded bg-ink" /> Dipilih
               </span>
             </div>
           </div>

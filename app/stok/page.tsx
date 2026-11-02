@@ -4,12 +4,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  Landmark,
-  ShieldCheck,
-  LayoutDashboard,
-  Archive,
-  Users,
-  FileSpreadsheet,
   Boxes,
   Search,
   PlusCircle,
@@ -18,7 +12,6 @@ import {
   FileDown,
   Printer,
   X,
-  Menu as MenuIcon,
   CheckCircle2,
   TrendingDown,
   Warehouse,
@@ -36,6 +29,7 @@ import {
   Scale,
   ChefHat,
 } from 'lucide-react';
+import { TopNav, BottomTabs } from '@/components/SiteNav';
 import {
   StockItem,
   StockMovement,
@@ -62,7 +56,6 @@ import {
 export default function StockMonitoringPage() {
   const [stockItems, setStockItems] = useState<StockItem[]>(DEFAULT_STOCK_ITEMS_16);
   const [movements, setMovements] = useState<StockMovement[]>([]);
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
   // Active Main Workflow Tab
   const [activeMainTab, setActiveMainTab] = useState<'inventory' | 'opname' | 'movements' | 'bom'>('inventory');
@@ -729,299 +722,46 @@ export default function StockMonitoringPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans antialiased w-full overflow-x-hidden">
+    <div className="min-h-screen bg-paper text-ink flex flex-col w-full overflow-x-hidden has-bottom-tabs">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs sm:text-sm font-semibold px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-2 animate-bounce">
-          <Info className="w-4 h-4 text-blue-400 shrink-0" />
+        <div className="fixed bottom-20 right-5 z-50 bg-ink text-white text-xs sm:text-sm font-semibold px-4 py-3 rounded-xl shadow-2xl border border-line flex items-center gap-2 animate-bounce">
+          <Info className="w-4 h-4 text-gold shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* ============ INSTITUTIONAL MASTHEAD ============ */}
-      <div className="bg-[#0b1f3a] text-white no-print">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6">
-          <div className="flex items-center justify-between gap-3 py-1.5 text-[10px] sm:text-[11px] font-medium text-blue-200/80">
-            <span className="flex items-center gap-1.5">
-              <Landmark className="w-3 h-3" />
-              <span className="hidden sm:inline">Badan Gizi Nasional — Republik Indonesia</span>
-              <span className="sm:hidden">Badan Gizi Nasional</span>
+      {/* ============ HEADER ============ */}
+      <header className="bg-white border-b border-line sticky top-0 z-40 no-print">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-2.5 min-w-0" aria-label="SPPG Wonodri 3, beranda">
+            <Image src="/logo.png" alt="" width={32} height={32} className="object-contain shrink-0" priority />
+            <span className="min-w-0">
+              <span className="block font-heading font-bold text-[15px] leading-tight truncate">
+                SPPG Wonodri 3
+              </span>
+              <span className="block text-xs text-slate-600 leading-tight truncate">
+                Monitoring Stok &bull; Dapur MBG
+              </span>
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
-              </span>
-              <span className="font-bold text-emerald-300">Sistem Aktif</span>
-              <span className="hidden md:inline text-blue-300/60">• Logistik Bahan Masuk (01 Nov) &amp; Masak (02 Nov)</span>
-            </span>
-          </div>
-        </div>
-      </div>
+          </Link>
 
-      {/* ============ APP SHELL HEADER ============ */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 no-print shadow-xs">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6">
-          <div className="h-16 flex items-center justify-between gap-3">
-            {/* Hamburger Button (Mobile Drawer) */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsDrawerOpen(true)}
-                className="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors"
-                title="Buka Menu Drawer"
-              >
-                <MenuIcon className="w-5 h-5" />
-              </button>
+          <TopNav />
 
-              {/* Brand */}
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-xs p-1 flex items-center justify-center shrink-0">
-                  <Image src="/logo.png" alt="Logo BGN" width={30} height={30} className="object-contain" priority />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-black text-sm sm:text-base text-slate-900 tracking-tight truncate leading-tight">
-                      SPPG Wonodri 3
-                    </span>
-                    <span className="hidden md:inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-blue-800 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
-                      <ShieldCheck className="w-2.5 h-2.5" /> Terverifikasi BGN
-                    </span>
-                  </div>
-                  <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium block truncate">
-                    Monitoring Stok: Masuk 01 Nov &bull; Masak 02 Nov 2026 (1.553 Porsi)
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Nav Links (Desktop) */}
-            <div className="hidden md:flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <Link
-                href="/"
-                className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5 text-blue-600" />
-                <span>Portal Utama</span>
-              </Link>
-              <Link
-                href="/arsip"
-                className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1"
-              >
-                <Archive className="w-3.5 h-3.5 text-blue-600" />
-                <span>Arsip Operasional</span>
-              </Link>
-              <Link
-                href="/absensi"
-                className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1"
-              >
-                <Users className="w-3.5 h-3.5 text-blue-600" />
-                <span>Absensi Relawan</span>
-              </Link>
-              <span className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-700 flex items-center gap-1 shadow-xs">
-                <Boxes className="w-3.5 h-3.5" />
-                <span>Stok Gudang</span>
-              </span>
-              <Link
-                href="/admin"
-                className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100"
-                title="Panel Operator"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Primary nav bar */}
-        <div className="border-t border-slate-100 bg-slate-50/80">
-          <div className="max-w-7xl mx-auto px-3 sm:px-6">
-            <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1.5">
-              <Link
-                href="/"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                Portal
-              </Link>
-              <Link
-                href="/arsip"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
-              >
-                <Archive className="w-3.5 h-3.5" />
-                Arsip Operasional
-              </Link>
-              <Link
-                href="/absensi"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
-              >
-                <Users className="w-3.5 h-3.5" />
-                Absensi Relawan
-              </Link>
-              <span className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 flex items-center gap-1.5 whitespace-nowrap shadow-xs cursor-default">
-                <Boxes className="w-3.5 h-3.5" />
-                Monitoring Stok
-              </span>
-              <Link
-                href="/admin"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                Panel Operator
-              </Link>
-            </nav>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowPrintModal(true)}
+            className="inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft shrink-0 cursor-pointer"
+          >
+            <Printer className="w-4 h-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Cetak Berita Acara</span>
+            <span className="sr-only sm:hidden">Cetak Berita Acara</span>
+          </button>
         </div>
       </header>
 
-      {/* ============ DRAWER KIRI (MOBILE MENU) ============ */}
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 flex no-print">
-          <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
-            onClick={() => setIsDrawerOpen(false)}
-          />
-          <div className="relative w-80 max-w-[85vw] bg-slate-900 text-white h-full shadow-2xl p-5 flex flex-col justify-between overflow-y-auto">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-white p-1 flex items-center justify-center">
-                    <Image src="/logo.png" alt="Logo" width={22} height={22} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-white">SPPG Wonodri 3</h3>
-                    <p className="text-[10px] text-slate-400">Navigasi Sentral ERP</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="space-y-1 text-xs">
-                <Link
-                  href="/"
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white"
-                >
-                  <LayoutDashboard className="w-4 h-4 text-blue-400" />
-                  <span>Portal Utama (MBG)</span>
-                </Link>
-                <Link
-                  href="/arsip"
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white"
-                >
-                  <Archive className="w-4 h-4 text-sky-400" />
-                  <span>Katalog Arsip Operasional</span>
-                </Link>
-                <Link
-                  href="/absensi"
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white"
-                >
-                  <Users className="w-4 h-4 text-emerald-400" />
-                  <span>Presensi 40 Relawan</span>
-                </Link>
-                <div className="pt-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1 mb-1.5">
-                    Modul Stok &amp; Logistik
-                  </span>
-
-                  <div className="space-y-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveMainTab('inventory');
-                        setIsDrawerOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
-                        activeMainTab === 'inventory'
-                          ? 'bg-blue-600 text-white font-bold'
-                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                      }`}
-                    >
-                      <Boxes className="w-4 h-4 shrink-0 text-blue-400" />
-                      <span>Daftar Stok Bahan</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveMainTab('movements');
-                        setIsDrawerOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
-                        activeMainTab === 'movements'
-                          ? 'bg-indigo-600 text-white font-bold'
-                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                      }`}
-                    >
-                      <History className="w-4 h-4 shrink-0 text-indigo-400" />
-                      <span>Mutasi Masuk &amp; Keluar ({movements.length})</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveMainTab('opname');
-                        setIsDrawerOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
-                        activeMainTab === 'opname'
-                          ? 'bg-amber-600 text-white font-bold'
-                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                      }`}
-                    >
-                      <ClipboardCheck className="w-4 h-4 shrink-0 text-amber-400" />
-                      <span>Stock Opname (Hitung Fisik)</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveMainTab('bom');
-                        setIsDrawerOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all cursor-pointer text-left ${
-                        activeMainTab === 'bom'
-                          ? 'bg-blue-600 text-white font-bold'
-                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                      }`}
-                    >
-                      <Calculator className="w-4 h-4 shrink-0 text-purple-400" />
-                      <span>Kalkulator BOM (1.553 Porsi)</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <Link
-                    href="/admin"
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white"
-                  >
-                    <FileSpreadsheet className="w-4 h-4 text-amber-400" />
-                    <span>Panel Operator</span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-slate-800 pt-4 text-[11px] text-slate-400">
-              <p className="font-bold text-slate-300">Pagu Kuota: 1.553 Porsi / Hari</p>
-              <p className="text-[10px] text-slate-500">Kecamatan Semarang Selatan</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ============ MAIN CONTENT ============ */}
-      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-5 sm:py-7 flex-1 space-y-5 print:hidden">
+      <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6 print:hidden">
         {/* Banner Header Halaman */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5 max-w-2xl">
@@ -3199,16 +2939,14 @@ export default function StockMonitoringPage() {
       )}
 
       {/* ============ FOOTER ============ */}
-      <footer className="bg-white border-t border-slate-200 mt-10 py-6 text-center text-xs text-slate-500 no-print">
-        <div className="max-w-7xl mx-auto px-4 space-y-1">
-          <p className="font-bold text-slate-700">
-            Satuan Pelayanan Pangan Bergizi (SPPG) Wonodri 3 — Kota Semarang
-          </p>
-          <p className="text-[11px]">
-            Badan Gizi Nasional (BGN) Republik Indonesia &bull; Logistik Masuk 01 Nov &bull; Masak 02 Nov 2026 (1.553 Porsi)
-          </p>
+      <footer className="no-print border-t border-line bg-white mt-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 text-sm text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <span>Portal transparansi operasional SPPG Wonodri 3, Kota Semarang</span>
+          <span>Badan Gizi Nasional, Republik Indonesia</span>
         </div>
       </footer>
+
+      <BottomTabs />
     </div>
   );
 }

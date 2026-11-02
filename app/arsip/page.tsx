@@ -13,15 +13,11 @@ import {
   ChevronRight,
   Filter,
   CheckCircle2,
-  Landmark,
-  ShieldCheck,
-  LayoutDashboard,
   FileSpreadsheet,
   KeyRound,
   X,
-  Archive,
-  Boxes,
 } from 'lucide-react';
+import { TopNav, BottomTabs } from '@/components/SiteNav';
 import staticMenusData from '@/lib/staticMenus.json';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
 import { DailyMenuRecord } from '@/lib/data';
@@ -215,132 +211,39 @@ export default function ArsipPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans antialiased w-full overflow-x-hidden">
-      {/* ============ INSTITUTIONAL MASTHEAD ============ */}
-      <div className="bg-[#0b1f3a] text-white no-print">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6">
-          <div className="flex items-center justify-between gap-3 py-1.5 text-[10px] sm:text-[11px] font-medium text-blue-200/80">
-            <span className="flex items-center gap-1.5">
-              <Landmark className="w-3 h-3" />
-              <span className="hidden sm:inline">Badan Gizi Nasional — Republik Indonesia</span>
-              <span className="sm:hidden">Badan Gizi Nasional</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+    <div className="min-h-screen bg-paper text-ink flex flex-col w-full overflow-x-hidden has-bottom-tabs">
+      {/* ============ HEADER ============ */}
+      <header className="bg-white border-b border-line sticky top-0 z-40 no-print">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-2.5 min-w-0" aria-label="SPPG Wonodri 3, beranda">
+            <Image src="/logo.png" alt="" width={32} height={32} className="object-contain shrink-0" priority />
+            <span className="min-w-0">
+              <span className="block font-heading font-bold text-[15px] leading-tight truncate">
+                SPPG Wonodri 3
               </span>
-              <span className="font-bold text-emerald-300">Sistem Aktif</span>
-              <span className="hidden md:inline text-blue-300/60">• Direktori Arsip Terbuka</span>
+              <span className="block text-xs text-slate-600 leading-tight truncate">
+                Dapur MBG, Semarang Selatan
+              </span>
             </span>
-          </div>
-        </div>
-      </div>
+          </Link>
 
-      {/* ============ APP SHELL HEADER ============ */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 no-print shadow-xs">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6">
-          <div className="h-16 flex items-center justify-between gap-3">
-            {/* Brand */}
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-xs p-1 flex items-center justify-center shrink-0">
-                <Image src="/logo.png" alt="Logo BGN" width={30} height={30} className="object-contain" priority />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-black text-sm sm:text-base text-slate-900 tracking-tight truncate leading-tight">
-                    SPPG Wonodri 3
-                  </span>
-                  <span className="hidden md:inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-blue-800 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
-                    <ShieldCheck className="w-2.5 h-2.5" /> Terverifikasi BGN
-                  </span>
-                </div>
-                <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium block truncate">
-                  Portal Arsip Dokumen & Operasional Harian MBG
-                </span>
-              </div>
-            </div>
+          <TopNav />
 
-            {/* Quick Nav Links */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <Link
-                href="/"
-                className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5 text-blue-600" />
-                <span className="hidden sm:inline">Portal Utama</span>
-              </Link>
-              <Link
-                href="/absensi"
-                className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1"
-              >
-                <Users className="w-3.5 h-3.5 text-blue-600" />
-                <span className="hidden sm:inline">Absensi</span>
-              </Link>
-              <Link
-                href="/stok"
-                className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1"
-              >
-                <Boxes className="w-3.5 h-3.5 text-blue-600" />
-                <span className="hidden sm:inline">Stok</span>
-              </Link>
-              <Link
-                href="/admin"
-                className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100"
-                title="Panel Operator"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Primary nav: modul utama */}
-        <div className="border-t border-slate-100 bg-slate-50/80">
-          <div className="max-w-7xl mx-auto px-3 sm:px-6">
-            <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1.5">
-              <Link
-                href="/"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                Portal
-              </Link>
-              <Link
-                href="/arsip"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 flex items-center gap-1.5 whitespace-nowrap shadow-xs"
-              >
-                <Archive className="w-3.5 h-3.5" />
-                Arsip Operasional
-              </Link>
-              <Link
-                href="/absensi"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
-              >
-                <Users className="w-3.5 h-3.5" />
-                Absensi Relawan
-              </Link>
-              <Link
-                href="/stok"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
-              >
-                <Boxes className="w-3.5 h-3.5" />
-                Monitoring Stok
-              </Link>
-              <Link
-                href="/admin"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5 whitespace-nowrap border border-transparent hover:border-slate-200"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                Panel Operator
-              </Link>
-            </nav>
-          </div>
+          <button
+            type="button"
+            onClick={() => handleOpenPrintForDate(printDateTarget || allUniqueDates[0])}
+            title="Cetak SPJ Presensi (Perlu PIN)"
+            className="inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft shrink-0 cursor-pointer"
+          >
+            <Printer className="w-4 h-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Cetak SPJ</span>
+            <span className="sr-only sm:hidden">Cetak SPJ</span>
+          </button>
         </div>
       </header>
 
       {/* ============ MAIN CONTENT ============ */}
-      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-5 sm:py-7 flex-1 space-y-5">
+      <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6">
         {/* Banner Header Halaman */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5 max-w-2xl">
@@ -871,9 +774,14 @@ export default function ArsipPage() {
       )}
 
       {/* Footer */}
-      <footer className="py-5 text-center text-xs text-slate-400 border-t border-slate-200 bg-white no-print">
-        Direktori Arsip Operasional Resmi • SPPG Wonodri 3 Kota Semarang
+      <footer className="no-print border-t border-line bg-white mt-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 text-sm text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <span>Portal transparansi operasional SPPG Wonodri 3, Kota Semarang</span>
+          <span>Badan Gizi Nasional, Republik Indonesia</span>
+        </div>
       </footer>
+
+      <BottomTabs />
     </div>
   );
 }
