@@ -81,6 +81,11 @@ export default function StockMonitoringPage() {
   // Modal Print Type: Masuk (02 Nov), Keluar Masak (03 Nov), atau Rekap Mutasi
   const [printReportType, setPrintReportType] = useState<'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'MUTASI'>('B2_OUT');
 
+  const handleOpenPrintFor = (type: 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'MUTASI') => {
+    setPrintReportType(type);
+    setShowPrintModal(true);
+  };
+
   // Items untuk Dokumen Berita Acara A4
   const reportItems = useMemo(() => {
     if (printReportType === 'B2_OUT' || printReportType === 'B2_IN') {
@@ -798,12 +803,12 @@ export default function StockMonitoringPage() {
               Monitoring Stok &amp; Kuantitas Bahan Masak
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Barang datang tgl <strong>01 Nov 2026</strong> dari <strong>Yayasan Berkat Makmur Sentosa</strong> (244.2 KG + 4.838 Unit) telah <strong>dikeluarkan penuh pada tgl 02 Nov 2026</strong> untuk memasak <strong>1.553 Porsi MBG</strong>.
+              Tercatat 2 siklus mutasi: <strong>Batch 1</strong> (Masuk 01 Nov &bull; Masak 02 Nov) dan <strong>Batch 2</strong> (Masuk 02 Nov &bull; Masak 03 Nov) dari mitra <strong>Yayasan Berkat Makmur Sentosa</strong> untuk <strong>1.553 Porsi MBG</strong>.
             </p>
           </div>
 
           {/* Quick Actions in Banner */}
-          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full md:w-auto shrink-0">
+          <div className="grid grid-cols-2 lg:flex lg:items-center gap-2 w-full md:w-auto shrink-0">
             <button
               type="button"
               onClick={() => handleOpenAddItem()}
@@ -818,7 +823,7 @@ export default function StockMonitoringPage() {
               className="px-3 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
               <PlusCircle className="w-4 h-4 shrink-0" />
-              <span>+ Masuk (Supplier)</span>
+              <span>+ Catat Masuk</span>
             </button>
             <button
               type="button"
@@ -826,15 +831,25 @@ export default function StockMonitoringPage() {
               className="px-3 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
               <MinusCircle className="w-4 h-4 shrink-0" />
-              <span>- Pakai Masak</span>
+              <span>- Catat Masak</span>
             </button>
             <button
               type="button"
-              onClick={() => setShowPrintModal(true)}
-              className="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              onClick={() => handleOpenPrintFor('B2_IN')}
+              className="px-3 py-2 rounded-xl text-xs font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              title="Download Dokumen PDF Bahan Masuk"
             >
-              <Printer className="w-4 h-4 text-slate-600 shrink-0" />
-              <span>Cetak Berita Acara</span>
+              <FileDown className="w-4 h-4 text-emerald-700 shrink-0" />
+              <span>PDF Bahan Masuk</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOpenPrintFor('B2_OUT')}
+              className="px-3 py-2 rounded-xl text-xs font-bold text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              title="Download Dokumen PDF Bahan Keluar Masak"
+            >
+              <FileDown className="w-4 h-4 text-indigo-700 shrink-0" />
+              <span>PDF Bahan Masak</span>
             </button>
           </div>
         </div>
@@ -1845,17 +1860,35 @@ export default function StockMonitoringPage() {
               <div className="space-y-1">
                 <h3 className="text-sm font-black text-slate-900">Buku Register Mutasi Stok (Audit Trail)</h3>
                 <p className="text-xs text-slate-500">
-                  Daftar transaksi barang masuk tgl 02 Nov 2026 dan barang keluar masak dapur tgl 03 Nov 2026.
+                  Daftar transaksi barang masuk dan keluar masak dapur (Siklus Batch 01 &amp; 02 Nov 2026).
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => handleOpenPrintFor('B2_IN')}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
+                  title="Download Dokumen Berita Acara PDF Bahan Masuk"
+                >
+                  <FileDown className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>PDF Masuk</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleOpenPrintFor('B2_OUT')}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 flex items-center gap-1 cursor-pointer transition-colors"
+                  title="Download Dokumen Berita Acara PDF Bahan Keluar Masak"
+                >
+                  <FileDown className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>PDF Masak</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => handleOpenRestock()}
                   className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs flex items-center gap-1 cursor-pointer"
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
-                  <span>+ Masuk (Supplier)</span>
+                  <span>+ Masuk</span>
                 </button>
                 <button
                   type="button"
@@ -1863,7 +1896,7 @@ export default function StockMonitoringPage() {
                   className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs flex items-center gap-1 cursor-pointer"
                 >
                   <MinusCircle className="w-3.5 h-3.5" />
-                  <span>- Pakai Masak</span>
+                  <span>- Pakai</span>
                 </button>
                 <button
                   type="button"
@@ -2816,10 +2849,11 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-3.5 sm:px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer transition-colors"
+                  title="Download atau Simpan sebagai PDF (A4)"
                 >
-                  <Printer className="w-4 h-4 shrink-0" />
-                  <span>Cetak / PDF</span>
+                  <FileDown className="w-4 h-4 shrink-0" />
+                  <span>Download / Simpan PDF</span>
                 </button>
                 <button
                   type="button"
