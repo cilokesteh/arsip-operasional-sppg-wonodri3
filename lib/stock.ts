@@ -17,8 +17,8 @@ export interface StockItem {
   uom: string; // KG, L, POUCH, BTL, PAPAN, KRAT, PCS, etc.
   storageLocation: string; // 'Gudang Basah' atau 'Gudang Kering'
   currentStock: number;
-  initialStock: number; // Jumlah yang masuk 01 Nov 2026
-  usedStock: number; // Jumlah yang keluar masak 02 Nov 2026
+  initialStock: number; // Jumlah yang masuk 03 Nov 2026
+  usedStock: number; // Jumlah yang keluar masak 03 Nov 2026
   minStockAlert: number;
   dailyUsageAvg: number;
   supplierName: string;
@@ -58,13 +58,13 @@ export interface StockSummary {
   categoryCounts: Record<StockCategory, number>;
 }
 
-export const ARSIP_STOCK_INVENTORY_KEY = 'sppg_stock_inventory_v7';
-export const ARSIP_STOCK_MOVEMENTS_KEY = 'sppg_stock_movements_v7';
-export const ARSIP_STOCK_OPNAME_DRAFT_KEY = 'sppg_stock_opname_draft_v7';
+export const ARSIP_STOCK_INVENTORY_KEY = 'sppg_stock_inventory_v8';
+export const ARSIP_STOCK_MOVEMENTS_KEY = 'sppg_stock_movements_v8';
+export const ARSIP_STOCK_OPNAME_DRAFT_KEY = 'sppg_stock_opname_draft_v8';
 
 export const SUPPLIER_YAYASAN = 'Yayasan Berkat Makmur Sentosa';
 
-// 17 Master Bahan Baku Resmi (Masuk 01 Nov 2026 -> Keluar Masak Penuh 02 Nov 2026 untuk 1.553 Porsi MBG)
+// 17 Master Bahan Baku Resmi (Masuk 03 Nov 2026 -> Keluar Masak Penuh 03 Nov 2026 untuk 1.553 Porsi MBG)
 export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
   // 1. Bahan Kering (Gudang Kering)
   {
@@ -80,9 +80,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 25,
     dailyUsageAvg: 100,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 100 KG (01 Nov) -> Keluar masak 100 KG (02 Nov) untuk nasi 1.553 porsi',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 100 KG (03 Nov) -> Keluar masak 100 KG (03 Nov) untuk nasi 1.553 porsi',
   },
   {
     id: 'bhk-02',
@@ -97,9 +97,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 1,
     dailyUsageAvg: 3,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 3 KG (01 Nov) -> Keluar masak 3 KG (02 Nov) bumbu penyedap sup/tumis',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 3 KG (03 Nov) -> Keluar masak 3 KG (03 Nov) bumbu penyedap sup/tumis',
   },
   {
     id: 'bhk-03',
@@ -114,9 +114,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 1,
     dailyUsageAvg: 3,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 3 KG (01 Nov) -> Keluar masak 3 KG (02 Nov) adonan rolade/tahu',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 3 KG (03 Nov) -> Keluar masak 3 KG (03 Nov) adonan rolade/tahu',
   },
   {
     id: 'bhk-04',
@@ -131,9 +131,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 0.5,
     dailyUsageAvg: 1,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 1 L (01 Nov) -> Keluar masak 1 L (02 Nov) bumbu olahan tumisan',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 1 L (03 Nov) -> Keluar masak 1 L (03 Nov) bumbu olahan tumisan',
   },
   {
     id: 'bhk-05',
@@ -148,9 +148,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 10,
     dailyUsageAvg: 36,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 36 L (01 Nov) -> Keluar masak 36 L (02 Nov) menggoreng tahu & rolade',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 36 L (03 Nov) -> Keluar masak 36 L (03 Nov) menggoreng tahu & rolade',
   },
   {
     id: 'bhk-06',
@@ -165,9 +165,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 0.5,
     dailyUsageAvg: 1,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 1 L (01 Nov) -> Keluar masak 1 L (02 Nov) bumbu kecap manis',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 1 L (03 Nov) -> Keluar masak 1 L (03 Nov) bumbu kecap manis',
   },
 
   // 2. Rempah (Gudang Kering)
@@ -184,9 +184,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 0.05,
     dailyUsageAvg: 0.2,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 0.2 KG (01 Nov) -> Keluar masak 0.2 KG (02 Nov) bumbu olahan ayam & sup',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 0.2 KG (03 Nov) -> Keluar masak 0.2 KG (03 Nov) bumbu olahan ayam & sup',
   },
   {
     id: 'rmp-02',
@@ -201,9 +201,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 1,
     dailyUsageAvg: 2,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 2 KG (01 Nov) -> Keluar masak 2 KG (02 Nov) bumbu dasar masakan',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 2 KG (03 Nov) -> Keluar masak 2 KG (03 Nov) bumbu dasar masakan',
   },
   {
     id: 'rmp-03',
@@ -218,9 +218,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 0.5,
     dailyUsageAvg: 1,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 1 KG (01 Nov) -> Keluar masak 1 KG (02 Nov) bumbu dasar masakan',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 1 KG (03 Nov) -> Keluar masak 1 KG (03 Nov) bumbu dasar masakan',
   },
 
   // 3. Protein Hewani (Gudang Basah)
@@ -237,9 +237,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 15,
     dailyUsageAvg: 60,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 60 KG (01 Nov) -> Keluar masak 60 KG (02 Nov) lauk hewani 1.553 porsi',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 60 KG (03 Nov) -> Keluar masak 60 KG (03 Nov) lauk hewani 1.553 porsi',
   },
   {
     id: 'prh-02',
@@ -254,9 +254,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 1,
     dailyUsageAvg: 3,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 3 KG (01 Nov) -> Keluar masak 3 KG (02 Nov) adonan rolade & sup telur',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 3 KG (03 Nov) -> Keluar masak 3 KG (03 Nov) adonan rolade & sup telur',
   },
 
   // 4. Protein Nabati (Gudang Kering)
@@ -273,9 +273,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 200,
     dailyUsageAvg: 1600,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 1.600 PCS (01 Nov) -> Keluar masak 1.600 PCS (02 Nov) lauk nabati 1.553 porsi',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 1.600 PCS (03 Nov) -> Keluar masak 1.600 PCS (03 Nov) lauk nabati 1.553 porsi',
   },
 
   // 5. Sayur (Gudang Basah)
@@ -292,9 +292,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 10,
     dailyUsageAvg: 33,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 33 KG (01 Nov) -> Keluar masak 33 KG (02 Nov) sayur sup wortel kembang kol',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 33 KG (03 Nov) -> Keluar masak 33 KG (03 Nov) sayur sup wortel kembang kol',
   },
   {
     id: 'syr-02',
@@ -309,9 +309,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 1,
     dailyUsageAvg: 4,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 4 KG (01 Nov) -> Keluar masak 4 KG (02 Nov) pelengkap sup & olahan ayam',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 4 KG (03 Nov) -> Keluar masak 4 KG (03 Nov) pelengkap sup & olahan ayam',
   },
   {
     id: 'syr-03',
@@ -326,9 +326,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 10,
     dailyUsageAvg: 35,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 35 KG (01 Nov) -> Keluar masak 35 KG (02 Nov) sup kembang kol MBG',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 35 KG (03 Nov) -> Keluar masak 35 KG (03 Nov) sup kembang kol MBG',
   },
 
   // 6. Buah (Gudang Basah)
@@ -345,9 +345,9 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 200,
     dailyUsageAvg: 1600,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 1.600 PCS (01 Nov) -> Keluar 1.600 PCS (02 Nov) buah segar 1.553 porsi siswa',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 1.600 PCS (03 Nov) -> Keluar 1.600 PCS (03 Nov) buah segar 1.553 porsi siswa',
   },
 
   // 7. Lainnya (Gudang Kering)
@@ -364,18 +364,18 @@ export const DEFAULT_STOCK_ITEMS_17: StockItem[] = [
     minStockAlert: 200,
     dailyUsageAvg: 1600,
     supplierName: SUPPLIER_YAYASAN,
-    lastRestockDate: '2026-11-01',
-    lastUsageDate: '2026-11-02',
-    notes: 'Masuk 1.600 PCS (01 Nov) -> Keluar masak 1.600 PCS (02 Nov) pembungkus rolade ayam',
+    lastRestockDate: '2026-11-02',
+    lastUsageDate: '2026-11-03',
+    notes: 'Masuk 1.600 PCS (03 Nov) -> Keluar masak 1.600 PCS (03 Nov) pembungkus rolade ayam',
   },
 ];
 
-// Register 34 Mutasi: 17 Masuk (01 Nov 2026) + 17 Keluar Masak (02 Nov 2026)
+// Register 34 Mutasi: 17 Masuk (03 Nov 2026) + 17 Keluar Masak (03 Nov 2026)
 export const DEFAULT_STOCK_MOVEMENTS_34: StockMovement[] = [
-  // --- 17 BARANG KELUAR MASAK (02 NOVEMBER 2026) ---
+  // --- 17 BARANG KELUAR MASAK (03 NOVEMBER 2026) ---
   ...DEFAULT_STOCK_ITEMS_17.map((item, idx) => ({
-    id: `mov-20261102-${String(idx + 1).padStart(2, '0')}`,
-    date: '2026-11-02',
+    id: `mov-20261103-${String(idx + 1).padStart(2, '0')}`,
+    date: '2026-11-03',
     time: '05:00',
     itemId: item.id,
     itemName: item.name,
@@ -383,15 +383,15 @@ export const DEFAULT_STOCK_MOVEMENTS_34: StockMovement[] = [
     qty: item.usedStock,
     uom: item.uom,
     balanceAfter: 0,
-    reference: 'BOM-MSK-20261102',
+    reference: 'BOM-MSK-20261103',
     loggedBy: 'Seksi Pengolahan Dapur',
-    notes: `Pemakaian masak 1.553 Porsi MBG tgl 02 Nov 2026 (Nasi, Rolade Ayam Kulit Tahu, Tahu Kuning, Sup Kembang Kol Wortel, Jeruk Manis)`,
+    notes: `Pemakaian masak 1.553 Porsi MBG tgl 03 Nov 2026 (Nasi, Rolade Ayam Kulit Tahu, Tahu Kuning, Sup Kembang Kol Wortel, Jeruk Manis)`,
   })),
 
-  // --- 17 BARANG MASUK DARI SUPPLIER (01 NOVEMBER 2026) ---
+  // --- 17 BARANG MASUK DARI SUPPLIER (02 NOVEMBER 2026) ---
   ...DEFAULT_STOCK_ITEMS_17.map((item, idx) => ({
-    id: `mov-20261101-${String(idx + 1).padStart(2, '0')}`,
-    date: '2026-11-01',
+    id: `mov-20261102-${String(idx + 1).padStart(2, '0')}`,
+    date: '2026-11-02',
     time: '04:30',
     itemId: item.id,
     itemName: item.name,
@@ -399,9 +399,9 @@ export const DEFAULT_STOCK_MOVEMENTS_34: StockMovement[] = [
     qty: item.initialStock,
     uom: item.uom,
     balanceAfter: item.initialStock,
-    reference: 'GRN-20261101-01',
+    reference: 'GRN-20261102-01',
     loggedBy: 'Nur Khafidin (Petugas Timbangan)',
-    notes: `Penerimaan bahan baku masuk dari ${SUPPLIER_YAYASAN} tgl 01 Nov 2026`,
+    notes: `Penerimaan bahan baku masuk dari ${SUPPLIER_YAYASAN} tgl 03 Nov 2026`,
   })),
 ];
 
@@ -479,7 +479,7 @@ export function saveMovementsToStorage(movements: StockMovement[]): void {
   }
 }
 
-// Rekapitulasi kuantitas fisik (Masuk tgl 1 & Keluar Masak tgl 2)
+// Rekapitulasi kuantitas fisik (Masuk tgl 2 & Keluar Masak tgl 3)
 export function calculateStockSummary(items: StockItem[]): StockSummary {
   let totalKgMasuk = 0;
   let totalQtyNonKgMasuk = 0;
@@ -560,8 +560,8 @@ export function generateStockCSV(items: StockItem[]): string {
     'Golongan / Kategori',
     'Nama Bahan Makanan',
     'Lokasi Simpan',
-    'Masuk 01 Nov (Qty)',
-    'Keluar 02 Nov (Qty)',
+    'Masuk 02 Nov (Qty)',
+    'Keluar 03 Nov (Qty)',
     'Sisa Stok Saat Ini',
     'Satuan',
     'Status Penggunaan',
@@ -578,7 +578,7 @@ export function generateStockCSV(items: StockItem[]): string {
       item.usedStock,
       item.currentStock,
       `"${item.uom}"`,
-      `"Habis Terpakai Masak 02 Nov"`,
+      `"Habis Terpakai Masak 03 Nov"`,
       `"${item.supplierName.replace(/"/g, '""')}"`,
     ].join(',');
   });
@@ -605,9 +605,9 @@ export function generateMovementsCSV(movements: StockMovement[]): string {
   const rows = movements.map((m) => {
     const typeLabel =
       m.type === 'IN'
-        ? 'MASUK (01 NOV)'
+        ? 'MASUK (02 NOV)'
         : m.type === 'OUT'
-        ? 'KELUAR MASAK (02 NOV)'
+        ? 'KELUAR MASAK (03 NOV)'
         : 'PENYESUAIAN OPNAME';
 
     return [

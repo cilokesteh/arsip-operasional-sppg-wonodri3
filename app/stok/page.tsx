@@ -77,7 +77,7 @@ export default function StockMonitoringPage() {
   const [opnameSearch, setOpnameSearch] = useState<string>('');
   const [isOpnameDirty, setIsOpnameDirty] = useState<boolean>(false);
 
-  // Modal Print Type: Masuk (01 Nov), Keluar Masak (02 Nov), atau Rekap Mutasi
+  // Modal Print Type: Masuk (02 Nov), Keluar Masak (03 Nov), atau Rekap Mutasi
   const [printReportType, setPrintReportType] = useState<'MASUK' | 'KELUAR' | 'MUTASI'>('KELUAR');
 
   // Interactive Modals
@@ -105,13 +105,13 @@ export default function StockMonitoringPage() {
   const [formRestockDate, setFormRestockDate] = useState<string>('2026-11-01');
   const [formRestockQty, setFormRestockQty] = useState<number>(20);
   const [formRestockVendor, setFormRestockVendor] = useState<string>('Yayasan Berkat Makmur Sentosa');
-  const [formRestockInvoice, setFormRestockInvoice] = useState<string>('GRN-20261101-01');
+  const [formRestockInvoice, setFormRestockInvoice] = useState<string>('GRN-20261102-01');
   const [formRestockNotes, setFormRestockNotes] = useState<string>('Bahan baku masuk tgl 01 Nov 2026');
 
   // Form States for Usage
   const [formUsageItemId, setFormUsageItemId] = useState<string>('bhk-01');
   const [formUsageQty, setFormUsageQty] = useState<number>(10);
-  const [formUsageMenu, setFormUsageMenu] = useState<string>('Produksi Dapur MBG 1.553 Porsi (02 Nov 2026)');
+  const [formUsageMenu, setFormUsageMenu] = useState<string>('Produksi Dapur MBG 1.553 Porsi (03 Nov 2026)');
   const [formUsageNotes, setFormUsageNotes] = useState<string>('Dikeluarkan penuh untuk pengolahan masak dapur');
 
   // Feedback Notification Toast
@@ -387,7 +387,7 @@ export default function StockMonitoringPage() {
     setFormAddMinAlert(5);
     setFormAddDailyUsage(2);
     setFormAddSupplier('Yayasan Berkat Makmur Sentosa');
-    setFormAddNotes('Penerimaan masuk 01 Nov 2026');
+    setFormAddNotes('Penerimaan masuk 02 Nov 2026');
     setShowAddItemModal(true);
   };
 
@@ -411,8 +411,8 @@ export default function StockMonitoringPage() {
       minStockAlert: Number(formAddMinAlert) || 0,
       dailyUsageAvg: Number(formAddDailyUsage) || 0,
       supplierName: formAddSupplier || 'Yayasan Berkat Makmur Sentosa',
-      lastRestockDate: '2026-11-01',
-      lastUsageDate: '2026-11-02',
+      lastRestockDate: '2026-11-02',
+      lastUsageDate: '2026-11-03',
       notes: formAddNotes || undefined,
     };
 
@@ -457,7 +457,7 @@ export default function StockMonitoringPage() {
       setFormRestockItemId(stockItems[0]?.id || '');
       setFormRestockVendor(stockItems[0]?.supplierName || 'Yayasan Berkat Makmur Sentosa');
     }
-    setFormRestockDate('2026-11-01');
+    setFormRestockDate('2026-11-02');
     setFormRestockQty(20);
     setFormRestockInvoice(`GRN-20261101-${Date.now().toString().slice(-4)}`);
     setShowRestockModal(true);
@@ -519,7 +519,7 @@ export default function StockMonitoringPage() {
           ...item,
           currentStock: Number((item.currentStock + qty).toFixed(2)),
           initialStock: Number((item.initialStock + qty).toFixed(2)),
-          lastRestockDate: formRestockDate || '2026-11-01',
+          lastRestockDate: formRestockDate || '2026-11-02',
           supplierName: formRestockVendor || item.supplierName,
         };
       }
@@ -528,7 +528,7 @@ export default function StockMonitoringPage() {
 
     const newMovement: StockMovement = {
       id: `mov-${Date.now()}`,
-      date: formRestockDate || '2026-11-01',
+      date: formRestockDate || '2026-11-02',
       time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       itemId: target.id,
       itemName: target.name,
@@ -536,9 +536,9 @@ export default function StockMonitoringPage() {
       qty: qty,
       uom: target.uom,
       balanceAfter: Number((target.currentStock + qty).toFixed(2)),
-      reference: formRestockInvoice || 'GRN-20261101-01',
+      reference: formRestockInvoice || 'GRN-20261102-01',
       loggedBy: 'Nur Khafidin (Petugas Timbangan)',
-      notes: formRestockNotes || 'Penerimaan bahan baku masuk tgl 01 Nov 2026',
+      notes: formRestockNotes || 'Penerimaan bahan baku masuk tgl 02 Nov 2026',
     };
 
     const updatedMovements = [newMovement, ...movements];
@@ -576,7 +576,7 @@ export default function StockMonitoringPage() {
           ...item,
           currentStock: newBalance,
           usedStock: Number((item.usedStock + qty).toFixed(2)),
-          lastUsageDate: '2026-11-02',
+          lastUsageDate: '2026-11-03',
         };
       }
       return item;
@@ -584,7 +584,7 @@ export default function StockMonitoringPage() {
 
     const newMovement: StockMovement = {
       id: `mov-${Date.now()}`,
-      date: '2026-11-02',
+      date: '2026-11-03',
       time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       itemId: target.id,
       itemName: target.name,
@@ -592,9 +592,9 @@ export default function StockMonitoringPage() {
       qty: qty,
       uom: target.uom,
       balanceAfter: newBalance,
-      reference: formUsageMenu || 'BOM-MSK-20261102',
+      reference: formUsageMenu || 'BOM-MSK-20261103',
       loggedBy: 'Seksi Pengolahan Dapur',
-      notes: formUsageNotes || 'Pemakaian bahan masak MBG tgl 02 Nov 2026',
+      notes: formUsageNotes || 'Pemakaian bahan masak MBG tgl 03 Nov 2026',
     };
 
     const updatedMovements = [newMovement, ...movements];
@@ -608,9 +608,9 @@ export default function StockMonitoringPage() {
     showToast(`🍳 Pemakaian dapur dicatat: -${qty} ${target.uom} ${target.name}`);
   };
 
-  // Reset to Baseline 17 Items (Masuk 01 Nov -> Keluar 02 Nov)
+  // Reset to Baseline 17 Items (Masuk 02 Nov -> Keluar 02 Nov)
   const handleResetToBaseline = () => {
-    if (window.confirm('Muat ulang 17 bahan baku masuk 01 Nov & pengeluaran masak tgl 02 Nov 2026?')) {
+    if (window.confirm('Muat ulang 17 bahan baku masuk 02 Nov & pengeluaran masak tgl 03 Nov 2026?')) {
       setStockItems(DEFAULT_STOCK_ITEMS_17);
       setMovements(DEFAULT_STOCK_MOVEMENTS_34);
       saveStockToStorage(DEFAULT_STOCK_ITEMS_17);
@@ -703,7 +703,7 @@ export default function StockMonitoringPage() {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-          SELESAI DIMASAK (02 NOV)
+          SELESAI DIMASAK (03 NOV)
         </span>
       );
     }
@@ -769,7 +769,7 @@ export default function StockMonitoringPage() {
           <div className="space-y-1.5 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
-                Selesai Dimasak (02 Nov 2026)
+                Selesai Dimasak (03 Nov 2026)
               </span>
               <span className="text-xs text-slate-400">•</span>
               <span className="text-xs text-slate-500 font-medium">BGN TA 2026 — SPPG Wonodri 3 Kota Semarang</span>
@@ -834,17 +834,17 @@ export default function StockMonitoringPage() {
             </div>
           </div>
 
-          {/* Card 2: Total Muatan Masuk (01 Nov) */}
+          {/* Card 2: Total Muatan Masuk (02 Nov) */}
           <div
             onClick={() => {
               setActiveMainTab('movements');
               setMovementFilterType('IN');
             }}
             className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between cursor-pointer hover:border-emerald-300 transition-colors"
-            title="Klik untuk lihat mutasi masuk 01 Nov"
+            title="Klik untuk lihat mutasi masuk 02 Nov"
           >
             <div className="space-y-0.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Masuk (01 Nov 2026)</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Masuk (02 Nov 2026)</span>
               <div className="text-xl sm:text-2xl font-black text-emerald-700">
                 {summary.totalKgMasuk} KG
               </div>
@@ -855,17 +855,17 @@ export default function StockMonitoringPage() {
             </div>
           </div>
 
-          {/* Card 3: Keluar Masak (02 Nov) */}
+          {/* Card 3: Keluar Masak (03 Nov) */}
           <div
             onClick={() => {
               setActiveMainTab('movements');
               setMovementFilterType('OUT');
             }}
             className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between cursor-pointer hover:border-indigo-300 transition-colors"
-            title="Klik untuk lihat mutasi keluar masak 02 Nov"
+            title="Klik untuk lihat mutasi keluar masak 03 Nov"
           >
             <div className="space-y-0.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Keluar Masak (02 Nov)</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Keluar Masak (03 Nov)</span>
               <div className="text-xl sm:text-2xl font-black text-indigo-700">
                 {summary.totalKgKeluar} KG
               </div>
@@ -1027,7 +1027,7 @@ export default function StockMonitoringPage() {
                 type="button"
                 onClick={handleResetToBaseline}
                 className="text-slate-500 hover:text-slate-800 p-2 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
-                title="Muat Ulang 16 Bahan Masuk 01 Nov & Keluar 02 Nov"
+                title="Muat Ulang 17 Bahan Masuk 02 Nov & Keluar 03 Nov"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
@@ -1182,7 +1182,7 @@ export default function StockMonitoringPage() {
                       className="w-full py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs border border-slate-300 flex items-center justify-center gap-1.5"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
-                      <span>Muat 16 Bahan Masuk 01 Nov 2026</span>
+                      <span>Muat 17 Bahan Masuk 02 Nov 2026</span>
                     </button>
                   </div>
                 </div>
@@ -1223,13 +1223,13 @@ export default function StockMonitoringPage() {
 
                       <div className="grid grid-cols-3 gap-2 bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
                         <div className="border-r border-slate-200 pr-1">
-                          <span className="text-[9px] uppercase font-bold text-emerald-700 block">Masuk (01 Nov)</span>
+                          <span className="text-[9px] uppercase font-bold text-emerald-700 block">Masuk (02 Nov)</span>
                           <span className="font-mono font-black text-sm text-slate-800 mt-0.5 block">
                             {item.initialStock} {item.uom}
                           </span>
                         </div>
                         <div className="border-r border-slate-200 px-1">
-                          <span className="text-[9px] uppercase font-bold text-indigo-700 block">Keluar (02 Nov)</span>
+                          <span className="text-[9px] uppercase font-bold text-indigo-700 block">Keluar (03 Nov)</span>
                           <span className="font-mono font-black text-sm text-indigo-900 mt-0.5 block">
                             {item.usedStock} {item.uom}
                           </span>
@@ -1286,8 +1286,8 @@ export default function StockMonitoringPage() {
                     <tr>
                       <th className="py-3 px-4">Bahan Makanan &amp; SKU</th>
                       <th className="py-3 px-3">Lokasi / Golongan</th>
-                      <th className="py-3 px-3 text-right">Masuk (01 Nov)</th>
-                      <th className="py-3 px-3 text-right">Keluar (02 Nov)</th>
+                      <th className="py-3 px-3 text-right">Masuk (02 Nov)</th>
+                      <th className="py-3 px-3 text-right">Keluar (03 Nov)</th>
                       <th className="py-3 px-3 text-right">Sisa Stok</th>
                       <th className="py-3 px-3 text-center">Satuan</th>
                       <th className="py-3 px-3 text-center">Status Penggunaan</th>
@@ -1315,7 +1315,7 @@ export default function StockMonitoringPage() {
                               className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-300 cursor-pointer flex items-center gap-1.5"
                             >
                               <RotateCcw className="w-3.5 h-3.5" />
-                              <span>Muat 16 Bahan Masuk 01 Nov 2026</span>
+                              <span>Muat 17 Bahan Masuk 02 Nov 2026</span>
                             </button>
                           </div>
                         </td>
@@ -1357,12 +1357,12 @@ export default function StockMonitoringPage() {
                               </div>
                             </td>
 
-                            {/* Masuk (01 Nov) */}
+                            {/* Masuk (02 Nov) */}
                             <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-700 text-sm">
                               +{item.initialStock}
                             </td>
 
-                            {/* Keluar (02 Nov) */}
+                            {/* Keluar (03 Nov) */}
                             <td className="py-3.5 px-3 text-right font-mono font-bold text-indigo-700 text-sm">
                               -{item.usedStock}
                             </td>
@@ -1425,7 +1425,7 @@ export default function StockMonitoringPage() {
                   Menampilkan <strong>{filteredItems.length}</strong> bahan baku terdaftar
                 </div>
                 <div className="font-mono text-[11px] text-slate-500">
-                  Total Masuk 01 Nov: <strong>{summary.totalKgMasuk} KG</strong> &bull; Total Masak 02 Nov: <strong>{summary.totalKgKeluar} KG</strong> (1.553 Porsi MBG)
+                  Total Masuk 02 Nov: <strong>{summary.totalKgMasuk} KG</strong> &bull; Total Masak 03 Nov: <strong>{summary.totalKgKeluar} KG</strong> (1.553 Porsi MBG)
                 </div>
               </div>
             </div>
@@ -1446,7 +1446,7 @@ export default function StockMonitoringPage() {
                     <span className="text-xs font-mono text-slate-500">{opnameSession.id}</span>
                   </div>
                   <h3 className="text-base sm:text-lg font-black text-slate-900">
-                    Stock Opname Timbangan Fisik Dapur (Paska Masak 02 Nov)
+                    Stock Opname Timbangan Fisik Dapur (Paska Masak 03 Nov)
                   </h3>
                   <p className="text-xs text-slate-500">
                     Petugas: <strong>{opnameSession.checkerName}</strong> &bull; Tanggal: <strong>{opnameSession.date}</strong>
@@ -1788,7 +1788,7 @@ export default function StockMonitoringPage() {
               <div className="space-y-1">
                 <h3 className="text-sm font-black text-slate-900">Buku Register Mutasi Stok (Audit Trail)</h3>
                 <p className="text-xs text-slate-500">
-                  Daftar transaksi barang masuk tgl 01 Nov 2026 dan barang keluar masak dapur tgl 02 Nov 2026.
+                  Daftar transaksi barang masuk tgl 02 Nov 2026 dan barang keluar masak dapur tgl 03 Nov 2026.
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -1847,9 +1847,9 @@ export default function StockMonitoringPage() {
                     {t === 'ALL'
                       ? `Semua Mutasi (${movements.length})`
                       : t === 'IN'
-                      ? `+ Masuk 01 Nov (${movements.filter((m) => m.type === 'IN').length})`
+                      ? `+ Masuk 02 Nov (${movements.filter((m) => m.type === 'IN').length})`
                       : t === 'OUT'
-                      ? `- Keluar Masak 02 Nov (${movements.filter((m) => m.type === 'OUT').length})`
+                      ? `- Keluar Masak 03 Nov (${movements.filter((m) => m.type === 'OUT').length})`
                       : '± Opname'}
                   </button>
                 ))}
@@ -1875,12 +1875,12 @@ export default function StockMonitoringPage() {
                       <div>
                         {m.type === 'IN' && (
                           <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            + MASUK (01 NOV)
+                            + MASUK (02 NOV)
                           </span>
                         )}
                         {m.type === 'OUT' && (
                           <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-indigo-100 text-indigo-800 border border-indigo-200">
-                            - KELUAR MASAK (02 NOV)
+                            - KELUAR MASAK (03 NOV)
                           </span>
                         )}
                         {m.type === 'ADJUST' && (
@@ -1946,12 +1946,12 @@ export default function StockMonitoringPage() {
                           <td className="py-3 px-3">
                             {m.type === 'IN' && (
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                + MASUK (01 NOV)
+                                + MASUK (02 NOV)
                               </span>
                             )}
                             {m.type === 'OUT' && (
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-100 text-indigo-800 border border-indigo-200">
-                                - KELUAR MASAK (02 NOV)
+                                - KELUAR MASAK (03 NOV)
                               </span>
                             )}
                             {m.type === 'ADJUST' && (
@@ -2003,7 +2003,7 @@ export default function StockMonitoringPage() {
                 </h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Kebutuhan bahan pangan untuk pengolahan menu sajian 1.553 Porsi MBG tanggal <strong>Senin, 02 November 2026</strong> telah terpenuhi 100% dari penerimaan logistik tgl 01 November 2026.
+                Kebutuhan bahan pangan untuk pengolahan menu sajian 1.553 Porsi MBG tanggal <strong>Selasa, 03 November 2026</strong> telah terpenuhi 100% dari penerimaan logistik tgl 02 November 2026.
               </p>
             </div>
 
@@ -2031,7 +2031,7 @@ export default function StockMonitoringPage() {
                   </div>
                   <div className="flex justify-between font-bold">
                     <span>Status Pengolahan:</span>
-                    <span className="font-mono text-emerald-700">Selesai 100% (02 Nov)</span>
+                    <span className="font-mono text-emerald-700">Selesai 100% (03 Nov)</span>
                   </div>
                 </div>
               </div>
@@ -2059,7 +2059,7 @@ export default function StockMonitoringPage() {
                   </div>
                   <div className="flex justify-between font-bold">
                     <span>Status Pengolahan:</span>
-                    <span className="font-mono text-emerald-700">Selesai 100% (02 Nov)</span>
+                    <span className="font-mono text-emerald-700">Selesai 100% (03 Nov)</span>
                   </div>
                 </div>
               </div>
@@ -2143,7 +2143,7 @@ export default function StockMonitoringPage() {
                   </div>
                   <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
                     <span>Status Pengolahan:</span>
-                    <span className="font-mono text-emerald-700">Selesai 100% (02 Nov)</span>
+                    <span className="font-mono text-emerald-700">Selesai 100% (03 Nov)</span>
                   </div>
                 </div>
               </div>
@@ -2413,7 +2413,7 @@ export default function StockMonitoringPage() {
                   type="text"
                   value={formRestockInvoice}
                   onChange={(e) => setFormRestockInvoice(e.target.value)}
-                  placeholder="GRN-20261101-01..."
+                  placeholder="GRN-20261102-01..."
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono text-slate-900"
                 />
               </div>
@@ -2581,13 +2581,13 @@ export default function StockMonitoringPage() {
                 <strong className="text-slate-900">{selectedItem.storageLocation}</strong>
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase font-bold block">Masuk (01 Nov 2026)</span>
+                <span className="text-[10px] text-slate-500 uppercase font-bold block">Masuk (02 Nov 2026)</span>
                 <strong className="text-emerald-700 text-sm font-mono font-black">
                   {selectedItem.initialStock} {selectedItem.uom}
                 </strong>
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase font-bold block">Keluar Masak (02 Nov)</span>
+                <span className="text-[10px] text-slate-500 uppercase font-bold block">Keluar Masak (03 Nov)</span>
                 <strong className="text-indigo-700 text-sm font-mono font-black">
                   {selectedItem.usedStock} {selectedItem.uom}
                 </strong>
@@ -2682,7 +2682,7 @@ export default function StockMonitoringPage() {
                       : 'text-slate-700 hover:text-slate-900'
                   }`}
                 >
-                  Masak (02 Nov)
+                  Masak (03 Nov)
                 </button>
                 <button
                   type="button"
@@ -2693,7 +2693,7 @@ export default function StockMonitoringPage() {
                       : 'text-slate-700 hover:text-slate-900'
                   }`}
                 >
-                  Masuk (01 Nov)
+                  Masuk (02 Nov)
                 </button>
                 <button
                   type="button"
@@ -2766,28 +2766,28 @@ export default function StockMonitoringPage() {
                   <h3 className="text-sm sm:text-base font-black uppercase underline tracking-wider text-slate-950">
                     {printReportType === 'MASUK' && 'BERITA ACARA REKAPITULASI FISIK BAHAN BAKU MASUK'}
                     {printReportType === 'KELUAR' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (BOM)'}
-                    {printReportType === 'MUTASI' && 'BUKU REGISTER REKAPITULASI MUTASI BAHAN BAKU (01 - 02 NOV 2026)'}
+                    {printReportType === 'MUTASI' && 'BUKU REGISTER REKAPITULASI MUTASI BAHAN BAKU (02 - 03 NOV 2026)'}
                   </h3>
                   <p className="text-[10px] font-mono text-slate-600">
-                    {printReportType === 'MASUK' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1101'}
-                    {printReportType === 'KELUAR' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1102'}
+                    {printReportType === 'MASUK' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1102'}
+                    {printReportType === 'KELUAR' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1103'}
                     {printReportType === 'MUTASI' && 'Nomor: REG-MUTASI/SPPG-SMG3/BGN/2026/11'}
                   </p>
                   <p className="text-[11px] text-slate-700 font-bold">
-                    {printReportType === 'MASUK' && 'Tanggal Penerimaan: Minggu, 01 November 2026'}
-                    {printReportType === 'KELUAR' && 'Tanggal Pengolahan Masak: Senin, 02 November 2026'}
-                    {printReportType === 'MUTASI' && 'Periode Mutasi: 01 s/d 02 November 2026'}
+                    {printReportType === 'MASUK' && 'Tanggal Penerimaan: Senin, 02 November 2026'}
+                    {printReportType === 'KELUAR' && 'Tanggal Pengolahan Masak: Selasa, 03 November 2026'}
+                    {printReportType === 'MUTASI' && 'Periode Mutasi: 02 s/d 03 November 2026'}
                   </p>
                 </div>
 
                 {/* Narasi Resmi Sesuai Pilihan */}
                 <p className="text-[11px] leading-relaxed text-justify text-slate-800">
                   {printReportType === 'MASUK' &&
-                    'Pada hari ini, Minggu tanggal 01 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku makanan bergizi gratis di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                    'Pada hari ini, Selasa tanggal 03 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku makanan bergizi gratis di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'KELUAR' &&
-                    'Pada hari ini, Senin tanggal 02 November 2026 pukul 05:00 WIB, telah dikeluarkan dan dialokasikan seluruh stok bahan baku dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Nasi Putih, Rolade Ayam Kulit Tahu, Tahu Kuning Goreng, Sup Kembang Kol Wortel, Buah Jeruk Manis) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                    'Pada hari ini, Selasa tanggal 03 November 2026 pukul 05:00 WIB, telah dikeluarkan dan dialokasikan seluruh stok bahan baku dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Nasi Putih, Rolade Ayam Kulit Tahu, Tahu Kuning Goreng, Sup Kembang Kol Wortel, Buah Jeruk Manis) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'MUTASI' &&
-                    'Rekapitulasi mutasi siklus bahan baku makanan Program MBG 1.553 Porsi SPPG Wonodri 3 periode 01 s/d 02 November 2026 pasokan dari Yayasan Berkat Makmur Sentosa, mencakup kuantitas penerimaan barang masuk dan pengeluaran masak dapur secara penuh dengan saldo akhir stok fisik sebagai berikut:'}
+                    'Rekapitulasi mutasi siklus bahan baku makanan Program MBG 1.553 Porsi SPPG Wonodri 3 periode 02 s/d 03 November 2026 pasokan dari Yayasan Berkat Makmur Sentosa, mencakup kuantitas penerimaan barang masuk dan pengeluaran masak dapur secara penuh dengan saldo akhir stok fisik sebagai berikut:'}
                 </p>
 
                 {/* Tabel Dokumen A4 */}
@@ -2800,8 +2800,8 @@ export default function StockMonitoringPage() {
                         <th className="p-1.5 border-r border-slate-400">NAMA BAHAN MAKANAN</th>
                         {printReportType === 'MUTASI' ? (
                           <>
-                            <th className="p-1.5 border-r border-slate-400 text-right">MASUK (01 NOV)</th>
-                            <th className="p-1.5 border-r border-slate-400 text-right">KELUAR (02 NOV)</th>
+                            <th className="p-1.5 border-r border-slate-400 text-right">MASUK (02 NOV)</th>
+                            <th className="p-1.5 border-r border-slate-400 text-right">KELUAR (03 NOV)</th>
                             <th className="p-1.5 border-r border-slate-400 text-right">SISA FISIK</th>
                           </>
                         ) : (
