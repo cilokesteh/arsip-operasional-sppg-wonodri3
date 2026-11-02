@@ -207,7 +207,7 @@ export default function ArsipPage() {
     if (!isSalaryUnlocked) {
       return <span className="font-mono text-slate-400">••••••</span>;
     }
-    return <span className="font-mono font-bold text-blue-900">{formatRupiah(amount)}</span>;
+    return <span className="font-mono font-bold text-ink">{formatRupiah(amount)}</span>;
   };
 
   return (
@@ -221,7 +221,7 @@ export default function ArsipPage() {
               <span className="block font-heading font-bold text-[15px] leading-tight truncate">
                 SPPG Wonodri 3
               </span>
-              <span className="block text-xs text-slate-600 leading-tight truncate">
+              <span className="block text-sm text-slate-600 leading-tight truncate">
                 Dapur MBG, Semarang Selatan
               </span>
             </span>
@@ -245,42 +245,42 @@ export default function ArsipPage() {
       {/* ============ MAIN CONTENT ============ */}
       <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6">
         {/* Banner Header Halaman */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-white rounded-xl border border-line p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-800 border border-blue-200">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-ink/5 text-ink border border-ink/15">
                 Direktori Resmi
               </span>
-              <span className="text-xs text-slate-400">•</span>
-              <span className="text-xs text-slate-500 font-medium">BGN TA 2026</span>
+              <span className="text-sm text-slate-400">•</span>
+              <span className="text-sm text-slate-500 font-medium">BGN TA 2026</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
               Arsip Operasional & Dokumen SPPG
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm sm:text-sm text-slate-600 leading-relaxed">
               Katalog seluruh riwayat harian pelaksanaan Program Makan Bergizi Gratis (MBG), mencakup menu sajian, dokumentasi alur dapur, alokasi 13 sekolah/posyandu, dan lembar SPJ presensi relawan.
             </p>
           </div>
 
           {/* Quick Metrics Strip */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 shrink-0">
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center min-w-[110px]">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Arsip</span>
-              <strong className="text-lg font-black text-slate-900">{allUniqueDates.length} Hari</strong>
+            <div className="bg-slate-50 border border-line rounded-xl p-3 text-center min-w-[110px]">
+              <span className="text-xs font-bold text-slate-500 block">Total Arsip</span>
+              <strong className="text-lg font-bold text-slate-900">{allUniqueDates.length} Hari</strong>
             </div>
-            <div className="bg-blue-50/60 border border-blue-200 rounded-xl p-3 text-center min-w-[110px]">
-              <span className="text-[10px] uppercase font-bold text-blue-700 block">Menu Tersedia</span>
-              <strong className="text-lg font-black text-blue-900">{staticMenusData.length} Menu</strong>
+            <div className="bg-ink/5/60 border border-ink/15 rounded-xl p-3 text-center min-w-[110px]">
+              <span className="text-xs font-bold text-ink block">Menu Tersedia</span>
+              <strong className="text-lg font-bold text-ink">{staticMenusData.length} Menu</strong>
             </div>
             <div className="col-span-2 sm:col-span-1 bg-emerald-50/60 border border-emerald-200 rounded-xl p-3 text-center min-w-[110px]">
-              <span className="text-[10px] uppercase font-bold text-emerald-700 block">Porsi / Hari</span>
-              <strong className="text-lg font-black text-emerald-900">1.553</strong>
+              <span className="text-xs font-bold text-emerald-700 block">Porsi / Hari</span>
+              <strong className="text-lg font-bold text-emerald-900">1.553</strong>
             </div>
           </div>
         </div>
 
         {/* Filter & Toolbar Bar */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+        <div className="bg-white rounded-xl border border-line p-4 space-y-3">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             {/* Search Input */}
             <div className="relative flex-1">
@@ -290,7 +290,7 @@ export default function ArsipPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari berdasarkan tanggal (cth: 21 Oktober) atau nama masakan..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-medium transition-colors"
+                className="w-full bg-slate-50 border border-line rounded-xl pl-10 pr-4 py-2 text-sm sm:text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-medium transition-colors"
               />
               {searchQuery && (
                 <button
@@ -306,12 +306,12 @@ export default function ArsipPage() {
             {/* Filter Dropdowns */}
             <div className="flex items-center gap-2 flex-wrap">
               {/* Bulan Filter */}
-              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-line rounded-xl px-3 py-1.5">
                 <CalendarIcon className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 <select
                   value={selectedMonthFilter}
                   onChange={(e) => setSelectedMonthFilter(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
+                  className="bg-transparent text-sm font-bold text-slate-800 focus:outline-none cursor-pointer"
                 >
                   <option value="ALL">Semua Bulan</option>
                   {availableMonths.map((m) => (
@@ -323,12 +323,12 @@ export default function ArsipPage() {
               </div>
 
               {/* Tipe Filter */}
-              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-line rounded-xl px-3 py-1.5">
                 <Filter className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                 <select
                   value={selectedTypeFilter}
                   onChange={(e) => setSelectedTypeFilter(e.target.value as typeof selectedTypeFilter)}
-                  className="bg-transparent text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
+                  className="bg-transparent text-sm font-bold text-slate-800 focus:outline-none cursor-pointer"
                 >
                   <option value="ALL">Semua Hari</option>
                   <option value="MENU">Ada Menu Sajian MBG</option>
@@ -338,12 +338,12 @@ export default function ArsipPage() {
               </div>
 
               {/* Per Page */}
-              <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5">
-                <span className="text-[11px] text-slate-500 font-medium">Tampil:</span>
+              <div className="flex items-center gap-1 bg-slate-50 border border-line rounded-xl px-2.5 py-1.5">
+                <span className="text-[13px] text-slate-500 font-medium">Tampil:</span>
                 <select
                   value={itemsPerPage}
                   onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                  className="bg-transparent text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
+                  className="bg-transparent text-sm font-bold text-slate-800 focus:outline-none cursor-pointer"
                 >
                   <option value={9}>9</option>
                   <option value={12}>12</option>
@@ -355,7 +355,7 @@ export default function ArsipPage() {
           </div>
 
           {/* Quick Active Filters Feedback */}
-          <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100 flex-wrap gap-2">
+          <div className="flex items-center justify-between text-sm text-slate-500 pt-1 border-t border-slate-100 flex-wrap gap-2">
             <span>
               Menemukan <strong>{filteredDates.length}</strong> tanggal operasional (Halaman {currentPage} dari {totalPages})
             </span>
@@ -367,7 +367,7 @@ export default function ArsipPage() {
                   setSelectedMonthFilter('ALL');
                   setSelectedTypeFilter('ALL');
                 }}
-                className="text-blue-700 hover:text-blue-800 font-bold underline cursor-pointer"
+                className="text-ink hover:text-ink font-bold underline cursor-pointer"
               >
                 Reset Semua Filter
               </button>
@@ -377,12 +377,12 @@ export default function ArsipPage() {
 
         {/* ============ GRID KARTU ARSIP ============ */}
         {filteredDates.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3 shadow-xs">
-            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+          <div className="bg-white rounded-xl border border-line p-12 text-center space-y-3">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
               <Search className="w-6 h-6" />
             </div>
             <h3 className="font-bold text-base text-slate-900">Tidak ada arsip yang sesuai</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            <p className="text-sm text-slate-500 max-w-sm mx-auto">
               Coba ganti kata kunci pencarian atau reset filter bulan untuk melihat tanggal lainnya.
             </p>
           </div>
@@ -401,30 +401,30 @@ export default function ArsipPage() {
               return (
                 <div
                   key={dateStr}
-                  className="bg-white rounded-2xl border border-slate-200 hover:border-blue-400 shadow-xs hover:shadow-md transition-all flex flex-col justify-between p-4 sm:p-5 space-y-4 group"
+                  className="bg-white rounded-xl border border-line hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between p-4 sm:p-5 space-y-4 group"
                 >
                   <div className="space-y-3">
                     {/* Header Card: Tanggal & Badge Hari */}
                     <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
                       <div>
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${
                           isWeekend ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-700'
                         }`}>
                           {formatIndoDate(dateStr).split(',')[0]}
                         </span>
-                        <h3 className="font-black text-sm sm:text-base text-slate-900 pt-1 group-hover:text-blue-700 transition-colors">
+                        <h3 className="font-bold text-sm sm:text-base text-slate-900 pt-1 group-hover:text-ink transition-colors">
                           {formatIndoDate(dateStr).split(',').slice(1).join(',').trim()}
                         </h3>
-                        <span className="text-[10px] text-slate-400 font-mono block">Kode: {dateStr}</span>
+                        <span className="text-xs text-slate-400 font-mono block">Kode: {dateStr}</span>
                       </div>
 
                       {menu ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1 shrink-0">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1 shrink-0">
                           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                           <span>Menu MBG</span>
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 shrink-0">
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-600 shrink-0">
                           Presensi Saja
                         </span>
                       )}
@@ -433,33 +433,33 @@ export default function ArsipPage() {
                     {/* Informasi Menu & Sajian */}
                     {menu ? (
                       <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-1.5">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 line-clamp-1">
+                        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-900 line-clamp-1">
                           <Utensils className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                           <span className="truncate">{menu.title}</span>
                         </div>
-                        <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                        <p className="text-[13px] text-slate-500 line-clamp-2 leading-relaxed">
                           {menu.components?.laukHewani ? `${menu.components.laukHewani} • ` : ''}
                           {menu.components?.sayur ? `${menu.components.sayur} • ` : ''}
                           {menu.components?.buah || 'Menu lengkap BGN'}
                         </p>
                       </div>
                     ) : (
-                      <div className="bg-slate-50/60 border border-dashed border-slate-200 rounded-xl p-3 text-[11px] text-slate-400 italic">
+                      <div className="bg-slate-50/60 border border-dashed border-line rounded-xl p-3 text-[13px] text-slate-400 italic">
                         {isSunday ? 'Hari Libur Rutin Dapur' : 'Dokumen Menu Belum Diunggah ke Sistem'}
                       </div>
                     )}
 
                     {/* Ringkasan Presensi Relawan */}
-                    <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                    <div className="grid grid-cols-2 gap-2 text-sm pt-1">
                       <div className="bg-slate-50 border border-slate-100 rounded-lg p-2">
-                        <span className="text-[10px] text-slate-400 block font-medium">Relawan Hadir</span>
-                        <strong className="text-xs font-mono font-bold text-emerald-700">
+                        <span className="text-xs text-slate-400 block font-medium">Relawan Hadir</span>
+                        <strong className="text-sm font-mono font-bold text-emerald-700">
                           {summary.statusCounts.Hadir} / {roster.filter((p) => p.isActive).length} Orang
                         </strong>
                       </div>
                       <div className="bg-slate-50 border border-slate-100 rounded-lg p-2">
-                        <span className="text-[10px] text-slate-400 block font-medium">Beban Upah</span>
-                        <strong className="text-xs font-mono font-bold text-blue-900 block truncate">
+                        <span className="text-xs text-slate-400 block font-medium">Beban Upah</span>
+                        <strong className="text-sm font-mono font-bold text-ink block truncate">
                           {renderSalary(summary.totalEarned)}
                         </strong>
                       </div>
@@ -471,21 +471,21 @@ export default function ArsipPage() {
                     {menu ? (
                       <Link
                         href={`/?date=${dateStr}`}
-                        className="flex-1 py-1.5 px-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-center text-xs font-bold transition-colors shadow-2xs flex items-center justify-center gap-1"
+                        className="flex-1 py-1.5 px-2 bg-ink hover:bg-ink-soft text-white rounded-lg text-center text-sm font-bold transition-colors flex items-center justify-center gap-1"
                         title="Buka Laporan Menu MBG Resmi"
                       >
                         <Utensils className="w-3 h-3" />
                         <span>Menu</span>
                       </Link>
                     ) : (
-                      <span className="flex-1 py-1.5 px-2 bg-slate-100 text-slate-400 rounded-lg text-center text-xs font-semibold">
+                      <span className="flex-1 py-1.5 px-2 bg-slate-100 text-slate-400 rounded-lg text-center text-sm font-semibold">
                         No Menu
                       </span>
                     )}
 
                     <Link
                       href={`/absensi?date=${dateStr}`}
-                      className="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-center text-xs font-bold transition-colors flex items-center justify-center gap-1 border border-slate-200"
+                      className="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-center text-sm font-bold transition-colors flex items-center justify-center gap-1 border border-line"
                       title="Buka Presensi Relawan Tanggal Ini"
                     >
                       <Users className="w-3 h-3 text-slate-600" />
@@ -495,7 +495,7 @@ export default function ArsipPage() {
                     <button
                       type="button"
                       onClick={() => handleOpenPrintForDate(dateStr)}
-                      className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-700 border border-slate-200 hover:border-blue-200 rounded-lg transition-colors cursor-pointer"
+                      className="p-1.5 bg-slate-50 hover:bg-ink/5 text-slate-600 hover:text-ink border border-line hover:border-ink/15 rounded-lg transition-colors cursor-pointer"
                       title="Pratinjau & Cetak Lembar SPJ A4"
                     >
                       <Printer className="w-3.5 h-3.5" />
@@ -509,8 +509,8 @@ export default function ArsipPage() {
 
         {/* ============ PAGINASI KONTROL ============ */}
         {totalPages > 1 && (
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 no-print">
-            <div className="text-xs text-slate-500 font-medium">
+          <div className="bg-white rounded-xl border border-line p-4 flex flex-col sm:flex-row items-center justify-between gap-3 no-print">
+            <div className="text-sm text-slate-500 font-medium">
               Menampilkan <strong>{((currentPage - 1) * itemsPerPage) + 1}</strong> –{' '}
               <strong>{Math.min(currentPage * itemsPerPage, filteredDates.length)}</strong> dari{' '}
               <strong>{filteredDates.length}</strong> tanggal
@@ -521,7 +521,7 @@ export default function ArsipPage() {
                 type="button"
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:hover:bg-slate-100 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                className="px-3 py-1.5 rounded-lg text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:hover:bg-slate-100 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Sebelumnya</span>
@@ -541,10 +541,10 @@ export default function ArsipPage() {
                         key={pageNum}
                         type="button"
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`w-8 h-8 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        className={`w-8 h-8 rounded-lg text-sm font-bold transition-all cursor-pointer ${
                           currentPage === pageNum
-                            ? 'bg-blue-600 text-white shadow-xs'
-                            : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
+                            ? 'bg-ink text-white'
+                            : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-line'
                         }`}
                       >
                         {pageNum}
@@ -553,7 +553,7 @@ export default function ArsipPage() {
                   }
                   if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
                     return (
-                      <span key={pageNum} className="text-slate-400 text-xs px-1">
+                      <span key={pageNum} className="text-slate-400 text-sm px-1">
                         ...
                       </span>
                     );
@@ -566,7 +566,7 @@ export default function ArsipPage() {
                 type="button"
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:hover:bg-slate-100 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                className="px-3 py-1.5 rounded-lg text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:hover:bg-slate-100 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
               >
                 <span className="hidden sm:inline">Berikutnya</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -579,13 +579,13 @@ export default function ArsipPage() {
       {/* ============ MODAL PIN OTORITAS ============ */}
       {showPinModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-xs w-full p-5 space-y-3 animate-in fade-in">
+          <div className="bg-white rounded-xl border border-line shadow-2xl max-w-xs w-full p-5 space-y-3 animate-in fade-in">
             <div className="text-center space-y-1">
               <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mx-auto">
                 <KeyRound className="w-5 h-5 text-amber-600" />
               </div>
               <h3 className="font-bold text-sm text-slate-900">PIN Otoritas Upah</h3>
-              <p className="text-[11px] text-slate-500">Masukkan PIN resmi untuk mencetak lembar SPJ & upah.</p>
+              <p className="text-[13px] text-slate-500">Masukkan PIN resmi untuk mencetak lembar SPJ & upah.</p>
             </div>
 
             <form onSubmit={handleVerifyPin} className="space-y-3 pt-1">
@@ -603,7 +603,7 @@ export default function ArsipPage() {
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-center text-lg font-mono font-bold tracking-widest text-slate-900 focus:outline-none focus:border-blue-600"
                 />
                 {pinError && (
-                  <p className="text-[11px] font-bold text-rose-600 text-center mt-1">
+                  <p className="text-[13px] font-bold text-rose-600 text-center mt-1">
                     {pinError}
                   </p>
                 )}
@@ -617,13 +617,13 @@ export default function ArsipPage() {
                     setInputPin('');
                     setPinError('');
                   }}
-                  className="flex-1 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
+                  className="flex-1 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-2xs"
+                  className="flex-1 py-1.5 rounded-lg bg-ink hover:bg-ink-soft text-white text-sm font-bold"
                 >
                   Buka
                 </button>

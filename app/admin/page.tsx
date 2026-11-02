@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { TopNav, BottomTabs } from '@/components/SiteNav';
 import Image from 'next/image';
 import {
-  ArrowLeft,
   CheckCircle2,
   Camera,
   Save,
@@ -25,8 +25,6 @@ import {
   Edit,
   RotateCcw,
   X,
-  Archive,
-  Boxes,
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
 import { DailyMenuRecord, getBeneficiariesForDate } from '@/lib/data';
@@ -683,17 +681,17 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
             <div className="w-14 h-14 rounded-2xl bg-[#e8f2fe] text-[#1759ab] flex items-center justify-center mx-auto shadow-xs border border-[#cfe4fc]">
               <Lock className="w-7 h-7 text-[#1759ab]" />
             </div>
-            <h1 className="font-black text-lg sm:text-xl text-[#0b1e3a]">
+            <h1 className="font-bold text-lg sm:text-xl text-[#0b1e3a]">
               Akses Panel Admin
             </h1>
-            <p className="text-xs text-slate-500">
+            <p className="text-sm text-slate-500">
               Khusus Tim Teknis & Operator Resmi SPPG Wonodri 3 Kota Semarang.
             </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="text-xs font-black text-slate-700 uppercase tracking-wider block mb-1.5">
+              <label className="text-sm font-bold text-slate-700 block mb-1.5">
                 Masukkan Kode Akses (PIN):
               </label>
               <div className="relative">
@@ -711,7 +709,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
             </div>
 
             {loginError && (
-              <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 flex items-center gap-1.5">
+              <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-sm font-bold text-rose-700 flex items-center gap-1.5">
                 <ShieldAlert className="w-4 h-4 shrink-0 text-rose-600" />
                 <span>{loginError}</span>
               </div>
@@ -719,7 +717,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl text-xs font-black text-white bg-[#1759ab] hover:bg-[#1d6fd0] transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-[#1759ab] hover:bg-[#1d6fd0] transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Masuk ke Panel Kendali</span>
             </button>
@@ -728,7 +726,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
           <div className="text-center pt-2 border-t border-slate-100">
             <Link
               href="/"
-              className="text-xs font-bold text-slate-500 hover:text-[#1759ab] transition-colors"
+              className="text-sm font-bold text-slate-500 hover:text-[#1759ab] transition-colors"
             >
               ← Kembali ke Halaman Publik
             </Link>
@@ -739,79 +737,38 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-[#0d1b2e] pb-16">
-      {/* Header Sticky */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-2xs">
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <Link
-              href="/"
-              className="p-1.5 sm:p-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors shrink-0"
-              title="Kembali ke Web Publik"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Link>
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-sky-500 p-0.5 sm:p-1 flex items-center justify-center shrink-0">
-                <Image src="/logo.png" alt="Logo" width={24} height={24} className="object-contain" />
-              </div>
-              <div className="min-w-0">
-                <span className="font-extrabold text-xs sm:text-base text-slate-900 block leading-tight truncate">
-                  Admin Panel SPPG
-                </span>
-                <span className="text-[10px] text-emerald-700 font-bold hidden sm:flex items-center gap-1 mt-0.5">
-                  <CloudUpload className="w-3 h-3" /> Auto-Sync Cloudflare KV & GDrive
-                </span>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-paper text-ink has-bottom-tabs">
+      {/* ============ HEADER ============ */}
+      <header className="bg-white border-b border-line sticky top-0 z-40 no-print">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-2.5 min-w-0" aria-label="SPPG Wonodri 3, beranda">
+            <Image src="/logo.png" alt="" width={32} height={32} className="object-contain shrink-0" priority />
+            <span className="min-w-0 hidden sm:block">
+              <span className="block font-heading font-bold text-[15px] leading-tight truncate">SPPG Wonodri 3</span>
+              <span className="block text-sm text-slate-600 leading-tight truncate">Panel operator</span>
+            </span>
+          </Link>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <Link
-              href="/arsip"
-              className="hidden sm:flex px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors items-center gap-1"
-              title="Katalog Arsip Operasional"
-            >
-              <Archive className="w-3.5 h-3.5 text-blue-600" />
-              <span>Arsip</span>
-            </Link>
-            <Link
-              href="/absensi"
-              className="hidden sm:flex px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors items-center gap-1"
-              title="Absensi 40 Relawan & Upah Dapur"
-            >
-              <Users className="w-3.5 h-3.5 text-blue-600" />
-              <span>Absensi</span>
-            </Link>
-            <Link
-              href="/stok"
-              className="hidden sm:flex px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors items-center gap-1"
-              title="Monitoring Stok Gudang & Logistik"
-            >
-              <Boxes className="w-3.5 h-3.5 text-blue-600" />
-              <span>Stok</span>
-            </Link>
+          <TopNav />
+
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => window.print()}
-              title="Cetak Laporan Langsung"
-              className="hidden sm:flex px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors items-center gap-1.5 shadow-xs cursor-pointer"
+              title="Cetak laporan langsung"
+              className="hidden sm:inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft cursor-pointer"
             >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Cetak</span>
+              <Printer className="w-4 h-4" aria-hidden="true" />
+              Cetak
             </button>
-            <Link
-              href="/"
-              className="hidden md:inline px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
-            >
-              Web Publik
-            </Link>
             <button
+              type="button"
               onClick={handleLogout}
-              className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+              className="inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 cursor-pointer"
             >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Keluar</span>
+              <LogOut className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Keluar</span>
+              <span className="sr-only sm:hidden">Keluar</span>
             </button>
           </div>
         </div>
@@ -821,7 +778,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
         {/* Floating / Top Banner Feedback Notifikasi */}
         {submitToast && (
           <div
-            className={`p-4 rounded-2xl text-xs font-bold border shadow-lg flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
+            className={`p-4 rounded-xl text-sm font-bold border shadow-lg flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
               submitToast.type === 'success'
                 ? 'bg-emerald-500 text-white border-emerald-600'
                 : 'bg-rose-500 text-white border-rose-600'
@@ -833,7 +790,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
               ) : (
                 <ShieldAlert className="w-5 h-5 text-rose-100 shrink-0" />
               )}
-              <span className="text-xs sm:text-sm font-black leading-snug">{submitToast.message}</span>
+              <span className="text-sm sm:text-sm font-bold leading-snug">{submitToast.message}</span>
             </div>
             <button
               type="button"
@@ -846,13 +803,13 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
         )}
 
         {/* Toggle Mode: Input Baru vs Kelola / Edit Arsip Lama */}
-        <div className="flex bg-slate-200/70 p-1 rounded-xl max-w-sm mx-auto text-xs font-bold">
+        <div className="flex bg-slate-200/70 p-1 rounded-xl max-w-sm mx-auto text-sm font-bold">
           <button
             type="button"
             onClick={() => setActiveTab('input')}
             className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'input'
-                ? 'bg-white text-[#1759ab] shadow-xs'
+                ? 'bg-white text-[#1759ab]'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -867,7 +824,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
             }}
             className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'list'
-                ? 'bg-white text-[#1759ab] shadow-xs'
+                ? 'bg-white text-[#1759ab]'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -877,12 +834,12 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
         </div>
 
         {editingAlert && (
-          <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-xs font-bold text-amber-900 flex items-center justify-between">
+          <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-sm font-bold text-amber-900 flex items-center justify-between">
             <span>{editingAlert}</span>
             <button
               type="button"
               onClick={handleResetForm}
-              className="text-xs text-blue-700 underline font-extrabold cursor-pointer ml-2"
+              className="text-sm text-ink underline font-semibold cursor-pointer ml-2"
             >
               Reset ke Form Kosong
             </button>
@@ -893,20 +850,20 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
         {activeTab === 'input' && (
           <form onSubmit={handlePublish} className="space-y-6">
             {publishSuccess && (
-              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 flex items-center gap-2 shadow-xs">
+              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm font-bold text-emerald-800 flex items-center gap-2">
                 <Check className="w-5 h-5 text-emerald-600 shrink-0" />
                 <span>Arsip menu untuk tanggal {menuDate} berhasil diperbarui & tersimpan!</span>
               </div>
             )}
 
             {/* ===================== ALUR 1: MENU ===================== */}
-            <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
+            <div className="app-card rounded-xl p-5 sm:p-7 space-y-5">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-lg bg-blue-100 text-ink flex items-center justify-center">
                     <Utensils className="w-4 h-4" />
                   </div>
-                  <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                  <h2 className="text-sm font-bold text-slate-900 ">
                     1. Menu Makanan & Tanggal Arsip
                   </h2>
                 </div>
@@ -914,18 +871,18 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                   <button
                     type="button"
                     onClick={handleResetForm}
-                    className="text-[11px] font-bold text-slate-500 hover:text-blue-600 flex items-center gap-1 cursor-pointer"
+                    className="text-[13px] font-bold text-slate-500 hover:text-blue-600 flex items-center gap-1 cursor-pointer"
                   >
                     <RotateCcw className="w-3 h-3" />
                     <span>Reset Form</span>
                   </button>
-                  <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded">Alur 1</span>
+                  <span className="text-xs text-blue-600 font-bold bg-ink/5 px-2 py-0.5 rounded">Alur 1</span>
                 </div>
               </div>
 
               {/* Tanggal Layanan */}
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-line space-y-2">
+                <label className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-blue-600" />
                   <span>Tanggal Layanan (Bisa Hari Ini, Kemarin, atau Tanggal Lampau):</span>
                 </label>
@@ -935,39 +892,39 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     type="date"
                     value={menuDate}
                     onChange={(e) => setMenuDate(e.target.value)}
-                    className="w-full sm:w-auto px-3.5 py-2 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-900 focus:ring-2 focus:ring-blue-600"
+                    className="w-full sm:w-auto px-3.5 py-2 text-sm border border-slate-300 rounded-lg bg-white font-bold text-slate-900 focus:ring-2 focus:ring-blue-600"
                     required
                   />
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[13px] text-slate-500">
                     *Mengedit tanggal yang sudah ada akan otomatis memperbarui arsip tanggal tersebut.
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Nama Menu Lengkap</label>
+                <label className="text-sm font-bold text-slate-700 block mb-1">Nama Menu Lengkap</label>
                 <input
                   type="text"
                   placeholder="Contoh: Nasi Putih Martabak Telur"
                   value={namaMenu}
                   onChange={(e) => setNamaMenu(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600"
                   required
                 />
               </div>
 
               {/* Upload Foto Makanan Utama */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+              <div className="p-4 rounded-xl bg-slate-50 border border-line space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <label className="text-xs font-black text-slate-900 block">
+                    <label className="text-sm font-bold text-slate-900 block">
                       Foto Sajian Porsi Makanan (Tampil di Web Publik)
                     </label>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[13px] text-slate-500">
                       Jepret langsung foto piring/box makanan matang.
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  <span className="text-xs font-bold text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                     <CloudUpload className="w-3 h-3" /> Auto-Save GDrive
                   </span>
                 </div>
@@ -976,7 +933,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                   {menuPhotoUploading ? (
                     <div className="flex flex-col items-center gap-1.5 text-blue-600">
                       <Loader2 className="w-6 h-6 animate-spin" />
-                      <span className="text-xs font-bold">Menyimpan foto ke Google Drive...</span>
+                      <span className="text-sm font-bold">Menyimpan foto ke Google Drive...</span>
                     </div>
                   ) : menuPhotoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -984,8 +941,8 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                   ) : (
                     <div className="text-slate-400 flex flex-col items-center gap-1.5 p-4 text-center">
                       <Camera className="w-7 h-7 text-blue-600" />
-                      <span className="text-xs font-bold text-slate-700">Tap untuk Jepret / Ambil Foto</span>
-                      <span className="text-[10px] text-slate-400">Otomatis tersimpan langsung di Google Drive SPPG</span>
+                      <span className="text-sm font-bold text-slate-700">Tap untuk Jepret / Ambil Foto</span>
+                      <span className="text-xs text-slate-400">Otomatis tersimpan langsung di Google Drive SPPG</span>
                     </div>
                   )}
                   <input
@@ -1001,14 +958,14 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                 </div>
 
                 {menuPhotoUrl && (
-                  <div className="flex items-center justify-between text-xs pt-1">
+                  <div className="flex items-center justify-between text-sm pt-1">
                     <span className="text-emerald-700 font-bold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Foto Tersimpan Permanen di Google Drive
                     </span>
                     <button
                       type="button"
                       onClick={() => setMenuPhotoUrl(null)}
-                      className="text-rose-600 hover:underline inline-flex items-center gap-0.5 cursor-pointer text-[11px]"
+                      className="text-rose-600 hover:underline inline-flex items-center gap-0.5 cursor-pointer text-[13px]"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> Ganti Foto
                     </button>
@@ -1018,12 +975,12 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
               {/* 5 Komponen Makanan */}
               <div className="space-y-2 pt-1">
-                <span className="text-xs font-bold text-slate-700 block">
+                <span className="text-sm font-bold text-slate-700 block">
                   Rincian 5 Komponen Pokok Makanan:
                 </span>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm">
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 block mb-0.5">1. Karbohidrat</label>
+                    <label className="text-xs font-bold text-slate-500 block mb-0.5">1. Karbohidrat</label>
                     <input
                       type="text"
                       placeholder="Nasi Putih"
@@ -1033,7 +990,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 block mb-0.5">2. Lauk Hewani</label>
+                    <label className="text-xs font-bold text-slate-500 block mb-0.5">2. Lauk Hewani</label>
                     <input
                       type="text"
                       placeholder="Telur Ayam"
@@ -1043,7 +1000,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 block mb-0.5">3. Lauk Nabati</label>
+                    <label className="text-xs font-bold text-slate-500 block mb-0.5">3. Lauk Nabati</label>
                     <input
                       type="text"
                       placeholder="Tempe"
@@ -1053,7 +1010,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 block mb-0.5">4. Sayur</label>
+                    <label className="text-xs font-bold text-slate-500 block mb-0.5">4. Sayur</label>
                     <input
                       type="text"
                       placeholder="Kacang Panjang & Putren"
@@ -1063,7 +1020,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
-                    <label className="text-[10px] font-bold text-slate-500 block mb-0.5">5. Buah</label>
+                    <label className="text-xs font-bold text-slate-500 block mb-0.5">5. Buah</label>
                     <input
                       type="text"
                       placeholder="Kelengkeng"
@@ -1077,56 +1034,56 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
             </div>
 
             {/* ===================== ALUR 2: AKG ===================== */}
-            <div className="app-card rounded-2xl p-5 sm:p-7 space-y-5">
+            <div className="app-card rounded-xl p-5 sm:p-7 space-y-5">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
                     <Flame className="w-4 h-4" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                    <h2 className="text-sm font-bold text-slate-900 ">
                       2. Angka Kandungan Gizi (AKG) — Cukup Isi 2 Kelompok
                     </h2>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[13px] text-slate-500">
                       Otomatis mengisi Busui, Bumil, dan Balita di laporan akhir.
                     </span>
                   </div>
                 </div>
-                <span className="text-[10px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded">Alur 2</span>
+                <span className="text-xs text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded">Alur 2</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* PORSI BESAR */}
-                <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200 space-y-3">
-                  <div className="flex items-center justify-between border-b border-blue-200/80 pb-2">
+                <div className="p-4 rounded-xl bg-ink/5/50 border border-ink/15 space-y-3">
+                  <div className="flex items-center justify-between border-b border-ink/15/80 pb-2">
                     <div>
-                      <span className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-blue-600 text-white">
+                      <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-ink text-white">
                         1. PORSI BESAR
                       </span>
-                      <span className="text-[10px] font-bold text-slate-600 block mt-1">
+                      <span className="text-xs font-bold text-slate-600 block mt-1">
                         SD 4-6 / SMP / SMK / GURU
                       </span>
                     </div>
-                    <span className="text-[9px] font-extrabold text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-right">
+                    <span className="text-[11px] font-semibold text-ink bg-blue-100 px-2 py-0.5 rounded text-right">
                       Auto-Copy ke:<br />Busui & Bumil
                     </span>
                   </div>
 
-                  <div className="space-y-2 text-xs">
+                  <div className="space-y-2 text-sm">
                     <div>
-                      <label className="text-[10px] font-bold text-amber-900 block mb-0.5">Energi (Kkal)</label>
+                      <label className="text-xs font-bold text-amber-900 block mb-0.5">Energi (Kkal)</label>
                       <input
                         type="text"
                         inputMode="decimal"
                         value={akgBesar.energyKcal}
                         onChange={(e) => handleAkgBesarChange('energyKcal', e.target.value)}
                         placeholder="Contoh: 746.15"
-                        className="w-full px-2.5 py-2 border border-amber-300 rounded-lg bg-white font-black text-amber-950 focus:ring-1 focus:ring-amber-500"
+                        className="w-full px-2.5 py-2 border border-amber-300 rounded-lg bg-white font-bold text-amber-950 focus:ring-1 focus:ring-amber-500"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Protein (g)</label>
+                        <label className="text-xs font-bold text-slate-600 block mb-0.5">Protein (g)</label>
                         <input
                           type="text"
                           inputMode="decimal"
@@ -1137,7 +1094,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Lemak (g)</label>
+                        <label className="text-xs font-bold text-slate-600 block mb-0.5">Lemak (g)</label>
                         <input
                           type="text"
                           inputMode="decimal"
@@ -1150,7 +1107,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Karbo (g)</label>
+                        <label className="text-xs font-bold text-slate-600 block mb-0.5">Karbo (g)</label>
                         <input
                           type="text"
                           inputMode="decimal"
@@ -1161,7 +1118,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Serat (g)</label>
+                        <label className="text-xs font-bold text-slate-600 block mb-0.5">Serat (g)</label>
                         <input
                           type="text"
                           inputMode="decimal"
@@ -1179,33 +1136,33 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                 <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-200 space-y-3">
                   <div className="flex items-center justify-between border-b border-emerald-200/80 pb-2">
                     <div>
-                      <span className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-600 text-white">
+                      <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-600 text-white">
                         2. PORSI KECIL
                       </span>
-                      <span className="text-[10px] font-bold text-slate-600 block mt-1">
+                      <span className="text-xs font-bold text-slate-600 block mt-1">
                         PAUD / TK / SD 1-3
                       </span>
                     </div>
-                    <span className="text-[9px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-right">
+                    <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-right">
                       Auto-Copy ke:<br />Balita 6-60 Bln
                     </span>
                   </div>
 
-                  <div className="space-y-2 text-xs">
+                  <div className="space-y-2 text-sm">
                     <div>
-                      <label className="text-[10px] font-bold text-amber-900 block mb-0.5">Energi (Kkal)</label>
+                      <label className="text-xs font-bold text-amber-900 block mb-0.5">Energi (Kkal)</label>
                       <input
                         type="text"
                         inputMode="decimal"
                         value={akgKecil.energyKcal}
                         onChange={(e) => handleAkgKecilChange('energyKcal', e.target.value)}
                         placeholder="Contoh: 656.90"
-                        className="w-full px-2.5 py-2 border border-amber-300 rounded-lg bg-white font-black text-amber-950 focus:ring-1 focus:ring-amber-500"
+                        className="w-full px-2.5 py-2 border border-amber-300 rounded-lg bg-white font-bold text-amber-950 focus:ring-1 focus:ring-amber-500"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Protein (g)</label>
+                        <label className="text-xs font-bold text-slate-600 block mb-0.5">Protein (g)</label>
                         <input
                           type="text"
                           inputMode="decimal"
@@ -1216,7 +1173,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Lemak (g)</label>
+                        <label className="text-xs font-bold text-slate-600 block mb-0.5">Lemak (g)</label>
                         <input
                           type="text"
                           inputMode="decimal"
@@ -1229,7 +1186,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Karbo (g)</label>
+                        <label className="text-xs font-bold text-slate-600 block mb-0.5">Karbo (g)</label>
                         <input
                           type="text"
                           inputMode="decimal"
@@ -1240,7 +1197,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Serat (g)</label>
+                        <label className="text-xs font-bold text-slate-600 block mb-0.5">Serat (g)</label>
                         <input
                           type="text"
                           inputMode="decimal"
@@ -1257,30 +1214,30 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
             </div>
 
             {/* ===================== ALUR 3: DOKUMENTASI (LENGKAP 5 TAHAP) ===================== */}
-            <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
+            <div className="app-card rounded-xl p-5 sm:p-7 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
                     <Camera className="w-4 h-4" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                    <h2 className="text-sm font-bold text-slate-900 ">
                       3. Dokumentasi Alur Dapur & Distribusi (5 Foto Lengkap)
                     </h2>
-                    <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
+                    <span className="text-[13px] text-emerald-700 font-bold flex items-center gap-1">
                       <CloudUpload className="w-3.5 h-3.5" />
                       Auto-upload ke folder Google Drive SPPG
                     </span>
                   </div>
                 </div>
-                <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded">Alur 3</span>
+                <span className="text-xs text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded">Alur 3</span>
               </div>
 
               {/* Grid 5 Foto Dapur Lengkap */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 {/* 1. Persiapan */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                  <span className="text-[11px] font-bold text-slate-800 block truncate">1. Persiapan Bahan</span>
+                <div className="p-3 rounded-xl bg-slate-50 border border-line text-center space-y-2">
+                  <span className="text-[13px] font-bold text-slate-800 block truncate">1. Persiapan Bahan</span>
                   <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
                     {prepUploading ? (
                       <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
@@ -1290,7 +1247,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     ) : (
                       <div className="text-slate-400 flex flex-col items-center gap-1">
                         <Camera className="w-5 h-5 text-blue-600" />
-                        <span className="text-[9px] font-bold text-slate-700">Jepret Foto</span>
+                        <span className="text-[11px] font-bold text-slate-700">Jepret Foto</span>
                       </div>
                     )}
                     <input
@@ -1308,7 +1265,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     <button
                       type="button"
                       onClick={() => setPrepPhotoUrl(null)}
-                      className="text-rose-600 hover:underline cursor-pointer text-[10px] block mx-auto"
+                      className="text-rose-600 hover:underline cursor-pointer text-xs block mx-auto"
                     >
                       Hapus
                     </button>
@@ -1316,8 +1273,8 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                 </div>
 
                 {/* 2. Pengolahan */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                  <span className="text-[11px] font-bold text-slate-800 block truncate">2. Pengolahan</span>
+                <div className="p-3 rounded-xl bg-slate-50 border border-line text-center space-y-2">
+                  <span className="text-[13px] font-bold text-slate-800 block truncate">2. Pengolahan</span>
                   <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
                     {cookUploading ? (
                       <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
@@ -1327,7 +1284,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     ) : (
                       <div className="text-slate-400 flex flex-col items-center gap-1">
                         <Camera className="w-5 h-5 text-blue-600" />
-                        <span className="text-[9px] font-bold text-slate-700">Jepret Foto</span>
+                        <span className="text-[11px] font-bold text-slate-700">Jepret Foto</span>
                       </div>
                     )}
                     <input
@@ -1345,7 +1302,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     <button
                       type="button"
                       onClick={() => setCookPhotoUrl(null)}
-                      className="text-rose-600 hover:underline cursor-pointer text-[10px] block mx-auto"
+                      className="text-rose-600 hover:underline cursor-pointer text-xs block mx-auto"
                     >
                       Hapus
                     </button>
@@ -1353,8 +1310,8 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                 </div>
 
                 {/* 3. Pengemasan */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                  <span className="text-[11px] font-bold text-slate-800 block truncate">3. Pengemasan Box</span>
+                <div className="p-3 rounded-xl bg-slate-50 border border-line text-center space-y-2">
+                  <span className="text-[13px] font-bold text-slate-800 block truncate">3. Pengemasan Box</span>
                   <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
                     {packUploading ? (
                       <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
@@ -1364,7 +1321,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     ) : (
                       <div className="text-slate-400 flex flex-col items-center gap-1">
                         <Camera className="w-5 h-5 text-blue-600" />
-                        <span className="text-[9px] font-bold text-slate-700">Jepret Foto</span>
+                        <span className="text-[11px] font-bold text-slate-700">Jepret Foto</span>
                       </div>
                     )}
                     <input
@@ -1382,7 +1339,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     <button
                       type="button"
                       onClick={() => setPackPhotoUrl(null)}
-                      className="text-rose-600 hover:underline cursor-pointer text-[10px] block mx-auto"
+                      className="text-rose-600 hover:underline cursor-pointer text-xs block mx-auto"
                     >
                       Hapus
                     </button>
@@ -1390,8 +1347,8 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                 </div>
 
                 {/* 4. Distribusi */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                  <span className="text-[11px] font-bold text-slate-800 block truncate">4. Distribusi</span>
+                <div className="p-3 rounded-xl bg-slate-50 border border-line text-center space-y-2">
+                  <span className="text-[13px] font-bold text-slate-800 block truncate">4. Distribusi</span>
                   <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
                     {distUploading ? (
                       <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
@@ -1401,7 +1358,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     ) : (
                       <div className="text-slate-400 flex flex-col items-center gap-1">
                         <Camera className="w-5 h-5 text-blue-600" />
-                        <span className="text-[9px] font-bold text-slate-700">Jepret Foto</span>
+                        <span className="text-[11px] font-bold text-slate-700">Jepret Foto</span>
                       </div>
                     )}
                     <input
@@ -1419,7 +1376,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     <button
                       type="button"
                       onClick={() => setDistPhotoUrl(null)}
-                      className="text-rose-600 hover:underline cursor-pointer text-[10px] block mx-auto"
+                      className="text-rose-600 hover:underline cursor-pointer text-xs block mx-auto"
                     >
                       Hapus
                     </button>
@@ -1427,8 +1384,8 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                 </div>
 
                 {/* 5. Pencucian Ompreng */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                  <span className="text-[11px] font-bold text-slate-800 block truncate">5. Pencucian Ompreng</span>
+                <div className="p-3 rounded-xl bg-slate-50 border border-line text-center space-y-2">
+                  <span className="text-[13px] font-bold text-slate-800 block truncate">5. Pencucian Ompreng</span>
                   <div className="relative h-28 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden">
                     {washUploading ? (
                       <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
@@ -1438,7 +1395,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     ) : (
                       <div className="text-slate-400 flex flex-col items-center gap-1">
                         <Camera className="w-5 h-5 text-blue-600" />
-                        <span className="text-[9px] font-bold text-slate-700">Jepret Foto</span>
+                        <span className="text-[11px] font-bold text-slate-700">Jepret Foto</span>
                       </div>
                     )}
                     <input
@@ -1456,7 +1413,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     <button
                       type="button"
                       onClick={() => setWashPhotoUrl(null)}
-                      className="text-rose-600 hover:underline cursor-pointer text-[10px] block mx-auto"
+                      className="text-rose-600 hover:underline cursor-pointer text-xs block mx-auto"
                     >
                       Hapus
                     </button>
@@ -1466,28 +1423,28 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
             </div>
 
             {/* ===================== ALUR 4: ALOKASI ===================== */}
-            <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
+            <div className="app-card rounded-xl p-5 sm:p-7 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
                     <Users className="w-4 h-4" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                    <h2 className="text-sm font-bold text-slate-900 ">
                       4. Alokasi Penerima Manfaat (12 Sekolah + 1 Posyandu)
                     </h2>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[13px] text-slate-500">
                       Total Master: {getBeneficiariesForDate(menuDate).reduce((a, s) => a + s.masterCount, 0).toLocaleString('id-ID')} Porsi ({menuDate < '2026-10-12' ? 'Baseline Lama s/d 11 Okt: 1.554' : (menuDate < '2026-10-19' ? 'Periode 12-18 Okt: 1.556' : 'Baseline Baru per 19 Okt: 1.553')}). Atur sekolah libur khusus tanggal ini jika ada.
                     </span>
                   </div>
                 </div>
-                <span className="text-[10px] text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded">Alur 4</span>
+                <span className="text-xs text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded">Alur 4</span>
               </div>
 
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="border border-line rounded-xl overflow-hidden">
                 <div className="max-h-64 overflow-y-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold text-[10px] uppercase sticky top-0">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-slate-50 border-b border-line text-slate-700 font-bold text-xs sticky top-0">
                       <tr>
                         <th className="py-2.5 px-3">Lembaga Sekolah / Posyandu</th>
                         <th className="py-2.5 px-3 w-24">Tipe</th>
@@ -1500,9 +1457,9 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                         const isOverridden = beneficiaryOverrides[site.id]?.condition === 'libur';
                         return (
                           <tr key={site.id} className="hover:bg-slate-50">
-                            <td className="py-2 px-3 font-extrabold text-slate-900">{site.name}</td>
+                            <td className="py-2 px-3 font-semibold text-slate-900">{site.name}</td>
                             <td className="py-2 px-3 text-slate-500">{site.type}</td>
-                            <td className="py-2 px-3 text-right font-black text-slate-900">{site.masterCount}</td>
+                            <td className="py-2 px-3 text-right font-bold text-slate-900">{site.masterCount}</td>
                             <td className="py-2 px-3 text-center">
                               <button
                                 type="button"
@@ -1519,7 +1476,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                                     });
                                   }
                                 }}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
+                                className={`px-2 py-0.5 rounded text-xs font-bold cursor-pointer transition-all ${
                                   isOverridden
                                     ? 'bg-rose-100 text-rose-800 border border-rose-200'
                                     : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
@@ -1538,33 +1495,33 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
             </div>
 
             {/* ===================== ALUR 5: URAIAN KEGIATAN ===================== */}
-            <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
+            <div className="app-card rounded-xl p-5 sm:p-7 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center">
                     <FileText className="w-4 h-4" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                    <h2 className="text-sm font-bold text-slate-900 ">
                       5. Uraian Kegiatan Operasional Dapur & Distribusi
                     </h2>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[13px] text-slate-500">
                       Log urutan tahapan kerja persiapan, masak, packing, dan keberangkatan armada.
                     </span>
                   </div>
                 </div>
-                <span className="text-[10px] text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded">Alur 5</span>
+                <span className="text-xs text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded">Alur 5</span>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">
+                <label className="text-sm font-bold text-slate-700 block mb-1">
                   Catatan / Log Uraian Kegiatan:
                 </label>
                 <textarea
                   rows={9}
                   value={uraianKegiatan}
                   onChange={(e) => setUraianKegiatan(e.target.value)}
-                  className="w-full p-3 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600 leading-relaxed font-sans"
+                  className="w-full p-3 text-sm border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-600 leading-relaxed font-sans"
                 />
               </div>
             </div>
@@ -1575,7 +1532,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl text-sm font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Printer className="w-4 h-4 text-slate-600" />
                   <span>Cetak Laporan Lengkap</span>
@@ -1584,7 +1541,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                 <button
                   type="submit"
                   disabled={isSubmitting || menuPhotoUploading || prepUploading || cookUploading || packUploading || distUploading || washUploading}
-                  className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none"
+                  className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-sm font-bold text-white bg-ink hover:bg-ink-soft active:scale-95 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none"
                 >
                   {isSubmitting ? (
                     <>
@@ -1605,13 +1562,13 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
         {/* ===================== TAB 2: PANEL KELOLA & EDIT ARSIP ===================== */}
         {activeTab === 'list' && (
-          <div className="app-card rounded-2xl p-5 sm:p-7 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div className="app-card rounded-xl p-5 sm:p-7 space-y-4">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
-                <h2 className="text-base font-black text-slate-900">
+                <h2 className="text-base font-bold text-slate-900">
                   Daftar Arsip Operasional Tersimpan
                 </h2>
-                <span className="text-xs text-slate-500">
+                <span className="text-sm text-slate-500">
                   Klik tombol <strong>Edit</strong> untuk mengubah data menu, foto, atau AKG tanggal tertentu.
                 </span>
               </div>
@@ -1621,14 +1578,14 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                   handleResetForm();
                   setActiveTab('input');
                 }}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 cursor-pointer shadow-xs"
+                className="px-3 py-1.5 rounded-lg text-sm font-bold text-white bg-ink hover:bg-ink-soft cursor-pointer"
               >
                 + Input Menu Baru
               </button>
             </div>
 
             {savedMenuList.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 text-xs border-2 border-dashed border-slate-200 rounded-xl">
+              <div className="p-8 text-center text-slate-400 text-sm border-2 border-dashed border-line rounded-xl">
                 Belum ada arsip yang tersimpan. Silakan isi form di tab &quot;Form Input / Edit&quot;.
               </div>
             ) : (
@@ -1637,14 +1594,14 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                   <div key={menu.date} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 p-2 rounded-xl transition-colors">
                     <div className="space-y-1 min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-100 text-blue-900">
+                        <span className="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-ink">
                           {menu.date}
                         </span>
-                        <span className="text-xs font-bold text-slate-900 truncate">
+                        <span className="text-sm font-bold text-slate-900 truncate">
                           {menu.title}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 truncate">
+                      <p className="text-[13px] text-slate-500 truncate">
                         Karbo: {menu.components?.karbohidrat || '-'} • Hewani: {menu.components?.laukHewani || '-'} • Sayur: {menu.components?.sayur || '-'}
                       </p>
                     </div>
@@ -1653,7 +1610,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                       <button
                         type="button"
                         onClick={() => handleLoadMenuToEdit(menu)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center gap-1 cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg text-sm font-bold text-ink bg-ink/5 border border-ink/15 hover:bg-ink/10 transition-colors flex items-center gap-1 cursor-pointer"
                       >
                         <Edit className="w-3.5 h-3.5" />
                         <span>Edit Arsip Ini</span>
@@ -1674,6 +1631,8 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
           </div>
         )}
       </main>
+
+      <BottomTabs />
     </div>
   );
 }

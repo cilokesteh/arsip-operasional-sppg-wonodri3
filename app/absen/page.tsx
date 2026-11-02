@@ -437,24 +437,24 @@ export default function AbsenMandiriPage() {
               <Image src="/logo.png" alt="Logo" width={24} height={24} className="object-contain" />
             </div>
             <div>
-              <span className="font-extrabold text-sm text-white tracking-tight block leading-tight">
+              <span className="font-semibold text-sm text-white tracking-tight block leading-tight">
                 SPPG Wonodri 3
               </span>
-              <span className="text-[10px] text-blue-400 font-semibold block">
+              <span className="text-xs text-blue-400 font-semibold block">
                 Presensi Realtime Mandiri
               </span>
             </div>
           </div>
 
           <div className="text-right">
-            <span className="text-xs font-mono font-bold text-emerald-400 block leading-tight">
+            <span className="text-sm font-mono font-bold text-emerald-400 block leading-tight">
               {currentWib || '...'}
             </span>
-            <span className="text-[10px] text-slate-400 block truncate">
+            <span className="text-xs text-slate-400 block truncate">
               {currentDateStr}
             </span>
             {pendingSync > 0 && (
-              <span className="text-[9px] font-bold text-amber-400 bg-amber-950/80 border border-amber-700/60 px-1.5 py-0.5 rounded inline-flex items-center gap-1 mt-1">
+              <span className="text-[11px] font-bold text-amber-400 bg-amber-950/80 border border-amber-700/60 px-1.5 py-0.5 rounded inline-flex items-center gap-1 mt-1">
                 <RefreshCw className="w-2.5 h-2.5 animate-spin" />
                 {pendingSync} menunggu kirim
               </span>
@@ -473,13 +473,13 @@ export default function AbsenMandiriPage() {
             </div>
 
             <div>
-              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/30">
+              <span className="text-[13px] font-bold text-emerald-400 bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/30">
                 Presensi {submitSuccess.type === 'IN' ? 'Masuk' : 'Pulang'} Berhasil!
               </span>
-              <h2 className="text-xl font-black text-white mt-3">
+              <h2 className="text-xl font-bold text-white mt-3">
                 {submitSuccess.volunteerName}
               </h2>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">
+              <p className="text-sm text-slate-400 font-medium mt-0.5">
                 {submitSuccess.dutySection} • {submitSuccess.time}
               </p>
             </div>
@@ -491,12 +491,12 @@ export default function AbsenMandiriPage() {
                 alt="Foto Selfie Presensi"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute top-2 right-2 bg-emerald-500/90 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">
+              <div className="absolute top-2 right-2 bg-emerald-500/90 text-white text-[11px] font-bold px-1.5 py-0.5 rounded shadow">
                 VERIFIED
               </div>
             </div>
 
-            <div className="bg-slate-900/80 rounded-2xl p-3 text-xs text-slate-300 border border-slate-700/60 space-y-1.5 text-left">
+            <div className="bg-slate-900/80 rounded-2xl p-3 text-sm text-slate-300 border border-slate-700/60 space-y-1.5 text-left">
               <div className="flex justify-between">
                 <span className="text-slate-400">Status GPS:</span>
                 <span className={submitSuccess.distance <= MAX_RADIUS_METERS ? "font-bold text-emerald-400" : "font-bold text-amber-400"}>
@@ -515,7 +515,7 @@ export default function AbsenMandiriPage() {
                 )}
               </div>
               {pendingSync > 0 && (
-                <p className="text-[10px] text-slate-500 leading-relaxed pt-0.5">
+                <p className="text-xs text-slate-500 leading-relaxed pt-0.5">
                   Presensi sudah tercatat aman di HP Anda dan otomatis dikirim ulang ke pusat begitu sinyal membaik. Anda boleh menutup halaman ini.
                 </p>
               )}
@@ -524,7 +524,7 @@ export default function AbsenMandiriPage() {
             <button
               type="button"
               onClick={handleResetForm}
-              className="w-full py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow"
+              className="w-full py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm rounded-xl transition-colors cursor-pointer shadow"
             >
               Kembali / Presensi Relawan Lain
             </button>
@@ -536,13 +536,13 @@ export default function AbsenMandiriPage() {
             <div className={`bg-slate-800/80 border rounded-2xl p-4 shadow-sm relative transition-all ${
               nameError ? 'border-rose-500 ring-2 ring-rose-500/30' : selectedVolunteer ? 'border-emerald-500/60' : 'border-slate-700/80'
             }`}>
-              <label className="text-xs font-black text-slate-300 uppercase tracking-wider block mb-1.5 flex items-center justify-between">
+              <label className="text-sm font-bold text-slate-300 block mb-1.5 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-blue-400" />
                   <span>1. Pilih Nama Relawan:</span>
                 </span>
                 {selectedVolunteer && (
-                  <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                  <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
                     <Check className="w-3 h-3" /> Terpilih
                   </span>
                 )}
@@ -553,7 +553,7 @@ export default function AbsenMandiriPage() {
                 <button
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className={`w-full bg-slate-900 border rounded-xl px-3.5 py-3 text-left text-xs font-bold text-white flex items-center justify-between transition cursor-pointer ${
+                  className={`w-full bg-slate-900 border rounded-xl px-3.5 py-3 text-left text-sm font-bold text-white flex items-center justify-between transition cursor-pointer ${
                     nameError ? 'border-rose-500' : 'border-slate-700 hover:border-slate-600'
                   }`}
                 >
@@ -561,7 +561,7 @@ export default function AbsenMandiriPage() {
                     {selectedVolunteer ? (
                       <div>
                         <span className="text-white text-sm block">{selectedVolunteer.name}</span>
-                        <span className="text-[10px] text-blue-400 font-normal">
+                        <span className="text-xs text-blue-400 font-normal">
                           {selectedVolunteer.dutySection} (Shift: {selectedVolunteer.defaultCheckIn} - {selectedVolunteer.defaultCheckOut})
                         </span>
                       </div>
@@ -575,7 +575,7 @@ export default function AbsenMandiriPage() {
                 </button>
 
                 {nameError && (
-                  <p className="text-[11px] text-rose-400 font-bold mt-1.5">
+                  <p className="text-[13px] text-rose-400 font-bold mt-1.5">
                     {nameError}
                   </p>
                 )}
@@ -589,7 +589,7 @@ export default function AbsenMandiriPage() {
                           placeholder="Ketik nama untuk mencari..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-8 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 font-medium"
+                          className="w-full pl-8 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 font-medium"
                           autoFocus
                         />
                         <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -607,23 +607,23 @@ export default function AbsenMandiriPage() {
                               setNameError('');
                               setIsDropdownOpen(false);
                             }}
-                            className={`w-full text-left p-2.5 rounded-lg transition flex items-center justify-between text-xs cursor-pointer ${
+                            className={`w-full text-left p-2.5 rounded-lg transition flex items-center justify-between text-sm cursor-pointer ${
                               selectedVolunteerId === v.id ? 'bg-blue-600/30 border border-blue-500/40' : 'hover:bg-slate-800'
                             }`}
                           >
                             <div>
                               <p className="font-bold text-white leading-tight">{v.name}</p>
-                              <p className="text-[10px] text-slate-400 mt-0.5">
+                              <p className="text-xs text-slate-400 mt-0.5">
                                 {v.dutySection} • Jam Kerja: {v.defaultCheckIn} - {v.defaultCheckOut}
                               </p>
                             </div>
-                            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-800/40 shrink-0">
+                            <span className="text-xs font-mono text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-800/40 shrink-0">
                               No.{v.no}
                             </span>
                           </button>
                         ))
                       ) : (
-                        <div className="p-4 text-center text-xs text-slate-500 font-medium">
+                        <div className="p-4 text-center text-sm text-slate-500 font-medium">
                           Nama tidak ditemukan dalam daftar.
                         </div>
                       )}
@@ -636,7 +636,7 @@ export default function AbsenMandiriPage() {
             {/* 2. Geolocation / Radius Geofence */}
             <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-sm space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="text-sm font-bold text-slate-300 flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-blue-400" />
                   <span>2. Status Lokasi GPS:</span>
                 </span>
@@ -645,7 +645,7 @@ export default function AbsenMandiriPage() {
                   type="button"
                   onClick={refreshLocation}
                   disabled={isLocating}
-                  className="text-[11px] font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+                  className="text-[13px] font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 disabled:opacity-50 cursor-pointer"
                 >
                   <RefreshCw className={`w-3 h-3 ${isLocating ? 'animate-spin' : ''}`} />
                   <span>Perbarui GPS</span>
@@ -653,38 +653,38 @@ export default function AbsenMandiriPage() {
               </div>
 
               {isLocating ? (
-                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-700/60 flex items-center gap-2.5 text-xs text-slate-300">
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-700/60 flex items-center gap-2.5 text-sm text-slate-300">
                   <RefreshCw className="w-4 h-4 animate-spin text-blue-400" />
                   <span>Mendeteksi koordinat satelit GPS HP Anda...</span>
                 </div>
               ) : locationError ? (
-                <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800 text-xs text-rose-300 space-y-1">
+                <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800 text-sm text-rose-300 space-y-1">
                   <div className="flex items-center gap-1.5 font-bold">
                     <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
                     <span>Akses Lokasi Dibutuhkan</span>
                   </div>
-                  <p className="text-[11px] text-rose-200">{locationError}</p>
+                  <p className="text-[13px] text-rose-200">{locationError}</p>
                 </div>
               ) : isLocationValid ? (
-                <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-300 flex items-start gap-2.5">
+                <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-800 text-sm text-emerald-300 flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold block leading-tight">
                       Lokasi Valid di Dapur SPPG Wonodri 3
                     </span>
-                    <span className="text-[11px] text-emerald-200 font-mono block mt-0.5">
+                    <span className="text-[13px] text-emerald-200 font-mono block mt-0.5">
                       Jarak: {distanceMeters}m (Radius maks ketat: {MAX_RADIUS_METERS}m)
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800 text-xs text-rose-300 flex items-start gap-2.5">
+                <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800 text-sm text-rose-300 flex items-start gap-2.5">
                   <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold block leading-tight">
                       Di Luar Radius Dapur ({distanceMeters} meter)
                     </span>
-                    <span className="text-[11px] text-rose-200 block mt-0.5">
+                    <span className="text-[13px] text-rose-200 block mt-0.5">
                       Presensi hanya dapat dikirim jika Anda berada di dalam area dapur SPPG Wonodri 3 (Maksimal {MAX_RADIUS_METERS} meter).
                     </span>
                   </div>
@@ -694,17 +694,17 @@ export default function AbsenMandiriPage() {
 
             {/* 3. Live Camera View (Tampil Rapi di Box Web, Anti-Zoom) */}
             <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-sm space-y-3">
-              <span className="text-xs font-black text-slate-300 uppercase tracking-wider flex items-center justify-between">
+              <span className="text-sm font-bold text-slate-300 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <Camera className="w-3.5 h-3.5 text-blue-400" />
                   <span>3. Foto Wajah Selfie:</span>
                 </span>
                 {capturedPhoto ? (
-                  <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/40">
+                  <span className="text-xs text-emerald-400 font-bold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/40">
                     Foto Siap ✓
                   </span>
                 ) : isCameraActive ? (
-                  <span className="text-[10px] text-blue-400 font-bold bg-blue-950/80 px-2 py-0.5 rounded border border-blue-800/40 animate-pulse">
+                  <span className="text-xs text-blue-400 font-bold bg-blue-950/80 px-2 py-0.5 rounded border border-blue-800/40 animate-pulse">
                     Kamera Live Aktif
                   </span>
                 ) : null}
@@ -718,8 +718,8 @@ export default function AbsenMandiriPage() {
                       <Lock className="w-7 h-7" />
                     </div>
                     <div className="space-y-1">
-                      <p className="font-bold text-xs text-white">Kamera Dinonaktifkan</p>
-                      <p className="text-[11px] text-slate-400 leading-relaxed max-w-xs mx-auto">
+                      <p className="font-bold text-sm text-white">Kamera Dinonaktifkan</p>
+                      <p className="text-[13px] text-slate-400 leading-relaxed max-w-xs mx-auto">
                         {distanceMeters !== null
                           ? `Anda terdeteksi ${distanceMeters} meter dari dapur. Seluruh fitur kamera dan presensi hanya aktif di dalam area dapur SPPG Wonodri 3 (Maksimal 10 meter).`
                           : 'Satelit GPS sedang mendeteksi... Fitur kamera akan aktif otomatis saat Anda berada di dapur.'}
@@ -759,12 +759,12 @@ export default function AbsenMandiriPage() {
                         {cameraLoading ? (
                           <>
                             <RefreshCw className="w-8 h-8 text-blue-400 animate-spin mx-auto" />
-                            <p className="text-xs text-slate-400">Menghubungkan kamera...</p>
+                            <p className="text-sm text-slate-400">Menghubungkan kamera...</p>
                           </>
                         ) : (
                           <>
                             <Camera className="w-10 h-10 text-slate-600 mx-auto" />
-                            <p className="text-xs text-slate-400 font-medium">
+                            <p className="text-sm text-slate-400 font-medium">
                               Kamera siap diaktifkan
                             </p>
                           </>
@@ -776,7 +776,7 @@ export default function AbsenMandiriPage() {
               </div>
 
               {cameraError && isLocationValid && (
-                <div className="p-2.5 rounded-lg bg-amber-950/60 border border-amber-800 text-xs text-amber-300 flex items-center gap-2">
+                <div className="p-2.5 rounded-lg bg-amber-950/60 border border-amber-800 text-sm text-amber-300 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
                   <span>{cameraError}</span>
                 </div>
@@ -788,7 +788,7 @@ export default function AbsenMandiriPage() {
                   <button
                     type="button"
                     disabled
-                    className="w-full py-3 bg-slate-900 border border-slate-800 text-slate-500 font-bold text-xs rounded-xl flex items-center justify-center gap-2 cursor-not-allowed opacity-60"
+                    className="w-full py-3 bg-slate-900 border border-slate-800 text-slate-500 font-bold text-sm rounded-xl flex items-center justify-center gap-2 cursor-not-allowed opacity-60"
                   >
                     <Lock className="w-3.5 h-3.5" />
                     <span>Fitur Kamera Terkunci di Luar Radius</span>
@@ -798,7 +798,7 @@ export default function AbsenMandiriPage() {
                     <button
                       type="button"
                       onClick={captureFromWebCamera}
-                      className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-sm rounded-xl transition shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 cursor-pointer animate-pulse"
+                      className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 cursor-pointer animate-pulse"
                     >
                       <Camera className="w-4 h-4" />
                       <span>📸 Jepret Foto Selfie Sekarang</span>
@@ -808,7 +808,7 @@ export default function AbsenMandiriPage() {
                       type="button"
                       onClick={startWebCamera}
                       disabled={cameraLoading}
-                      className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow cursor-pointer disabled:opacity-50"
+                      className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2 shadow cursor-pointer disabled:opacity-50"
                     >
                       <Camera className="w-4 h-4" />
                       <span>{cameraLoading ? 'Menghubungkan...' : 'Aktifkan Kamera di Layar'}</span>
@@ -818,7 +818,7 @@ export default function AbsenMandiriPage() {
                   <button
                     type="button"
                     onClick={handleRetakePhoto}
-                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-sm rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
                     <span>Ulangi / Jepret Foto Ulang</span>
@@ -831,7 +831,7 @@ export default function AbsenMandiriPage() {
             <div className="space-y-3 pt-2">
               {/* Status Validasi Sebelum Kirim */}
               {(!selectedVolunteer || !capturedPhoto || !isLocationValid) && (
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-700/60 text-xs text-slate-400 space-y-1">
+                <div className="p-3 rounded-xl bg-slate-900 border border-slate-700/60 text-sm text-slate-400 space-y-1">
                   <p className="font-bold text-slate-300">Kelengkapan Sebelum Kirim:</p>
                   <p className={selectedVolunteer ? 'text-emerald-400' : 'text-amber-400'}>
                     {selectedVolunteer ? `✓ Nama: ${selectedVolunteer.name}` : '• Belum memilih nama (Langkah 1)'}
@@ -850,7 +850,7 @@ export default function AbsenMandiriPage() {
                   type="button"
                   disabled={!isLocationValid}
                   onClick={() => handleSubmitAttendance('IN')}
-                  className={`py-4 px-4 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 ${
+                  className={`py-4 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 ${
                     isLocationValid
                       ? 'bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-white shadow-lg shadow-emerald-950/60 cursor-pointer'
                       : 'bg-slate-800 border border-slate-700/60 text-slate-500 cursor-not-allowed opacity-40'
@@ -864,7 +864,7 @@ export default function AbsenMandiriPage() {
                   type="button"
                   disabled={!isLocationValid}
                   onClick={() => handleSubmitAttendance('OUT')}
-                  className={`py-4 px-4 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 ${
+                  className={`py-4 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 ${
                     isLocationValid
                       ? 'bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white shadow-lg shadow-blue-950/60 cursor-pointer'
                       : 'bg-slate-800 border border-slate-700/60 text-slate-500 cursor-not-allowed opacity-40'
@@ -876,7 +876,7 @@ export default function AbsenMandiriPage() {
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-400 text-center font-medium leading-relaxed">
+            <p className="text-[13px] text-slate-400 text-center font-medium leading-relaxed">
               {isLocationValid
                 ? 'Pastikan Anda sudah memilih nama pada langkah 1 dan menjepret foto selfie sebelum mengirim presensi.'
                 : '⛔ Seluruh fitur presensi terkunci karena Anda berada di luar batas area dapur SPPG Wonodri 3 (Maksimal 10 meter).'}
@@ -886,7 +886,7 @@ export default function AbsenMandiriPage() {
       </main>
 
       {/* Footer Nav */}
-      <footer className="border-t border-slate-800/80 bg-slate-950/80 p-3 text-center text-[10px] text-slate-500">
+      <footer className="border-t border-slate-800/80 bg-slate-950/80 p-3 text-center text-xs text-slate-500">
         <div className="flex items-center justify-center gap-3 mb-1">
           <Link href="/arsip" className="text-slate-400 hover:text-white transition">
             Arsip Menu MBG

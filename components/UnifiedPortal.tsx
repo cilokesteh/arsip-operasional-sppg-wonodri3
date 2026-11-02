@@ -876,7 +876,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
         <button
           type="button"
           onClick={() => handleOpenPinModalSalary('unlock')}
-          className="inline-flex items-center gap-1 font-mono text-xs text-slate-400 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded cursor-pointer transition-colors"
+          className="inline-flex items-center gap-1 font-mono text-sm text-slate-400 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded cursor-pointer transition-colors"
           title="Klik untuk membuka proteksi PIN upah"
         >
           <Lock className="w-3 h-3 text-slate-400" />
@@ -885,7 +885,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       );
     }
     return (
-      <span className={isStrikethrough ? 'line-through text-slate-400 font-mono text-xs' : 'text-blue-900 font-mono font-bold text-xs'}>
+      <span className={isStrikethrough ? 'line-through text-slate-400 font-mono text-sm' : 'text-ink font-mono font-bold text-sm'}>
         {formatRupiah(amount)}
       </span>
     );
@@ -1008,7 +1008,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               <span className="block font-heading font-bold text-[15px] leading-tight truncate">
                 SPPG Wonodri 3
               </span>
-              <span className="block text-xs text-slate-600 leading-tight truncate">
+              <span className="block text-sm text-slate-600 leading-tight truncate">
                 Dapur MBG, Semarang Selatan
               </span>
             </span>
@@ -1022,29 +1022,29 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               <button
                 type="button"
                 onClick={handleLockSalary}
-                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
+                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-sm font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
                 title="Kunci kembali tampilan upah"
               >
                 <Unlock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span className="hidden sm:inline">Upah Terbuka</span>
-                <span className="sm:hidden text-[11px]">Kunci</span>
+                <span className="sm:hidden text-[13px]">Kunci</span>
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => handleOpenPinModalSalary('unlock')}
-                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1 cursor-pointer transition-colors"
+                className="px-2 sm:px-2.5 py-1.5 rounded-lg text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1 cursor-pointer transition-colors"
                 title="Buka tampilan upah dengan PIN"
               >
                 <Lock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                 <span className="hidden sm:inline">Buka Upah</span>
-                <span className="sm:hidden text-[11px]">PIN</span>
+                <span className="sm:hidden text-[13px]">PIN</span>
               </button>
             )}
 
             <button
               onClick={handleExportCsv}
-              className="flex px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-line items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+              className="flex px-2 sm:px-2.5 py-1.5 rounded-lg text-sm font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-line items-center gap-1.5 cursor-pointer transition-colors"
               title="Unduh Rekap CSV (Sesuai Tab / Periode Aktif)"
             >
               <Download className="w-3.5 h-3.5 text-slate-600 shrink-0" />
@@ -1068,14 +1068,14 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       <main className="max-w-6xl mx-auto w-full px-3 sm:px-4 py-4 sm:py-5 flex-1">
         <div className="space-y-4 animate-in fade-in">
             {/* Control Bar & Sub-Tabs */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-2 sm:p-2.5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="bg-white rounded-xl border border-line p-2 sm:p-2.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
               {/* Segmented Sub-Tabs */}
-              <div className="grid grid-cols-4 sm:flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold w-full md:w-auto">
+              <div className="grid grid-cols-4 sm:flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-sm font-bold w-full md:w-auto">
                 <button
                   onClick={() => setAbsensiSubTab('harian')}
                   className={`py-1.5 px-2 sm:px-3.5 rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 text-center ${
                     absensiSubTab === 'harian'
-                      ? 'bg-white text-blue-800 shadow-xs'
+                      ? 'bg-white text-ink'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -1088,7 +1088,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   onClick={() => setAbsensiSubTab('rekap')}
                   className={`py-1.5 px-2 sm:px-3.5 rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 text-center ${
                     absensiSubTab === 'rekap'
-                      ? 'bg-white text-blue-800 shadow-xs'
+                      ? 'bg-white text-ink'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -1101,7 +1101,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   onClick={() => setAbsensiSubTab('arsip')}
                   className={`py-1.5 px-2 sm:px-3.5 rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 text-center ${
                     absensiSubTab === 'arsip'
-                      ? 'bg-white text-blue-800 shadow-xs'
+                      ? 'bg-white text-ink'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -1113,7 +1113,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   onClick={() => setAbsensiSubTab('roster')}
                   className={`py-1.5 px-2 sm:px-3.5 rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 text-center ${
                     absensiSubTab === 'roster'
-                      ? 'bg-white text-blue-800 shadow-xs'
+                      ? 'bg-white text-ink'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -1128,25 +1128,25 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleShiftDate(-1)}
-                      className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-colors border border-slate-200 cursor-pointer shrink-0"
+                      className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-colors border border-line cursor-pointer shrink-0"
                       title="Hari Sebelumnya"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
 
-                    <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
-                      <CalendarIcon className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+                    <div className="flex items-center gap-1.5 bg-slate-50 border border-line rounded-lg px-2 py-1">
+                      <CalendarIcon className="w-3.5 h-3.5 text-ink shrink-0" />
                       <input
                         type="date"
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
-                        className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
+                        className="bg-transparent text-sm font-bold text-slate-900 focus:outline-none cursor-pointer"
                       />
                     </div>
 
                     <button
                       onClick={() => handleShiftDate(1)}
-                      className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-colors border border-slate-200 cursor-pointer shrink-0"
+                      className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-colors border border-line cursor-pointer shrink-0"
                       title="Hari Berikutnya"
                     >
                       <ChevronRight className="w-4 h-4" />
@@ -1155,7 +1155,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
                   <button
                     onClick={() => setSelectedDate(toIsoDateLocal(new Date()))}
-                    className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0"
+                    className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg transition-colors cursor-pointer shrink-0"
                   >
                     Hari Ini
                   </button>
@@ -1164,11 +1164,11 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
               {absensiSubTab === 'rekap' && (
                 <div className="flex items-center gap-2 self-end md:self-auto">
-                  <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-xs font-bold">
+                  <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-sm font-bold">
                     <button
                       onClick={() => setRekapPeriod('harian')}
                       className={`px-2.5 py-1 rounded transition-colors ${
-                        rekapPeriod === 'harian' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'
+                        rekapPeriod === 'harian' ? 'bg-white text-slate-900' : 'text-slate-600'
                       }`}
                     >
                       Harian
@@ -1176,7 +1176,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     <button
                       onClick={() => setRekapPeriod('mingguan')}
                       className={`px-2.5 py-1 rounded transition-colors ${
-                        rekapPeriod === 'mingguan' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'
+                        rekapPeriod === 'mingguan' ? 'bg-white text-slate-900' : 'text-slate-600'
                       }`}
                     >
                       Mingguan
@@ -1184,7 +1184,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     <button
                       onClick={() => setRekapPeriod('bulanan')}
                       className={`px-2.5 py-1 rounded transition-colors ${
-                        rekapPeriod === 'bulanan' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'
+                        rekapPeriod === 'bulanan' ? 'bg-white text-slate-900' : 'text-slate-600'
                       }`}
                     >
                       Bulanan
@@ -1192,12 +1192,12 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   </div>
 
                   {rekapPeriod === 'harian' && (
-                    <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
+                    <div className="flex items-center gap-1 bg-slate-50 border border-line rounded-lg px-2 py-1">
                       <input
                         type="date"
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
-                        className="bg-transparent text-xs font-bold text-slate-800 cursor-pointer"
+                        className="bg-transparent text-sm font-bold text-slate-800 cursor-pointer"
                       />
                     </div>
                   )}
@@ -1207,7 +1207,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                       type="month"
                       value={selectedMonth}
                       onChange={(e) => setSelectedMonth(e.target.value)}
-                      className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 cursor-pointer"
+                      className="bg-slate-50 border border-line rounded-lg px-2 py-1 text-sm font-bold text-slate-800 cursor-pointer"
                     />
                   )}
                 </div>
@@ -1215,36 +1215,36 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             </div>
 
             {/* 4 SUMMARY METRIC CARDS */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 text-xs w-full">
-              <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-0.5 min-w-0">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block truncate">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 text-sm w-full">
+              <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-line space-y-0.5 min-w-0">
+                <span className="text-xs font-semibold text-slate-400 block truncate">
                   Hadir ({formatIndoDate(selectedDate).split(',')[0]})
                 </span>
-                <div className="text-lg sm:text-2xl font-black text-emerald-600 font-mono">
-                  {dailySummary.statusCounts.Hadir} <span className="text-[10px] sm:text-xs font-normal text-slate-400">/ {activeRosterCount}</span>
+                <div className="text-lg sm:text-2xl font-bold text-emerald-600 font-mono">
+                  {dailySummary.statusCounts.Hadir} <span className="text-xs sm:text-sm font-normal text-slate-400">/ {activeRosterCount}</span>
                 </div>
-                <span className="text-[10px] sm:text-[11px] text-emerald-700 font-medium block truncate">
+                <span className="text-xs sm:text-[13px] text-emerald-700 font-medium block truncate">
                   Efektivitas {activeRosterCount > 0 ? Math.round((dailySummary.statusCounts.Hadir / activeRosterCount) * 100) : 0}%
                 </span>
               </div>
 
-              <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-1 min-w-0">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block truncate">
+              <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-line space-y-1 min-w-0">
+                <span className="text-xs font-semibold text-slate-400 block truncate">
                   Izin / Tidak Hadir
                 </span>
                 {absentPersonnel.length === 0 ? (
                   <div>
                     <div className="text-base sm:text-lg font-bold text-slate-900 font-mono">0 Orang</div>
-                    <span className="text-[10px] sm:text-[11px] text-emerald-600 font-medium block truncate">Semua Hadir</span>
+                    <span className="text-xs sm:text-[13px] text-emerald-600 font-medium block truncate">Semua Hadir</span>
                   </div>
                 ) : (
                   <div className="space-y-0.5">
-                    <div className="text-xs sm:text-sm font-black text-amber-700">
+                    <div className="text-sm sm:text-sm font-bold text-amber-700">
                       {absentPersonnel.length} Orang Izin:
                     </div>
                     <ul className="space-y-0.5">
                       {absentPersonnel.map((p) => (
-                        <li key={p.id} className="text-[10px] sm:text-[11px] font-medium text-slate-700 leading-tight break-words">
+                        <li key={p.id} className="text-xs sm:text-[13px] font-medium text-slate-700 leading-tight break-words">
                           <span className="text-amber-600 font-semibold">•</span> {p.name}
                         </li>
                       ))}
@@ -1253,33 +1253,33 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 )}
               </div>
 
-              <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-0.5 min-w-0">
+              <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-line space-y-0.5 min-w-0">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block truncate">
+                  <span className="text-xs font-semibold text-slate-400 block truncate">
                     Upah Hari Ini
                   </span>
                   {!isSalaryUnlocked && <Lock className="w-3 h-3 text-slate-300" />}
                 </div>
                 <div className="pt-0.5 truncate">{renderSalary(dailySummary.totalEarned)}</div>
-                <span className="text-[9px] sm:text-[10px] text-slate-400 block truncate">
+                <span className="text-[11px] sm:text-xs text-slate-400 block truncate">
                   {isSalaryUnlocked ? `Plafon ${formatRupiah(totalRosterPlafon)} / BNI` : 'Plafon •••••• / BNI'}
                 </span>
               </div>
 
-              <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-0.5 min-w-0">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block truncate">
+              <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-line space-y-0.5 min-w-0">
+                <span className="text-xs font-semibold text-slate-400 block truncate">
                   Total Roster
                 </span>
-                <div className="text-lg sm:text-2xl font-black text-slate-900 font-mono">
-                  {roster.length} <span className="text-[10px] sm:text-xs font-normal text-slate-400">Org</span>
+                <div className="text-lg sm:text-2xl font-bold text-slate-900 font-mono">
+                  {roster.length} <span className="text-xs sm:text-sm font-normal text-slate-400">Org</span>
                 </div>
-                <span className="text-[10px] sm:text-[11px] text-slate-400 block truncate">{activeRosterCount} Shift • {nonActiveRosterCount} Nonaktif</span>
+                <span className="text-xs sm:text-[13px] text-slate-400 block truncate">{activeRosterCount} Shift • {nonActiveRosterCount} Nonaktif</span>
               </div>
             </div>
 
             {/* FEEDBACK TOAST */}
             {saveToast && (
-              <div className="bg-emerald-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md flex items-center justify-between border border-emerald-700 animate-in fade-in">
+              <div className="bg-emerald-900 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-md flex items-center justify-between border border-emerald-700 animate-in fade-in">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   <span>{saveToast}</span>
@@ -1293,7 +1293,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             {/* SUB-TAB 1: PRESENSI HARIAN */}
             {absensiSubTab === 'harian' && (
               <div className="space-y-3 animate-in fade-in">
-                <div className="bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="bg-white px-3.5 py-2.5 rounded-xl border border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
                   <div className="flex items-center gap-2 flex-1">
                     <div className="relative flex-1 max-w-xs">
                       <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1302,14 +1302,14 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                         value={searchName}
                         onChange={(e) => setSearchName(e.target.value)}
                         placeholder="Cari nama relawan..."
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 font-medium"
+                        className="w-full bg-slate-50 border border-line rounded-lg pl-8 pr-3 py-1.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 font-medium"
                       />
                     </div>
 
                     <select
                       value={filterSection}
                       onChange={(e) => setFilterSection(e.target.value)}
-                      className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-blue-500 cursor-pointer font-medium"
+                      className="bg-slate-50 border border-line rounded-lg px-2.5 py-1.5 text-sm text-slate-700 focus:outline-none focus:border-blue-500 cursor-pointer font-medium"
                     >
                       {DUTY_SECTIONS.map((sec) => (
                         <option key={sec} value={sec}>
@@ -1322,7 +1322,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={handleMarkAllActivePresent}
-                      className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs rounded-lg border border-slate-200 transition-colors cursor-pointer flex items-center gap-1"
+                      className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-sm rounded-lg border border-line transition-colors cursor-pointer flex items-center gap-1"
                     >
                       <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Hadirkan Semua</span>
@@ -1330,7 +1330,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
                     <button
                       onClick={handleSaveAttendance}
-                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow-2xs transition-all cursor-pointer flex items-center gap-1"
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-lg transition-all cursor-pointer flex items-center gap-1"
                     >
                       <Save className="w-3.5 h-3.5" />
                       <span>Simpan</span>
@@ -1339,11 +1339,11 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 </div>
 
                 {/* Desktop Table */}
-                <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+                <div className="hidden md:block bg-white rounded-xl border border-line overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-sm">
                       <thead>
-                        <tr className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 text-[11px]">
+                        <tr className="bg-slate-50 text-slate-600 font-semibold border-b border-line text-[13px]">
                           <th className="py-2.5 px-3 w-10 text-center">NO</th>
                           <th className="py-2.5 px-3 min-w-[180px]">NAMA RELAWAN</th>
                           <th className="py-2.5 px-3">DIVISI</th>
@@ -1390,13 +1390,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                         {person.name}
                                       </span>
                                       {entry.photoUrl && (
-                                        <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 inline-flex items-center gap-0.5">
+                                        <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 inline-flex items-center gap-0.5">
                                           <span>📍</span>
                                           <span>{entry.distanceMeters !== undefined ? `${entry.distanceMeters}m` : 'GPS'}</span>
                                         </span>
                                       )}
                                     </div>
-                                    <span className="text-[10px] text-slate-400 font-mono">
+                                    <span className="text-xs text-slate-400 font-mono">
                                       Shift: {person.defaultCheckIn}-{person.defaultCheckOut}
                                     </span>
                                   </div>
@@ -1409,15 +1409,15 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                               {/* Tombol Reversal: Hadir, Izin, Sakit, Alpha (Bisa diklik ulang jika salah klik) */}
                               <td className="py-2.5 px-3 text-center">
                                 {isNonAktif ? (
-                                  <span className="text-[10px] text-slate-400 font-mono font-medium">Nonaktif</span>
+                                  <span className="text-xs text-slate-400 font-mono font-medium">Nonaktif</span>
                                 ) : (
                                   <div className="inline-flex items-center gap-1">
                                     <button
                                       type="button"
                                       onClick={() => handleSelectStatus(person.id, 'Hadir')}
-                                      className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                                      className={`px-2.5 py-1 text-sm font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
                                         entry.status === 'Hadir'
-                                          ? 'bg-emerald-600 text-white shadow-xs'
+                                          ? 'bg-emerald-600 text-white'
                                           : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
                                       }`}
                                       title="Klik untuk Hadir (Klik lagi untuk uncheck)"
@@ -1429,9 +1429,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                     <button
                                       type="button"
                                       onClick={() => handleSelectStatus(person.id, 'Izin')}
-                                      className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                                      className={`px-2.5 py-1 text-sm font-bold rounded-lg transition-all cursor-pointer ${
                                         entry.status === 'Izin'
-                                          ? 'bg-amber-600 text-white shadow-xs'
+                                          ? 'bg-amber-600 text-white'
                                           : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
                                       }`}
                                       title="Klik untuk Izin (Klik lagi untuk uncheck)"
@@ -1442,9 +1442,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                     <button
                                       type="button"
                                       onClick={() => handleSelectStatus(person.id, 'Sakit')}
-                                      className={`px-2 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                                      className={`px-2 py-1 text-sm font-bold rounded-lg transition-all cursor-pointer ${
                                         entry.status === 'Sakit'
-                                          ? 'bg-purple-600 text-white shadow-xs'
+                                          ? 'bg-purple-600 text-white'
                                           : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
                                       }`}
                                       title="Klik untuk Sakit (Klik lagi untuk uncheck)"
@@ -1455,9 +1455,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                     <button
                                       type="button"
                                       onClick={() => handleSelectStatus(person.id, 'Alpha')}
-                                      className={`px-2 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                                      className={`px-2 py-1 text-sm font-bold rounded-lg transition-all cursor-pointer ${
                                         entry.status === 'Alpha'
-                                          ? 'bg-rose-600 text-white shadow-xs'
+                                          ? 'bg-rose-600 text-white'
                                           : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
                                       }`}
                                       title="Klik untuk Alpha (Klik lagi untuk uncheck)"
@@ -1469,7 +1469,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                               </td>
 
                               {/* Jam Kerja */}
-                              <td className="py-2.5 px-3 text-center font-mono text-xs text-slate-700">
+                              <td className="py-2.5 px-3 text-center font-mono text-sm text-slate-700">
                                 {isHadir ? `${entry.checkIn} - ${person.id === 'v-1' && (entry.checkOut === '13:00' || !entry.checkOut) ? '23:59' : (entry.checkOut || person.defaultCheckOut)}` : '-'}
                               </td>
 
@@ -1483,16 +1483,16 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                 {isHadir ? (
                                   <button
                                     onClick={() => handleTogglePaid(person.id)}
-                                    className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors cursor-pointer border ${
+                                    className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors cursor-pointer border ${
                                       entry.paid
-                                        ? 'bg-blue-50 text-blue-800 border-blue-200'
-                                        : 'bg-slate-50 text-slate-600 border-slate-200'
+                                        ? 'bg-ink/5 text-ink border-ink/15'
+                                        : 'bg-slate-50 text-slate-600 border-line'
                                     }`}
                                   >
                                     {entry.paid ? '✓ Cair' : 'Menunggu'}
                                   </button>
                                 ) : (
-                                  <span className="text-[10px] text-slate-300">-</span>
+                                  <span className="text-xs text-slate-300">-</span>
                                 )}
                               </td>
 
@@ -1503,7 +1503,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                   value={entry.notes}
                                   onChange={(e) => handleUpdateNotes(person.id, e.target.value)}
                                   placeholder="..."
-                                  className="w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 text-xs py-0.5 text-slate-800 focus:outline-none"
+                                  className="w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 text-sm py-0.5 text-slate-800 focus:outline-none"
                                 />
                               </td>
                             </tr>
@@ -1525,7 +1525,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                       <div
                         key={entry.id}
                         className={`bg-white p-3 rounded-xl border space-y-2 ${
-                          !isHadir ? 'border-amber-200 bg-amber-50/20' : 'border-slate-200'
+                          !isHadir ? 'border-amber-200 bg-amber-50/20' : 'border-line'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2.5">
@@ -1542,15 +1542,15 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                             )}
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="font-bold text-xs text-slate-900 block truncate">{person.name}</span>
+                                <span className="font-bold text-sm text-slate-900 block truncate">{person.name}</span>
                                 {entry.photoUrl && (
-                                  <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 inline-flex items-center gap-0.5">
+                                  <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 inline-flex items-center gap-0.5">
                                     <span>📍</span>
                                     <span>{entry.distanceMeters !== undefined ? `${entry.distanceMeters}m` : 'GPS'}</span>
                                   </span>
                                 )}
                               </div>
-                              <span className="text-[10px] text-slate-400 block truncate">
+                              <span className="text-xs text-slate-400 block truncate">
                                 #{person.no} • {person.dutySection} • {person.defaultCheckIn}-{person.defaultCheckOut}
                               </span>
                             </div>
@@ -1558,7 +1558,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                           <div className="shrink-0">{isHadir ? renderSalary(entry.earnedAmount) : renderSalary(person.dailyRate, true)}</div>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-1 text-[11px] font-semibold">
+                        <div className="grid grid-cols-4 gap-1 text-[13px] font-semibold">
                           {(['Hadir', 'Izin', 'Sakit', 'Alpha'] as AttendanceStatus[]).map((st) => (
                             <button
                               key={st}
@@ -1568,13 +1568,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                               className={`py-1.5 rounded-lg text-center transition-all cursor-pointer font-bold ${
                                 entry.status === st
                                   ? st === 'Hadir'
-                                    ? 'bg-emerald-600 text-white shadow-xs'
+                                    ? 'bg-emerald-600 text-white'
                                     : st === 'Izin'
-                                    ? 'bg-amber-600 text-white shadow-xs'
+                                    ? 'bg-amber-600 text-white'
                                     : st === 'Sakit'
-                                    ? 'bg-purple-600 text-white shadow-xs'
-                                    : 'bg-rose-600 text-white shadow-xs'
-                                  : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
+                                    ? 'bg-purple-600 text-white'
+                                    : 'bg-rose-600 text-white'
+                                  : 'bg-slate-50 text-slate-600 border border-line hover:bg-slate-100'
                               }`}
                               title={`Klik untuk ${st} (Klik lagi untuk batal)`}
                             >
@@ -1584,14 +1584,14 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                         </div>
 
                         {isHadir && (
-                          <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs font-mono">
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-sm font-mono">
                             <span className="text-slate-600 font-medium">
                               Shift: {person.id === 'v-1' && (entry.checkOut === '13:00' || !entry.checkOut) ? `${entry.checkIn} - 23:59` : `${entry.checkIn} - ${entry.checkOut || person.defaultCheckOut}`}
                             </span>
                             <button
                               onClick={() => handleTogglePaid(person.id)}
-                              className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
-                                entry.paid ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-slate-50 text-slate-600'
+                              className={`px-2 py-0.5 rounded text-xs font-semibold border ${
+                                entry.paid ? 'bg-ink/5 text-ink border-ink/15' : 'bg-slate-50 text-slate-600'
                               }`}
                             >
                               {entry.paid ? '✓ Cair' : 'Menunggu'}
@@ -1607,7 +1607,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
             {/* SUB-TAB 2: REKAPITULASI (HARIAN / MINGGUAN / BULANAN) */}
             {absensiSubTab === 'rekap' && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden animate-in fade-in">
+              <div className="bg-white rounded-xl border border-line overflow-hidden animate-in fade-in">
                 {rekapPeriod === 'harian' ? (
                   <div className="p-4 sm:p-5 space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
@@ -1615,17 +1615,17 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                         <h3 className="font-bold text-sm text-slate-900">
                           Rekapitulasi Kehadiran & Beban Upah Harian ({formatIndoDate(selectedDate)})
                         </h3>
-                        <span className="text-[11px] text-slate-400">Ringkasan per divisi & rekapitulasi status kehadiran</span>
+                        <span className="text-[13px] text-slate-400">Ringkasan per divisi & rekapitulasi status kehadiran</span>
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <div className="text-right">
-                          <span className="text-xs text-slate-400 block">Total Beban Hari Ini:</span>
-                          <strong className="text-sm font-mono text-blue-900">{renderSalary(dailySummary.totalEarned)}</strong>
+                          <span className="text-sm text-slate-400 block">Total Beban Hari Ini:</span>
+                          <strong className="text-sm font-mono text-ink">{renderSalary(dailySummary.totalEarned)}</strong>
                         </div>
                         <button
                           type="button"
                           onClick={handleExportCsv}
-                          className="ml-2 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                          className="ml-2 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[13px] flex items-center gap-1 cursor-pointer transition-colors"
                           title="Unduh Rekap Harian (CSV / Excel)"
                         >
                           <Download className="w-3 h-3 text-emerald-700" />
@@ -1635,34 +1635,34 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     </div>
 
                     {/* Ringkasan Status Harian */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
                       <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
-                        <span className="text-[10px] uppercase font-bold text-emerald-800 block">Hadir</span>
+                        <span className="text-xs font-bold text-emerald-800 block">Hadir</span>
                         <strong className="text-xl font-mono text-emerald-700">{dailySummary.statusCounts.Hadir} Orang</strong>
                       </div>
                       <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-center">
-                        <span className="text-[10px] uppercase font-bold text-amber-800 block">Izin</span>
+                        <span className="text-xs font-bold text-amber-800 block">Izin</span>
                         <strong className="text-xl font-mono text-amber-700">{dailySummary.statusCounts.Izin} Orang</strong>
                       </div>
                       <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 text-center">
-                        <span className="text-[10px] uppercase font-bold text-purple-800 block">Sakit</span>
+                        <span className="text-xs font-bold text-purple-800 block">Sakit</span>
                         <strong className="text-xl font-mono text-purple-700">{dailySummary.statusCounts.Sakit} Orang</strong>
                       </div>
-                      <div className="p-3 rounded-xl bg-slate-100 border border-slate-200 text-center">
-                        <span className="text-[10px] uppercase font-bold text-slate-600 block">Libur / Nonaktif</span>
+                      <div className="p-3 rounded-xl bg-slate-100 border border-line text-center">
+                        <span className="text-xs font-bold text-slate-600 block">Libur / Nonaktif</span>
                         <strong className="text-xl font-mono text-slate-700">{dailySummary.statusCounts.Libur + dailySummary.statusCounts.Nonaktif} Orang</strong>
                       </div>
                     </div>
 
                     {/* Breakdown Per Divisi Harian */}
-                    <div className="border border-slate-200 rounded-xl overflow-hidden">
-                      <div className="p-3 bg-slate-50 border-b border-slate-200 font-bold text-xs text-slate-700">
+                    <div className="border border-line rounded-xl overflow-hidden">
+                      <div className="p-3 bg-slate-50 border-b border-line font-bold text-sm text-slate-700">
                         Rincian Kehadiran Per Divisi Kerja
                       </div>
                       <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs">
+                        <table className="w-full text-left text-sm">
                           <thead>
-                            <tr className="bg-slate-100/70 text-slate-600 font-semibold border-b border-slate-200 text-[11px]">
+                            <tr className="bg-slate-100/70 text-slate-600 font-semibold border-b border-line text-[13px]">
                               <th className="py-2 px-3">DIVISI / SEKSI</th>
                               <th className="py-2 px-3 text-center">TOTAL ANGGOTA</th>
                               <th className="py-2 px-3 text-center">HADIR</th>
@@ -1692,7 +1692,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                   <td className="py-2 px-3 text-center font-mono text-slate-500">
                                     {secInactive > 0 ? (
                                       <span>
-                                        {secActive} <span className="text-[10px] text-slate-400">({secInactive} Nonaktif)</span>
+                                        {secActive} <span className="text-xs text-slate-400">({secInactive} Nonaktif)</span>
                                       </span>
                                     ) : (
                                       <span>{secPersons.length}</span>
@@ -1715,7 +1715,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   </div>
                 ) : rekapPeriod === 'mingguan' ? (
                   <div className="overflow-x-auto">
-                    <div className="p-3.5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div className="p-3.5 border-b border-line flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm">
                       <span className="font-bold text-slate-800">
                         Matrix Kehadiran Mingguan (Senin s/d Minggu: {weekDays[0].formatted} – {weekDays[weekDays.length - 1].formatted})
                       </span>
@@ -1725,7 +1725,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                         <button
                           type="button"
                           onClick={handleExportCsv}
-                          className="ml-2 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                          className="ml-2 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[13px] flex items-center gap-1 cursor-pointer transition-colors"
                           title="Unduh Matrix Mingguan (CSV / Excel)"
                         >
                           <Download className="w-3 h-3 text-emerald-700" />
@@ -1734,9 +1734,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                       </div>
                     </div>
 
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-sm">
                       <thead>
-                        <tr className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 text-[11px]">
+                        <tr className="bg-slate-50 text-slate-600 font-semibold border-b border-line text-[13px]">
                           <th className="py-2.5 px-3 w-10 text-center">NO</th>
                           <th className="py-2.5 px-3 min-w-[170px]">NAMA RELAWAN</th>
                           <th className="py-2.5 px-3">DIVISI</th>
@@ -1751,7 +1751,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                   : 'bg-slate-100/60'
                               }`}
                             >
-                              <span className="uppercase">{d.label.slice(0, 3)}</span>
+                              <span className="">{d.label.slice(0, 3)}</span>
                             </th>
                           ))}
                           <th className="py-2.5 px-3 text-center">HADIR</th>
@@ -1780,7 +1780,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                   {person.name}
                                 </span>
                                 {!person.isActive && (
-                                  <span className="ml-1.5 text-[9px] font-mono text-rose-600 bg-rose-50 px-1 py-0.2 rounded border border-rose-200">
+                                  <span className="ml-1.5 text-[11px] font-mono text-rose-600 bg-rose-50 px-1 py-0.2 rounded border border-rose-200">
                                     Nonaktif
                                   </span>
                                 )}
@@ -1789,11 +1789,11 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                               {weekStatuses.map((st, idx) => (
                                 <td key={idx} className="py-2 px-2 text-center font-mono font-bold">
                                   {st === 'Hadir' ? (
-                                    <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">✓</span>
+                                    <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-xs">✓</span>
                                   ) : st === 'Izin' ? (
-                                    <span className="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded text-[10px]">I</span>
+                                    <span className="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded text-xs">I</span>
                                   ) : st === 'Sakit' ? (
-                                    <span className="text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded text-[10px]">S</span>
+                                    <span className="text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded text-xs">S</span>
                                   ) : st === 'FUTURE' ? (
                                     <span className="text-slate-300 font-normal">·</span>
                                   ) : st === 'Belum Absen' ? (
@@ -1817,7 +1817,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <div className="p-3.5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div className="p-3.5 border-b border-line flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm">
                       <span className="font-bold text-slate-800">Rekapitulasi Bulanan: {selectedMonth}</span>
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-slate-400">Total Pengeluaran Kas BNI:</span>
@@ -1825,7 +1825,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                         <button
                           type="button"
                           onClick={handleExportCsv}
-                          className="ml-2 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                          className="ml-2 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[13px] flex items-center gap-1 cursor-pointer transition-colors"
                           title="Unduh Rekapitulasi Bulanan (CSV / Excel)"
                         >
                           <Download className="w-3 h-3 text-emerald-700" />
@@ -1834,9 +1834,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                       </div>
                     </div>
 
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-sm">
                       <thead>
-                        <tr className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 text-[11px]">
+                        <tr className="bg-slate-50 text-slate-600 font-semibold border-b border-line text-[13px]">
                           <th className="py-2.5 px-3 w-10 text-center">NO</th>
                           <th className="py-2.5 px-3 min-w-[180px]">NAMA LENGKAP</th>
                           <th className="py-2.5 px-3">DIVISI</th>
@@ -1860,7 +1860,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                                   {person.name}
                                 </span>
                                 {!person.isActive && (
-                                  <span className="ml-1.5 text-[9px] font-mono text-rose-600 bg-rose-50 px-1 py-0.2 rounded border border-rose-200">
+                                  <span className="ml-1.5 text-[11px] font-mono text-rose-600 bg-rose-50 px-1 py-0.2 rounded border border-rose-200">
                                     Nonaktif
                                   </span>
                                 )}
@@ -1887,17 +1887,17 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
             {/* SUB-TAB 3: ARSIP LAPORAN */}
             {absensiSubTab === 'arsip' && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 animate-in fade-in shadow-2xs">
+              <div className="bg-white rounded-xl border border-line p-4 space-y-3 animate-in fade-in">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                   <div>
                     <h3 className="font-bold text-sm text-slate-900">Arsip Tanggal Operasional</h3>
-                    <span className="text-xs text-slate-400">Total {archivedDatesList.length} tanggal tersimpan</span>
+                    <span className="text-sm text-slate-400">Total {archivedDatesList.length} tanggal tersimpan</span>
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
                     <Link
                       href="/arsip"
-                      className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-colors"
+                      className="px-3 py-1.5 rounded-lg bg-ink hover:bg-ink-soft text-white font-bold text-sm flex items-center gap-1.5 transition-colors"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       <span>Buka Halaman Arsip Penuh (/arsip)</span>
@@ -1910,7 +1910,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                         value={searchArsip}
                         onChange={(e) => setSearchArsip(e.target.value)}
                         placeholder="Cari tanggal..."
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium"
+                        className="w-full bg-slate-50 border border-line rounded-lg pl-8 pr-3 py-1 text-sm text-slate-800 focus:outline-none focus:border-blue-500 font-medium"
                       />
                     </div>
                   </div>
@@ -1926,12 +1926,12 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                       <div
                         key={dateStr}
                         className={`p-3 rounded-xl border transition-colors flex items-center justify-between gap-3 ${
-                          isSelected ? 'border-blue-500 bg-blue-50/20' : 'border-slate-200 bg-white hover:border-slate-300'
+                          isSelected ? 'border-blue-500 bg-ink/5/20' : 'border-line bg-white hover:border-slate-300'
                         }`}
                       >
                         <div>
-                          <div className="font-bold text-xs text-slate-900">{formatIndoDate(dateStr)}</div>
-                          <div className="text-[10px] text-slate-400 font-mono">
+                          <div className="font-bold text-sm text-slate-900">{formatIndoDate(dateStr)}</div>
+                          <div className="text-xs text-slate-400 font-mono">
                             {summary.statusCounts.Hadir} Hadir • {renderSalary(summary.totalEarned)}
                           </div>
                         </div>
@@ -1942,13 +1942,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                               setSelectedDate(dateStr);
                               setAbsensiSubTab('harian');
                             }}
-                            className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold transition-colors cursor-pointer"
+                            className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-semibold transition-colors cursor-pointer"
                           >
                             Buka
                           </button>
                           <button
                             onClick={() => handleOpenPrintForDate(dateStr)}
-                            className="p-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors cursor-pointer"
+                            className="p-1 rounded bg-ink/5 hover:bg-ink/10 text-ink transition-colors cursor-pointer"
                             title="Cetak SPJ A4"
                           >
                             <Printer className="w-3.5 h-3.5" />
@@ -1963,15 +1963,15 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
             {/* SUB-TAB 4: DAFTAR RELAWAN */}
             {absensiSubTab === 'roster' && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 animate-in fade-in shadow-2xs">
+              <div className="bg-white rounded-xl border border-line p-4 space-y-3 animate-in fade-in">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div>
                     <h3 className="font-bold text-sm text-slate-900">Daftar Relawan Dapur ({roster.length} Personel)</h3>
-                    <span className="text-xs text-slate-400">Shift jadwal & tarif upah harian BGN</span>
+                    <span className="text-sm text-slate-400">Shift jadwal & tarif upah harian BGN</span>
                   </div>
                   <button
                     onClick={() => setShowAddModal(true)}
-                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                    className="px-3 py-1.5 bg-ink hover:bg-ink/50 text-white font-bold text-sm rounded-lg transition-colors cursor-pointer flex items-center gap-1"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>+ Tambah Relawan</span>
@@ -1985,7 +1985,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     <div
                       key={person.id}
                       className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
-                        person.isActive ? 'border-slate-200 bg-white' : 'border-rose-200 bg-rose-50/30 opacity-70'
+                        person.isActive ? 'border-line bg-white' : 'border-rose-200 bg-rose-50/30 opacity-70'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -1999,21 +1999,21 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                             <img src={todayEntry.photoUrl} alt="Selfie" className="w-full h-full object-cover" />
                           </button>
                         ) : (
-                          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 font-bold text-xs shrink-0 font-mono">
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-line flex items-center justify-center text-slate-400 font-bold text-sm shrink-0 font-mono">
                             #{person.no}
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <div className="font-bold text-xs text-slate-900 flex items-center gap-1.5 truncate">
+                          <div className="font-bold text-sm text-slate-900 flex items-center gap-1.5 truncate">
                             <span className="truncate">{person.name}</span>
                             {todayEntry?.photoUrl && (
                               <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Sudah Absen Selfie Hari Ini" />
                             )}
                           </div>
-                          <div className="text-[10px] text-slate-500 truncate">
+                          <div className="text-xs text-slate-500 truncate">
                             {person.dutySection} • {person.defaultCheckIn}-{person.defaultCheckOut}
                           </div>
-                          <div className="text-[10px] text-blue-900 font-mono font-bold pt-0.5">
+                          <div className="text-xs text-ink font-mono font-bold pt-0.5">
                             {renderSalary(person.dailyRate)}
                           </div>
                         </div>
@@ -2031,7 +2031,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                           setEditIsActiveInput(person.isActive);
                           setEditNotesInput(person.notes || '');
                         }}
-                        className="p-1.5 text-slate-400 hover:text-blue-600 bg-slate-50 rounded-lg border border-slate-200 cursor-pointer"
+                        className="p-1.5 text-slate-400 hover:text-blue-600 bg-slate-50 rounded-lg border border-line cursor-pointer"
                         title={`Edit ${person.name}`}
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -2048,13 +2048,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       {/* MODAL EDIT RELAWAN */}
       {editingVolunteer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto no-print">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-5 sm:p-6 space-y-4 my-auto animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div className="bg-white rounded-xl border border-line shadow-2xl max-w-md w-full p-5 sm:p-6 space-y-4 my-auto animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
                 <h3 className="font-bold text-base text-slate-900">
                   Edit Data & Jadwal Relawan
                 </h3>
-                <span className="text-xs text-blue-700 font-bold block">
+                <span className="text-sm text-ink font-bold block">
                   #{editingVolunteer.no} - {editingVolunteer.name}
                 </span>
               </div>
@@ -2067,7 +2067,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               </button>
             </div>
 
-            <form onSubmit={handleSaveEditRoster} className="space-y-3.5 text-xs">
+            <form onSubmit={handleSaveEditRoster} className="space-y-3.5 text-sm">
               <div>
                 <label className="block text-slate-700 font-bold mb-1">
                   Nama Lengkap Relawan
@@ -2076,7 +2076,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   type="text"
                   value={editNameInput}
                   onChange={(e) => setEditNameInput(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-bold focus:outline-none focus:border-blue-600 uppercase"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-bold focus:outline-none focus:border-blue-600 "
                   required
                 />
               </div>
@@ -2166,7 +2166,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-2 bg-ink hover:bg-ink-soft text-white font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <Save className="w-4 h-4" />
                   <span>Simpan Perubahan</span>
@@ -2180,13 +2180,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       {/* MODAL TAMBAH RELAWAN BARU */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto no-print">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-5 sm:p-6 space-y-4 my-auto animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div className="bg-white rounded-xl border border-line shadow-2xl max-w-md w-full p-5 sm:p-6 space-y-4 my-auto animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
                 <h3 className="font-bold text-base text-slate-900">
                   Tambah Relawan Dapur Baru
                 </h3>
-                <span className="text-xs text-slate-500">
+                <span className="text-sm text-slate-500">
                   Relawan akan ditambahkan ke master roster & jadwal harian
                 </span>
               </div>
@@ -2199,7 +2199,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               </button>
             </div>
 
-            <form onSubmit={handleAddPersonSubmit} className="space-y-3.5 text-xs">
+            <form onSubmit={handleAddPersonSubmit} className="space-y-3.5 text-sm">
               <div>
                 <label className="block text-slate-700 font-bold mb-1">Nama Lengkap</label>
                 <input
@@ -2207,7 +2207,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   value={newPersonName}
                   onChange={(e) => setNewPersonName(e.target.value)}
                   placeholder="Contoh: AHMAD FAUZI"
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 font-bold focus:outline-none focus:border-blue-600 uppercase"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 font-bold focus:outline-none focus:border-blue-600 "
                   required
                   autoFocus
                 />
@@ -2273,7 +2273,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-2 bg-ink hover:bg-ink-soft text-white font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Tambah Relawan</span>
@@ -2429,18 +2429,18 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       {/* MODAL PIN ACCESS MENU OPERASIONAL */}
       {showPinModalMenu && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 no-print">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 space-y-4 animate-in fade-in">
+          <div className="bg-white rounded-xl border border-line shadow-2xl max-w-sm w-full p-6 space-y-4 animate-in fade-in">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-ink/5 text-ink flex items-center justify-center shrink-0">
                 <Lock className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h3 className="font-black text-sm text-slate-900">Verifikasi PIN Cetak Menu</h3>
-                <span className="text-[11px] text-slate-500">Dokumen Resmi SPPG Wonodri 3</span>
+                <h3 className="font-bold text-sm text-slate-900">Verifikasi PIN Cetak Menu</h3>
+                <span className="text-[13px] text-slate-500">Dokumen Resmi SPPG Wonodri 3</span>
               </div>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-sm text-slate-600 leading-relaxed">
               Dokumen ini memuat pengesahan resmi SPPG Wonodri 3. Masukkan <strong>Kode PIN Operator</strong> untuk mengunduh / mencetak PDF:
             </p>
 
@@ -2463,7 +2463,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               </div>
 
               {pinErrorMenu && (
-                <div className="p-2 rounded-lg bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 flex items-center gap-1.5">
+                <div className="p-2 rounded-lg bg-rose-50 border border-rose-200 text-sm font-bold text-rose-700 flex items-center gap-1.5">
                   <ShieldAlert className="w-4 h-4 shrink-0 text-rose-600" />
                   <span>{pinErrorMenu}</span>
                 </div>
@@ -2473,13 +2473,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 <button
                   type="button"
                   onClick={() => setShowPinModalMenu(false)}
-                  className="w-1/2 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+                  className="w-1/2 py-2 rounded-xl text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-1/2 py-2 rounded-xl text-sm font-bold text-white bg-ink hover:bg-ink-soft transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Buka Cetak</span>
@@ -2493,13 +2493,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       {/* MODAL PIN SECURITY ABSENSI */}
       {showPinModalSalary && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-xs w-full p-5 space-y-3 animate-in fade-in">
+          <div className="bg-white rounded-xl border border-line shadow-2xl max-w-xs w-full p-5 space-y-3 animate-in fade-in">
             <div className="text-center space-y-1">
               <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mx-auto">
                 <KeyRound className="w-5 h-5 text-amber-600" />
               </div>
               <h3 className="font-bold text-sm text-slate-900">PIN Otoritas Upah</h3>
-              <p className="text-[11px] text-slate-500">Masukkan PIN resmi untuk membuka rincian upah.</p>
+              <p className="text-[13px] text-slate-500">Masukkan PIN resmi untuk membuka rincian upah.</p>
             </div>
 
             <form onSubmit={handleVerifySalaryPin} className="space-y-3 pt-1">
@@ -2517,7 +2517,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-center text-lg font-mono font-bold tracking-widest text-slate-900 focus:outline-none focus:border-blue-600"
                 />
                 {pinErrorSalary && (
-                  <p className="text-[11px] font-bold text-rose-600 text-center mt-1">
+                  <p className="text-[13px] font-bold text-rose-600 text-center mt-1">
                     {pinErrorSalary}
                   </p>
                 )}
@@ -2531,13 +2531,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     setPinInputSalary('');
                     setPinErrorSalary('');
                   }}
-                  className="flex-1 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
+                  className="flex-1 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-2xs"
+                  className="flex-1 py-1.5 rounded-lg bg-ink hover:bg-ink-soft text-white text-sm font-bold"
                 >
                   Buka
                 </button>
@@ -2550,9 +2550,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       {/* Modal Kalender Menu */}
       {showCalendarModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 no-print">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xl max-w-xs w-full p-4 space-y-3">
+          <div className="bg-white rounded-xl border border-line shadow-xl max-w-xs w-full p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <span className="font-extrabold text-sm text-slate-900">
+              <span className="font-semibold text-sm text-slate-900">
                 {monthNames[calendarMonth]} {calendarYear}
               </span>
               <div className="flex items-center gap-1">
@@ -2568,7 +2568,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               </div>
             </div>
 
-            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 uppercase">
+            <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400 ">
               <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
             </div>
 
@@ -2589,11 +2589,11 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                       setSelectedDate(dateStr);
                       setShowCalendarModal(false);
                     }}
-                    className={`h-8 rounded text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
+                    className={`h-8 rounded text-sm font-bold transition-all flex items-center justify-center cursor-pointer ${
                       isSelected
-                        ? 'bg-blue-600 text-white shadow-xs'
+                        ? 'bg-ink text-white'
                         : hasMenu
-                        ? 'bg-blue-50 text-blue-900 hover:bg-blue-100 font-black border border-blue-200'
+                        ? 'bg-ink/5 text-ink hover:bg-ink/10 font-bold border border-ink/15'
                         : 'text-slate-600 hover:bg-slate-100'
                     }`}
                   >
@@ -2624,7 +2624,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   </div>
                   <div>
                     <strong className="text-sm text-white block">Portal SPPG Wonodri 3</strong>
-                    <span className="text-[10px] text-slate-400">Pusat Kontrol Operasional & SDM</span>
+                    <span className="text-xs text-slate-400">Pusat Kontrol Operasional & SDM</span>
                   </div>
                 </div>
 
@@ -2637,8 +2637,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               </div>
 
               {/* Navigation Modul Links */}
-              <div className="space-y-2 text-xs font-semibold">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
+              <div className="space-y-2 text-sm font-semibold">
+                <span className="text-xs font-bold text-slate-400 block px-1">
                   Menu Utama Portal
                 </span>
 
@@ -2649,8 +2649,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 >
                   <Utensils className="w-5 h-5 mt-0.5 shrink-0 text-blue-400" />
                   <div>
-                    <div className="text-xs font-bold leading-tight">Laporan Harian (MBG)</div>
-                    <div className="text-[10px] text-slate-400 pt-0.5">
+                    <div className="text-sm font-bold leading-tight">Laporan Harian (MBG)</div>
+                    <div className="text-xs text-slate-400 pt-0.5">
                       Menu harian, kandungan gizi AKG, foto bento tray & alokasi sekolah
                     </div>
                   </div>
@@ -2663,8 +2663,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 >
                   <Archive className="w-5 h-5 mt-0.5 shrink-0 text-sky-400" />
                   <div>
-                    <div className="text-xs font-bold leading-tight">Katalog Arsip Operasional</div>
-                    <div className="text-[10px] text-slate-400 pt-0.5">
+                    <div className="text-sm font-bold leading-tight">Katalog Arsip Operasional</div>
+                    <div className="text-xs text-slate-400 pt-0.5">
                       Direktori 126+ hari arsip historis berpaginasi
                     </div>
                   </div>
@@ -2677,15 +2677,15 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 >
                   <Boxes className="w-5 h-5 mt-0.5 shrink-0 text-amber-400" />
                   <div>
-                    <div className="text-xs font-bold leading-tight">Monitoring Stok Gudang</div>
-                    <div className="text-[10px] text-slate-400 pt-0.5">
+                    <div className="text-sm font-bold leading-tight">Monitoring Stok Gudang</div>
+                    <div className="text-xs text-slate-400 pt-0.5">
                       Kartu stok 32 bahan baku, log mutasi & stok opname
                     </div>
                   </div>
                 </Link>
 
                 <div className="pt-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1 mb-1.5">
+                  <span className="text-xs font-bold text-slate-400 block px-1 mb-1.5">
                     Modul Presensi Relawan
                   </span>
 
@@ -2702,8 +2702,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   >
                     <CalendarIcon className="w-4 h-4 mt-0.5 shrink-0 text-emerald-400" />
                     <div>
-                      <div className="text-xs font-bold">Presensi Harian</div>
-                      <div className="text-[10px] text-slate-400">Checklist jam masuk & pulang personel</div>
+                      <div className="text-sm font-bold">Presensi Harian</div>
+                      <div className="text-xs text-slate-400">Checklist jam masuk & pulang personel</div>
                     </div>
                   </button>
 
@@ -2721,8 +2721,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   >
                     <TableIcon className="w-4 h-4 mt-0.5 shrink-0 text-amber-400" />
                     <div>
-                      <div className="text-xs font-bold">Rekapitulasi (Senin-Minggu)</div>
-                      <div className="text-[10px] text-slate-400">Matrix 7 hari kalender kerja & beban upah</div>
+                      <div className="text-sm font-bold">Rekapitulasi (Senin-Minggu)</div>
+                      <div className="text-xs text-slate-400">Matrix 7 hari kalender kerja & beban upah</div>
                     </div>
                   </button>
 
@@ -2739,8 +2739,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   >
                     <Users className="w-4 h-4 mt-0.5 shrink-0 text-rose-400" />
                     <div>
-                      <div className="text-xs font-bold">Daftar Relawan Dapur</div>
-                      <div className="text-[10px] text-slate-400">Master 40 personel, shift & tarif upah</div>
+                      <div className="text-sm font-bold">Daftar Relawan Dapur</div>
+                      <div className="text-xs text-slate-400">Master 40 personel, shift & tarif upah</div>
                     </div>
                   </button>
                 </div>
@@ -2753,8 +2753,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   >
                     <FileSpreadsheet className="w-5 h-5 mt-0.5 shrink-0 text-purple-400" />
                     <div>
-                      <div className="text-xs font-bold leading-tight">Panel Operator Admin</div>
-                      <div className="text-[10px] text-slate-400 pt-0.5">
+                      <div className="text-sm font-bold leading-tight">Panel Operator Admin</div>
+                      <div className="text-xs text-slate-400 pt-0.5">
                         Input Menu Baru & Upload Dokumentasi Foto GDrive
                       </div>
                     </div>
@@ -2764,7 +2764,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
               {/* Quick Operation Actions */}
               <div className="pt-3 border-t border-slate-800 space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
+                <span className="text-xs font-bold text-slate-400 block px-1">
                   Aksi Dokumen
                 </span>
 
@@ -2773,7 +2773,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     setIsDrawerOpen(false);
                     handleOpenPrintForDate(selectedDate);
                   }}
-                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-xs font-medium cursor-pointer transition-colors"
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-sm font-medium cursor-pointer transition-colors"
                 >
                   <span className="flex items-center gap-2">
                     <Printer className="w-4 h-4 text-emerald-400" />
@@ -2787,7 +2787,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                     setIsDrawerOpen(false);
                     handleExportCsv();
                   }}
-                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-xs font-medium cursor-pointer transition-colors"
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-sm font-medium cursor-pointer transition-colors"
                 >
                   <span className="flex items-center gap-2">
                     <Download className="w-4 h-4 text-slate-300" />
@@ -2799,7 +2799,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             </div>
 
             {/* Drawer Footer */}
-            <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-400 space-y-1">
+            <div className="pt-4 border-t border-slate-800 text-[13px] text-slate-400 space-y-1">
               <div className="flex items-center justify-between font-mono">
                 <span>Alokasi Porsi:</span>
                 <span className="text-white font-bold">{totalMaster} Porsi (100%)</span>
@@ -2810,7 +2810,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   {isSalaryUnlocked ? formatRupiah(totalRosterPlafon) : '••••••••'}
                 </span>
               </div>
-              <p className="text-[10px] text-slate-500 pt-1">
+              <p className="text-xs text-slate-500 pt-1">
                 Verifikasi: Arief Rahman Hakim (Aslap) & Salsabiila Zainima, S.Ak (Akuntan)
               </p>
             </div>
@@ -2823,14 +2823,14 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-2xl text-center">
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+              <span className="text-sm font-bold text-white flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
                 <span>Bukti Selfie GPS Relawan</span>
               </span>
               <button
                 type="button"
                 onClick={() => setViewingPhotoModal(null)}
-                className="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 bg-slate-800 rounded-lg cursor-pointer"
+                className="text-slate-400 hover:text-white text-sm font-bold px-2 py-1 bg-slate-800 rounded-lg cursor-pointer"
               >
                 ✕ Tutup
               </button>
@@ -2844,10 +2844,10 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               />
             </div>
 
-            <div className="text-left bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 text-xs space-y-1">
+            <div className="text-left bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 text-sm space-y-1">
               <p className="font-bold text-white">{viewingPhotoModal.name}</p>
-              <p className="text-[11px] text-slate-400">Jam Hadir: {viewingPhotoModal.time}</p>
-              <p className="text-[11px] text-emerald-400 font-mono">
+              <p className="text-[13px] text-slate-400">Jam Hadir: {viewingPhotoModal.time}</p>
+              <p className="text-[13px] text-emerald-400 font-mono">
                 📍 Jarak GPS: {viewingPhotoModal.distance !== undefined ? `${viewingPhotoModal.distance} meter dari Dapur` : 'Terverifikasi'}
               </p>
             </div>

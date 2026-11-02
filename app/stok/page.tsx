@@ -725,7 +725,7 @@ export default function StockMonitoringPage() {
   const getStatusBadge = (status: StockStatus, daysLeft: number) => {
     if (status === 'critical') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
           SELESAI DIMASAK (03 NOV)
         </span>
@@ -733,14 +733,14 @@ export default function StockMonitoringPage() {
     }
     if (status === 'warning') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
           <TrendingDown className="w-3 h-3 text-amber-600" />
           MENIPIS ({daysLeft} Hari)
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-ink border border-blue-300">
         <CheckCircle2 className="w-3 h-3 text-blue-600" />
         STANDBY GUDANG
       </span>
@@ -751,7 +751,7 @@ export default function StockMonitoringPage() {
     <div className="min-h-screen bg-paper text-ink flex flex-col w-full overflow-x-hidden has-bottom-tabs">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-20 right-5 z-50 bg-ink text-white text-xs sm:text-sm font-semibold px-4 py-3 rounded-xl shadow-2xl border border-line flex items-center gap-2 animate-bounce">
+        <div className="fixed bottom-20 right-5 z-50 bg-ink text-white text-sm sm:text-sm font-semibold px-4 py-3 rounded-xl shadow-2xl border border-line flex items-center gap-2 animate-bounce">
           <Info className="w-4 h-4 text-gold shrink-0" />
           <span>{toastMessage}</span>
         </div>
@@ -766,7 +766,7 @@ export default function StockMonitoringPage() {
               <span className="block font-heading font-bold text-[15px] leading-tight truncate">
                 SPPG Wonodri 3
               </span>
-              <span className="block text-xs text-slate-600 leading-tight truncate">
+              <span className="block text-sm text-slate-600 leading-tight truncate">
                 Monitoring Stok &bull; Dapur MBG
               </span>
             </span>
@@ -789,20 +789,20 @@ export default function StockMonitoringPage() {
       {/* ============ MAIN CONTENT ============ */}
       <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6 print:hidden">
         {/* Banner Header Halaman */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-white rounded-xl border border-line p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                 Selesai Dimasak (03 Nov 2026)
               </span>
-              <span className="text-xs text-slate-400">•</span>
-              <span className="text-xs text-slate-500 font-medium">BGN TA 2026 — SPPG Wonodri 3 Kota Semarang</span>
+              <span className="text-sm text-slate-400">•</span>
+              <span className="text-sm text-slate-500 font-medium">BGN TA 2026 — SPPG Wonodri 3 Kota Semarang</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <Boxes className="w-6 h-6 text-blue-600" />
               Monitoring Stok &amp; Kuantitas Bahan Masak
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm sm:text-sm text-slate-600 leading-relaxed">
               Tercatat 2 siklus mutasi: <strong>Batch 1</strong> (Masuk 01 Nov &bull; Masak 02 Nov) dan <strong>Batch 2</strong> (Masuk 02 Nov &bull; Masak 03 Nov) dari mitra <strong>Yayasan Berkat Makmur Sentosa</strong> untuk <strong>1.553 Porsi MBG</strong>.
             </p>
           </div>
@@ -812,7 +812,7 @@ export default function StockMonitoringPage() {
             <button
               type="button"
               onClick={() => handleOpenAddItem()}
-              className="px-3 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              className="px-3 py-2 rounded-xl text-sm font-bold text-white bg-ink hover:bg-ink-soft flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
               <PlusCircle className="w-4 h-4 shrink-0" />
               <span>+ Bahan Baru</span>
@@ -820,7 +820,7 @@ export default function StockMonitoringPage() {
             <button
               type="button"
               onClick={() => handleOpenRestock()}
-              className="px-3 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              className="px-3 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
               <PlusCircle className="w-4 h-4 shrink-0" />
               <span>+ Catat Masuk</span>
@@ -828,7 +828,7 @@ export default function StockMonitoringPage() {
             <button
               type="button"
               onClick={() => handleOpenUsage()}
-              className="px-3 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              className="px-3 py-2 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
               <MinusCircle className="w-4 h-4 shrink-0" />
               <span>- Catat Masak</span>
@@ -836,7 +836,7 @@ export default function StockMonitoringPage() {
             <button
               type="button"
               onClick={() => handleOpenPrintFor('B2_IN')}
-              className="px-3 py-2 rounded-xl text-xs font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              className="px-3 py-2 rounded-xl text-sm font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
               title="Download Dokumen PDF Bahan Masuk"
             >
               <FileDown className="w-4 h-4 text-emerald-700 shrink-0" />
@@ -845,7 +845,7 @@ export default function StockMonitoringPage() {
             <button
               type="button"
               onClick={() => handleOpenPrintFor('B2_OUT')}
-              className="px-3 py-2 rounded-xl text-xs font-bold text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              className="px-3 py-2 rounded-xl text-sm font-bold text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
               title="Download Dokumen PDF Bahan Keluar Masak"
             >
               <FileDown className="w-4 h-4 text-indigo-700 shrink-0" />
@@ -857,13 +857,13 @@ export default function StockMonitoringPage() {
         {/* ============ 4 METRICS KPI CARDS (KUANTITAS FISIK MURNI) ============ */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Card 1: Total Item Bahan */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
+          <div className="bg-white rounded-xl border border-line p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Bahan Baku</span>
-              <div className="text-xl sm:text-2xl font-black text-slate-900">{summary.totalItems} Item</div>
-              <span className="text-[10px] text-slate-500 font-medium">Masuk 01 &bull; Keluar 02 Nov</span>
+              <span className="text-[13px] font-bold text-slate-500">Total Bahan Baku</span>
+              <div className="text-xl sm:text-2xl font-bold text-slate-900">{summary.totalItems} Item</div>
+              <span className="text-xs text-slate-500 font-medium">Masuk 01 &bull; Keluar 02 Nov</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-ink/5 border border-ink/15 flex items-center justify-center shrink-0">
               <Boxes className="w-5 h-5 text-blue-600" />
             </div>
           </div>
@@ -874,15 +874,15 @@ export default function StockMonitoringPage() {
               setActiveMainTab('movements');
               setMovementFilterType('IN');
             }}
-            className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between cursor-pointer hover:border-emerald-300 transition-colors"
+            className="bg-white rounded-xl border border-line p-4 flex items-center justify-between cursor-pointer hover:border-emerald-300 transition-colors"
             title="Klik untuk lihat mutasi masuk 02 Nov"
           >
             <div className="space-y-0.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Masuk (02 Nov 2026)</span>
-              <div className="text-xl sm:text-2xl font-black text-emerald-700">
+              <span className="text-[13px] font-bold text-slate-500">Masuk (02 Nov 2026)</span>
+              <div className="text-xl sm:text-2xl font-bold text-emerald-700">
                 {summary.totalKgMasuk} KG
               </div>
-              <span className="text-[10px] text-emerald-600 font-medium">+{summary.totalQtyNonKgMasuk} Unit &bull; Buka Mutasi &rarr;</span>
+              <span className="text-xs text-emerald-600 font-medium">+{summary.totalQtyNonKgMasuk} Unit &bull; Buka Mutasi &rarr;</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
               <Scale className="w-5 h-5 text-emerald-600" />
@@ -895,15 +895,15 @@ export default function StockMonitoringPage() {
               setActiveMainTab('movements');
               setMovementFilterType('OUT');
             }}
-            className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between cursor-pointer hover:border-indigo-300 transition-colors"
+            className="bg-white rounded-xl border border-line p-4 flex items-center justify-between cursor-pointer hover:border-indigo-300 transition-colors"
             title="Klik untuk lihat mutasi keluar masak 03 Nov"
           >
             <div className="space-y-0.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Keluar Masak (03 Nov)</span>
-              <div className="text-xl sm:text-2xl font-black text-indigo-700">
+              <span className="text-[13px] font-bold text-slate-500">Keluar Masak (03 Nov)</span>
+              <div className="text-xl sm:text-2xl font-bold text-indigo-700">
                 {summary.totalKgKeluar} KG
               </div>
-              <span className="text-[10px] text-indigo-600 font-medium">1.553 Porsi MBG &bull; Buka Mutasi &rarr;</span>
+              <span className="text-xs text-indigo-600 font-medium">1.553 Porsi MBG &bull; Buka Mutasi &rarr;</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center shrink-0">
               <ChefHat className="w-5 h-5 text-indigo-600" />
@@ -911,32 +911,32 @@ export default function StockMonitoringPage() {
           </div>
 
           {/* Card 4: Sisa Stok Saat Ini */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
+          <div className="bg-white rounded-xl border border-line p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Sisa Stok Fisik</span>
-              <div className="text-xl sm:text-2xl font-black text-slate-900">
+              <span className="text-[13px] font-bold text-slate-500">Sisa Stok Fisik</span>
+              <div className="text-xl sm:text-2xl font-bold text-slate-900">
                 {summary.currentKgSisa} KG
               </div>
-              <span className="text-[10px] text-emerald-600 font-bold">Habis Terpakai Masak 100%</span>
+              <span className="text-xs text-emerald-600 font-bold">Habis Terpakai Masak 100%</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 border border-line flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-5 h-5 text-emerald-600" />
             </div>
           </div>
         </div>
 
         {/* ============ 4 WORKFLOW TABS (SUB-NAV) ============ */}
-        <div className="space-y-2 border-b border-slate-200 pb-3">
+        <div className="space-y-2 border-b border-line pb-3">
           {/* Mobile Grid View (2x2) — 100% langsung kelihatan tanpa perlu geser */}
           <div className="grid grid-cols-2 gap-2 sm:hidden">
             {/* Tab 1: Stok Bahan */}
             <button
               type="button"
               onClick={() => setActiveMainTab('inventory')}
-              className={`p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all ${
+              className={`p-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
                 activeMainTab === 'inventory'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                  ? 'bg-ink text-white'
+                  : 'bg-white text-slate-700 border border-line hover:bg-slate-50'
               }`}
             >
               <Boxes className="w-4 h-4 shrink-0" />
@@ -947,10 +947,10 @@ export default function StockMonitoringPage() {
             <button
               type="button"
               onClick={() => setActiveMainTab('movements')}
-              className={`p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all ${
+              className={`p-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
                 activeMainTab === 'movements'
                   ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                  : 'bg-white text-slate-700 border border-line hover:bg-slate-50'
               }`}
             >
               <History className="w-4 h-4 shrink-0" />
@@ -961,10 +961,10 @@ export default function StockMonitoringPage() {
             <button
               type="button"
               onClick={() => setActiveMainTab('opname')}
-              className={`p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all ${
+              className={`p-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
                 activeMainTab === 'opname'
                   ? 'bg-amber-600 text-white'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                  : 'bg-white text-slate-700 border border-line hover:bg-slate-50'
               }`}
             >
               <ClipboardCheck className="w-4 h-4 shrink-0" />
@@ -978,10 +978,10 @@ export default function StockMonitoringPage() {
             <button
               type="button"
               onClick={() => setActiveMainTab('bom')}
-              className={`p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all ${
+              className={`p-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
                 activeMainTab === 'bom'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                  ? 'bg-ink text-white'
+                  : 'bg-white text-slate-700 border border-line hover:bg-slate-50'
               }`}
             >
               <Calculator className="w-4 h-4 shrink-0" />
@@ -997,8 +997,8 @@ export default function StockMonitoringPage() {
                 onClick={() => setActiveMainTab('inventory')}
                 className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 cursor-pointer transition-colors ${
                   activeMainTab === 'inventory'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                    ? 'bg-ink text-white'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-line'
                 }`}
               >
                 <Boxes className="w-4 h-4" />
@@ -1010,8 +1010,8 @@ export default function StockMonitoringPage() {
                 onClick={() => setActiveMainTab('movements')}
                 className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 cursor-pointer transition-colors ${
                   activeMainTab === 'movements'
-                    ? 'bg-indigo-600 text-white shadow-xs'
-                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-line'
                 }`}
               >
                 <History className="w-4 h-4" />
@@ -1023,8 +1023,8 @@ export default function StockMonitoringPage() {
                 onClick={() => setActiveMainTab('opname')}
                 className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 cursor-pointer transition-colors ${
                   activeMainTab === 'opname'
-                    ? 'bg-amber-600 text-white shadow-xs'
-                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                    ? 'bg-amber-600 text-white'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-line'
                 }`}
               >
                 <ClipboardCheck className="w-4 h-4" />
@@ -1039,8 +1039,8 @@ export default function StockMonitoringPage() {
                 onClick={() => setActiveMainTab('bom')}
                 className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 cursor-pointer transition-colors ${
                   activeMainTab === 'bom'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                    ? 'bg-ink text-white'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-line'
                 }`}
               >
                 <Calculator className="w-4 h-4" />
@@ -1052,7 +1052,7 @@ export default function StockMonitoringPage() {
               <button
                 type="button"
                 onClick={handleClearAllInventory}
-                className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer flex items-center gap-1"
+                className="px-2.5 py-1.5 rounded-lg text-sm font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer flex items-center gap-1"
                 title="Kosongkan seluruh data inventory"
               >
                 <span>Kosongkan</span>
@@ -1073,7 +1073,7 @@ export default function StockMonitoringPage() {
         {activeMainTab === 'inventory' && (
           <div className="space-y-4">
             {/* Toolbar Filters */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+            <div className="bg-white rounded-xl border border-line p-4 space-y-3">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 {/* Search Input */}
                 <div className="relative flex-1">
@@ -1083,7 +1083,7 @@ export default function StockMonitoringPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Cari bahan makanan, SKU, golongan, atau lokasi simpan..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-medium transition-colors"
+                    className="w-full bg-slate-50 border border-line rounded-xl pl-10 pr-4 py-2 text-sm sm:text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-medium transition-colors"
                   />
                   {searchQuery && (
                     <button
@@ -1101,7 +1101,7 @@ export default function StockMonitoringPage() {
                   <select
                     value={selectedLocation}
                     onChange={(e) => setSelectedLocation(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer"
+                    className="bg-slate-50 border border-line rounded-xl px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer"
                   >
                     <option value="ALL">Semua Lokasi</option>
                     <option value="Gudang Basah">Gudang Basah ({summary.gudangBasahCount})</option>
@@ -1111,7 +1111,7 @@ export default function StockMonitoringPage() {
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer"
+                    className="bg-slate-50 border border-line rounded-xl px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer"
                   >
                     <option value="ALL">Semua Status</option>
                     <option value="critical">Selesai Dimasak</option>
@@ -1122,7 +1122,7 @@ export default function StockMonitoringPage() {
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as 'name' | 'daysLeft' | 'currentStock')}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer"
+                    className="bg-slate-50 border border-line rounded-xl px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer"
                   >
                     <option value="name">Urut: Nama Bahan</option>
                     <option value="currentStock">Urut: Jumlah Stok</option>
@@ -1141,7 +1141,7 @@ export default function StockMonitoringPage() {
                   <button
                     type="button"
                     onClick={handleDownloadStockCSV}
-                    className="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1.5 cursor-pointer transition-colors"
+                    className="px-3 py-2 rounded-xl text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1.5 cursor-pointer transition-colors"
                     title="Export Daftar Stok ke CSV"
                   >
                     <FileDown className="w-4 h-4 text-blue-600" />
@@ -1152,11 +1152,11 @@ export default function StockMonitoringPage() {
 
               {/* Batch Filter Bar */}
               <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1 pb-1 border-b border-slate-100">
-                <span className="text-[10px] uppercase font-bold text-slate-400 shrink-0">Filter Batch:</span>
+                <span className="text-xs font-bold text-slate-400 shrink-0">Filter Batch:</span>
                 <button
                   type="button"
                   onClick={() => setSelectedBatch('ALL')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer transition-colors ${
+                  className={`px-2.5 py-1 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer transition-colors ${
                     selectedBatch === 'ALL'
                       ? 'bg-slate-900 text-white'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -1167,7 +1167,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedBatch('02-NOV')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer transition-colors ${
+                  className={`px-2.5 py-1 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer transition-colors ${
                     selectedBatch === '02-NOV'
                       ? 'bg-indigo-600 text-white'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -1178,7 +1178,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedBatch('01-NOV')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer transition-colors ${
+                  className={`px-2.5 py-1 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer transition-colors ${
                     selectedBatch === '01-NOV'
                       ? 'bg-emerald-600 text-white'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -1193,9 +1193,9 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('ALL')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer transition-colors ${
                     selectedCategory === 'ALL'
-                      ? 'bg-blue-600 text-white shadow-xs'
+                      ? 'bg-ink text-white'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
@@ -1216,15 +1216,15 @@ export default function StockMonitoringPage() {
                     key={cat}
                     type="button"
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
+                    className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
                       selectedCategory === cat
-                        ? 'bg-blue-600 text-white shadow-xs'
+                        ? 'bg-ink text-white'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
                     {getCategoryIcon(cat)}
                     <span>{cat}</span>
-                    <span className="text-[10px] opacity-70">({summary.categoryCounts[cat] || 0})</span>
+                    <span className="text-xs opacity-70">({summary.categoryCounts[cat] || 0})</span>
                   </button>
                 ))}
               </div>
@@ -1233,17 +1233,17 @@ export default function StockMonitoringPage() {
             {/* Mobile Card View (md:hidden) */}
             <div className="md:hidden space-y-3">
               {filteredItems.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500 shadow-xs">
+                <div className="bg-white rounded-xl border border-line p-8 text-center text-slate-500">
                   <Boxes className="w-10 h-10 mx-auto mb-3 text-slate-300" />
                   <p className="font-bold text-slate-700 text-sm">Inventory Belum Memiliki Data Bahan Baku</p>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-sm text-slate-400 mt-1">
                     Mulai tambahkan bahan baru atau muat 16 bahan masuk 01 Nov 2026.
                   </p>
                   <div className="flex flex-col gap-2 mt-4">
                     <button
                       type="button"
                       onClick={() => handleOpenAddItem()}
-                      className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 rounded-xl bg-ink hover:bg-ink-soft text-white font-bold text-sm flex items-center justify-center gap-1.5"
                     >
                       <PlusCircle className="w-4 h-4" />
                       <span>+ Tambah Bahan Baru</span>
@@ -1251,7 +1251,7 @@ export default function StockMonitoringPage() {
                     <button
                       type="button"
                       onClick={() => handleResetToBaseline()}
-                      className="w-full py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs border border-slate-300 flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm border border-slate-300 flex items-center justify-center gap-1.5"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
                       <span>Muat 17 Bahan Masuk 02 Nov 2026</span>
@@ -1266,21 +1266,21 @@ export default function StockMonitoringPage() {
                   return (
                     <div
                       key={item.id}
-                      className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3"
+                      className="bg-white rounded-xl border border-line p-4 space-y-3"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <h4 className="font-black text-slate-900 text-sm leading-snug">{item.name}</h4>
+                          <h4 className="font-bold text-slate-900 text-sm leading-snug">{item.name}</h4>
                           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                            <span className="font-mono text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                            <span className="font-mono text-[11px] font-bold text-ink bg-ink/5 px-1.5 py-0.5 rounded">
                               {item.sku}
                             </span>
-                            <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                            <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
                               {getCategoryIcon(item.category)}
                               <span>{item.category}</span>
                             </span>
                             <span
-                              className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                              className={`text-[11px] font-bold px-1.5 py-0.5 rounded border ${
                                 item.storageLocation === 'Gudang Basah'
                                   ? 'bg-cyan-50 text-cyan-800 border-cyan-200'
                                   : 'bg-amber-50 text-amber-800 border-amber-200'
@@ -1294,31 +1294,31 @@ export default function StockMonitoringPage() {
                       </div>
 
                       <div className="grid grid-cols-3 gap-2 bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
-                        <div className="border-r border-slate-200 pr-1">
-                          <span className="text-[9px] uppercase font-bold text-emerald-700 block">Masuk (02 Nov)</span>
-                          <span className="font-mono font-black text-sm text-slate-800 mt-0.5 block">
+                        <div className="border-r border-line pr-1">
+                          <span className="text-[11px] font-bold text-emerald-700 block">Masuk (02 Nov)</span>
+                          <span className="font-mono font-bold text-sm text-slate-800 mt-0.5 block">
                             {item.initialStock} {item.uom}
                           </span>
                         </div>
-                        <div className="border-r border-slate-200 px-1">
-                          <span className="text-[9px] uppercase font-bold text-indigo-700 block">Keluar (03 Nov)</span>
-                          <span className="font-mono font-black text-sm text-indigo-900 mt-0.5 block">
+                        <div className="border-r border-line px-1">
+                          <span className="text-[11px] font-bold text-indigo-700 block">Keluar (03 Nov)</span>
+                          <span className="font-mono font-bold text-sm text-indigo-900 mt-0.5 block">
                             {item.usedStock} {item.uom}
                           </span>
                         </div>
                         <div className="pl-1">
-                          <span className="text-[9px] uppercase font-bold text-slate-500 block">Sisa Stok</span>
-                          <span className="font-mono font-black text-sm text-slate-900 mt-0.5 block">
+                          <span className="text-[11px] font-bold text-slate-500 block">Sisa Stok</span>
+                          <span className="font-mono font-bold text-sm text-slate-900 mt-0.5 block">
                             {item.currentStock} {item.uom}
                           </span>
                         </div>
                       </div>
 
-                      <p className="text-[10px] text-slate-500 italic bg-slate-50/50 p-2 rounded-lg border border-slate-100">
+                      <p className="text-xs text-slate-500 italic bg-slate-50/50 p-2 rounded-lg border border-slate-100">
                         {item.notes}
                       </p>
 
-                      <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-100 text-xs">
+                      <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-100 text-sm">
                         <button
                           type="button"
                           onClick={() => handleOpenRestock(item)}
@@ -1351,10 +1351,10 @@ export default function StockMonitoringPage() {
             </div>
 
             {/* Desktop Inventory Table (hidden md:block) */}
-            <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="hidden md:block bg-white rounded-xl border border-line overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-black tracking-wider">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 border-b border-line text-slate-600 text-xs font-bold ">
                     <tr>
                       <th className="py-3 px-4">Bahan Makanan &amp; SKU</th>
                       <th className="py-3 px-3">Lokasi / Golongan</th>
@@ -1376,7 +1376,7 @@ export default function StockMonitoringPage() {
                             <button
                               type="button"
                               onClick={() => handleOpenAddItem()}
-                              className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs cursor-pointer flex items-center gap-1.5"
+                              className="px-3.5 py-2 rounded-xl bg-ink hover:bg-ink-soft text-white font-bold text-sm cursor-pointer flex items-center gap-1.5"
                             >
                               <PlusCircle className="w-4 h-4" />
                               <span>+ Tambah Bahan Baru</span>
@@ -1384,7 +1384,7 @@ export default function StockMonitoringPage() {
                             <button
                               type="button"
                               onClick={() => handleResetToBaseline()}
-                              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-300 cursor-pointer flex items-center gap-1.5"
+                              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm border border-slate-300 cursor-pointer flex items-center gap-1.5"
                             >
                               <RotateCcw className="w-3.5 h-3.5" />
                               <span>Muat 17 Bahan Masuk 02 Nov 2026</span>
@@ -1400,25 +1400,25 @@ export default function StockMonitoringPage() {
                         return (
                           <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                             <td className="py-3.5 px-4">
-                              <div className="font-black text-slate-900 text-xs sm:text-sm leading-tight">
+                              <div className="font-bold text-slate-900 text-sm sm:text-sm leading-tight">
                                 {item.name}
                               </div>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <span className="font-mono text-[10px] font-bold text-blue-700 bg-blue-50 px-1 rounded">
+                                <span className="font-mono text-xs font-bold text-ink bg-ink/5 px-1 rounded">
                                   {item.sku}
                                 </span>
-                                <span className="text-[10px] text-slate-400">Masuk: 01 Nov &bull; Masak: 02 Nov</span>
+                                <span className="text-xs text-slate-400">Masuk: 01 Nov &bull; Masak: 02 Nov</span>
                               </div>
                             </td>
 
                             <td className="py-3.5 px-3">
-                              <div className="flex items-center gap-1 text-[11px] font-bold text-slate-700">
+                              <div className="flex items-center gap-1 text-[13px] font-bold text-slate-700">
                                 {getCategoryIcon(item.category)}
                                 <span>{item.category}</span>
                               </div>
                               <div className="mt-1">
                                 <span
-                                  className={`inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                                  className={`inline-flex items-center text-[11px] font-bold px-1.5 py-0.5 rounded border ${
                                     item.storageLocation === 'Gudang Basah'
                                       ? 'bg-cyan-50 text-cyan-800 border-cyan-200'
                                       : 'bg-amber-50 text-amber-800 border-amber-200'
@@ -1440,13 +1440,13 @@ export default function StockMonitoringPage() {
                             </td>
 
                             {/* Sisa Stok */}
-                            <td className="py-3.5 px-3 text-right font-mono font-black text-sm text-slate-900">
+                            <td className="py-3.5 px-3 text-right font-mono font-bold text-sm text-slate-900">
                               {item.currentStock}
                             </td>
 
                             {/* Satuan */}
                             <td className="py-3.5 px-3 text-center">
-                              <span className="font-black text-xs px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 border border-slate-200 font-mono">
+                              <span className="font-bold text-sm px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 border border-line font-mono">
                                 {item.uom}
                               </span>
                             </td>
@@ -1492,11 +1492,11 @@ export default function StockMonitoringPage() {
               </div>
 
               {/* Table Footer */}
-              <div className="bg-slate-50 border-t border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
+              <div className="bg-slate-50 border-t border-line p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-slate-600">
                 <div>
                   Menampilkan <strong>{filteredItems.length}</strong> bahan baku terdaftar
                 </div>
-                <div className="font-mono text-[11px] text-slate-500">
+                <div className="font-mono text-[13px] text-slate-500">
                   Total Masuk 02 Nov: <strong>{summary.totalKgMasuk} KG</strong> &bull; Total Masak 03 Nov: <strong>{summary.totalKgKeluar} KG</strong> (1.553 Porsi MBG)
                 </div>
               </div>
@@ -1507,20 +1507,20 @@ export default function StockMonitoringPage() {
         {/* ============ TAB 2: STOCK OPNAME & HITUNG FISIK ============ */}
         {activeMainTab === 'opname' && opnameSession && (
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+            <div className="bg-white rounded-xl border border-line p-5 space-y-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
                       Sesi Hitung Fisik (Opname)
                     </span>
-                    <span className="text-xs text-slate-400">•</span>
-                    <span className="text-xs font-mono text-slate-500">{opnameSession.id}</span>
+                    <span className="text-sm text-slate-400">•</span>
+                    <span className="text-sm font-mono text-slate-500">{opnameSession.id}</span>
                   </div>
-                  <h3 className="text-base sm:text-lg font-black text-slate-900">
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900">
                     Stock Opname Timbangan Fisik Dapur (Paska Masak 03 Nov)
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm text-slate-500">
                     Petugas: <strong>{opnameSession.checkerName}</strong> &bull; Tanggal: <strong>{opnameSession.date}</strong>
                   </p>
                 </div>
@@ -1529,7 +1529,7 @@ export default function StockMonitoringPage() {
                   <button
                     type="button"
                     onClick={handleSaveOpnameDraft}
-                    className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                    className="px-3.5 py-2 rounded-xl text-sm font-bold text-white bg-ink hover:bg-ink-soft flex items-center gap-1.5 cursor-pointer transition-colors"
                   >
                     <Save className="w-4 h-4" />
                     <span>Simpan Draf Opname</span>
@@ -1538,7 +1538,7 @@ export default function StockMonitoringPage() {
                   <button
                     type="button"
                     onClick={handleFinalizeOpname}
-                    className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                    className="px-3.5 py-2 rounded-xl text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 flex items-center gap-1.5 cursor-pointer transition-colors"
                   >
                     <Check className="w-4 h-4" />
                     <span>Selesaikan &amp; Terapkan</span>
@@ -1547,7 +1547,7 @@ export default function StockMonitoringPage() {
                   <button
                     type="button"
                     onClick={handleDownloadOpnameCSV}
-                    className="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1.5 cursor-pointer transition-colors"
+                    className="px-3 py-2 rounded-xl text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1.5 cursor-pointer transition-colors"
                     title="Export Hasil Opname ke CSV"
                   >
                     <FileDown className="w-4 h-4 text-blue-600" />
@@ -1567,25 +1567,25 @@ export default function StockMonitoringPage() {
 
               {/* Opname Variance Metric Strip */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Item Dicek</span>
-                  <strong className="text-lg font-black text-slate-900">{opnameStats.totalRows} Bahan</strong>
+                <div className="bg-slate-50 rounded-xl p-3 border border-line">
+                  <span className="text-xs font-bold text-slate-500 block">Total Item Dicek</span>
+                  <strong className="text-lg font-bold text-slate-900">{opnameStats.totalRows} Bahan</strong>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 block">Item Berselisih</span>
-                  <strong className={`text-lg font-black ${opnameStats.itemsDiff > 0 ? 'text-rose-600' : 'text-emerald-700'}`}>
+                <div className="bg-slate-50 rounded-xl p-3 border border-line">
+                  <span className="text-xs font-bold text-slate-500 block">Item Berselisih</span>
+                  <strong className={`text-lg font-bold ${opnameStats.itemsDiff > 0 ? 'text-rose-600' : 'text-emerald-700'}`}>
                     {opnameStats.itemsDiff} Item
                   </strong>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 block">Tingkat Akurasi Fisik</span>
-                  <strong className="text-lg font-black text-blue-700">{opnameStats.matchPct}%</strong>
+                <div className="bg-slate-50 rounded-xl p-3 border border-line">
+                  <span className="text-xs font-bold text-slate-500 block">Tingkat Akurasi Fisik</span>
+                  <strong className="text-lg font-bold text-ink">{opnameStats.matchPct}%</strong>
                 </div>
               </div>
             </div>
 
             {/* Opname Search Bar */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between gap-3">
+            <div className="bg-white rounded-xl border border-line p-4 flex items-center justify-between gap-3">
               <div className="relative flex-1">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
@@ -1593,10 +1593,10 @@ export default function StockMonitoringPage() {
                   value={opnameSearch}
                   onChange={(e) => setOpnameSearch(e.target.value)}
                   placeholder="Cari bahan pada lembar opname..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-amber-500"
+                  className="w-full bg-slate-50 border border-line rounded-xl pl-10 pr-4 py-2 text-sm sm:text-sm text-slate-900 focus:outline-none focus:border-amber-500"
                 />
               </div>
-              <span className="text-xs text-slate-500 shrink-0 font-medium">
+              <span className="text-sm text-slate-500 shrink-0 font-medium">
                 {isOpnameDirty ? (
                   <span className="text-amber-600 font-bold flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" /> Ada Perubahan Belum Disimpan
@@ -1612,7 +1612,7 @@ export default function StockMonitoringPage() {
             {/* Mobile Opname Cards (md:hidden) */}
             <div className="md:hidden space-y-3">
               {filteredOpnameRows.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500 shadow-xs">
+                <div className="bg-white rounded-xl border border-line p-8 text-center text-slate-500">
                   <ClipboardCheck className="w-10 h-10 mx-auto mb-2 text-slate-300" />
                   <p className="font-bold text-slate-700">Belum Ada Item pada Lembar Opname</p>
                 </div>
@@ -1622,16 +1622,16 @@ export default function StockMonitoringPage() {
                   return (
                     <div
                       key={row.itemId}
-                      className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3"
+                      className="bg-white rounded-xl border border-line p-4 space-y-3"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-mono font-bold text-xs flex items-center justify-center shrink-0">
+                          <span className="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-mono font-bold text-sm flex items-center justify-center shrink-0">
                             {idx + 1}
                           </span>
                           <div>
-                            <h4 className="font-black text-slate-900 text-sm leading-snug">{row.name}</h4>
-                            <span className="text-[10px] text-slate-500 font-medium">
+                            <h4 className="font-bold text-slate-900 text-sm leading-snug">{row.name}</h4>
+                            <span className="text-xs text-slate-500 font-medium">
                               {row.category} &bull; {row.storageLocation}
                             </span>
                           </div>
@@ -1639,31 +1639,31 @@ export default function StockMonitoringPage() {
 
                         <div>
                           {diff === 0 ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                               KLOP (0 {row.uom})
                             </span>
                           ) : diff > 0 ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-ink border border-ink/15">
                               +{diff} {row.uom}
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
                               {diff} {row.uom}
                             </span>
                           )}
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200 items-center">
+                      <div className="grid grid-cols-2 gap-2.5 bg-slate-50 p-3 rounded-xl border border-line items-center">
                         <div>
-                          <span className="text-[10px] uppercase font-bold text-slate-500 block">Stok Sistem</span>
-                          <div className="font-mono font-black text-lg text-slate-800 mt-0.5">
-                            {row.systemQty} <span className="text-xs text-slate-500">{row.uom}</span>
+                          <span className="text-xs font-bold text-slate-500 block">Stok Sistem</span>
+                          <div className="font-mono font-bold text-lg text-slate-800 mt-0.5">
+                            {row.systemQty} <span className="text-sm text-slate-500">{row.uom}</span>
                           </div>
                         </div>
 
                         <div>
-                          <label className="text-[10px] uppercase font-bold text-amber-800 block">
+                          <label className="text-xs font-bold text-amber-800 block">
                             Fisik Timbangan *
                           </label>
                           <div className="flex items-center gap-1.5 mt-0.5">
@@ -1675,9 +1675,9 @@ export default function StockMonitoringPage() {
                               onChange={(e) =>
                                 handleOpnamePhysicalChange(row.itemId, parseFloat(e.target.value) || 0)
                               }
-                              className="w-full bg-white border-2 border-amber-400 rounded-lg py-1.5 px-2 text-right font-mono font-black text-lg text-slate-900 focus:outline-none focus:border-amber-600 shadow-xs"
+                              className="w-full bg-white border-2 border-amber-400 rounded-lg py-1.5 px-2 text-right font-mono font-bold text-lg text-slate-900 focus:outline-none focus:border-amber-600"
                             />
-                            <span className="font-mono font-bold text-xs text-slate-600 shrink-0">{row.uom}</span>
+                            <span className="font-mono font-bold text-sm text-slate-600 shrink-0">{row.uom}</span>
                           </div>
                         </div>
                       </div>
@@ -1688,7 +1688,7 @@ export default function StockMonitoringPage() {
                           value={row.notes}
                           onChange={(e) => handleOpnameNotesChange(row.itemId, e.target.value)}
                           placeholder="Catatan kondisi fisik (kemasan baik/utuh)..."
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-700 focus:outline-none focus:border-amber-500"
+                          className="w-full bg-slate-50 border border-line rounded-lg p-2 text-sm text-slate-700 focus:outline-none focus:border-amber-500"
                         />
                       </div>
                     </div>
@@ -1697,11 +1697,11 @@ export default function StockMonitoringPage() {
               )}
 
               {/* Mobile Footer Save/Finalize Action Bar */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-2">
+              <div className="bg-white rounded-xl border border-line p-4 space-y-2">
                 <button
                   type="button"
                   onClick={handleSaveOpnameDraft}
-                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
+                  className="w-full py-2.5 rounded-xl bg-ink hover:bg-ink-soft text-white font-bold text-sm flex items-center justify-center gap-1.5"
                 >
                   <Save className="w-4 h-4" />
                   <span>Simpan Draf Opname</span>
@@ -1709,7 +1709,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={handleFinalizeOpname}
-                  className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
+                  className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm flex items-center justify-center gap-1.5"
                 >
                   <Check className="w-4 h-4" />
                   <span>Selesaikan &amp; Terapkan Opname</span>
@@ -1718,10 +1718,10 @@ export default function StockMonitoringPage() {
             </div>
 
             {/* Desktop Opname Table (hidden md:block) */}
-            <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="hidden md:block bg-white rounded-xl border border-line overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-black tracking-wider">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 border-b border-line text-slate-600 text-xs font-bold ">
                     <tr>
                       <th className="py-3 px-4 w-10 text-center">No</th>
                       <th className="py-3 px-4">Bahan Makanan &amp; SKU</th>
@@ -1743,14 +1743,14 @@ export default function StockMonitoringPage() {
                           <td className="py-3 px-4 text-center font-mono text-slate-400">{idx + 1}</td>
                           <td className="py-3 px-4">
                             <div className="font-bold text-slate-900">{row.name}</div>
-                            <div className="font-mono text-[10px] text-blue-700">{row.sku}</div>
+                            <div className="font-mono text-xs text-ink">{row.sku}</div>
                           </td>
-                          <td className="py-3 px-3 text-[11px] text-slate-600">
+                          <td className="py-3 px-3 text-[13px] text-slate-600">
                             <span className="font-bold block">{row.category}</span>
-                            <span className="text-[10px] text-slate-400">{row.storageLocation}</span>
+                            <span className="text-xs text-slate-400">{row.storageLocation}</span>
                           </td>
                           <td className="py-3 px-3 text-center">
-                            <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                            <span className="font-mono font-bold text-sm px-2 py-0.5 rounded bg-slate-100 text-slate-700">
                               {row.uom}
                             </span>
                           </td>
@@ -1771,12 +1771,12 @@ export default function StockMonitoringPage() {
                                 }
                                 className="w-20 bg-slate-50 border border-slate-300 rounded-lg py-1 px-2 text-right font-mono font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white"
                               />
-                              <span className="text-[10px] text-slate-500 font-mono">{row.uom}</span>
+                              <span className="text-xs text-slate-500 font-mono">{row.uom}</span>
                             </div>
                           </td>
 
                           {/* Selisih Otomatis */}
-                          <td className="py-3 px-3 text-right font-mono font-black">
+                          <td className="py-3 px-3 text-right font-mono font-bold">
                             {diff === 0 ? (
                               <span className="text-slate-400">0</span>
                             ) : diff > 0 ? (
@@ -1789,15 +1789,15 @@ export default function StockMonitoringPage() {
                           {/* Status Kecocokan */}
                           <td className="py-3 px-3 text-center">
                             {diff === 0 ? (
-                              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">
+                              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
                                 KLOP
                               </span>
                             ) : diff > 0 ? (
-                              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-100 text-blue-800">
+                              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-ink">
                                 LEBIH
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-100 text-rose-800">
+                              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">
                                 KURANG
                               </span>
                             )}
@@ -1810,7 +1810,7 @@ export default function StockMonitoringPage() {
                               value={row.notes}
                               onChange={(e) => handleOpnameNotesChange(row.itemId, e.target.value)}
                               placeholder="Catatan fisik..."
-                              className="w-full bg-transparent border-b border-slate-200 py-1 text-[11px] text-slate-700 focus:outline-none focus:border-amber-500"
+                              className="w-full bg-transparent border-b border-line py-1 text-[13px] text-slate-700 focus:outline-none focus:border-amber-500"
                             />
                           </td>
                         </tr>
@@ -1821,8 +1821,8 @@ export default function StockMonitoringPage() {
               </div>
 
               {/* Table Footer Action */}
-              <div className="bg-slate-50 border-t border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <span className="text-xs text-slate-500 font-medium">
+              <div className="bg-slate-50 border-t border-line p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <span className="text-sm text-slate-500 font-medium">
                   {isOpnameDirty ? (
                     <span className="text-amber-700 font-bold">
                       ⚠️ Klik &quot;Simpan Draf Opname&quot; agar angka tidak hilang saat berpindah menu.
@@ -1836,14 +1836,14 @@ export default function StockMonitoringPage() {
                   <button
                     type="button"
                     onClick={handleSaveOpnameDraft}
-                    className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs cursor-pointer"
+                    className="px-4 py-2 rounded-xl text-sm font-bold text-white bg-ink hover:bg-ink-soft cursor-pointer"
                   >
                     Simpan Draf
                   </button>
                   <button
                     type="button"
                     onClick={handleFinalizeOpname}
-                    className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-xs cursor-pointer"
+                    className="px-4 py-2 rounded-xl text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 cursor-pointer"
                   >
                     Selesaikan Opname
                   </button>
@@ -1856,10 +1856,10 @@ export default function StockMonitoringPage() {
         {/* ============ TAB 3: MUTASI MASUK & KELUAR ============ */}
         {activeMainTab === 'movements' && (
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="bg-white rounded-xl border border-line p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-1">
-                <h3 className="text-sm font-black text-slate-900">Buku Register Mutasi Stok (Audit Trail)</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="text-sm font-bold text-slate-900">Buku Register Mutasi Stok (Audit Trail)</h3>
+                <p className="text-sm text-slate-500">
                   Daftar transaksi barang masuk dan keluar masak dapur (Siklus Batch 01 &amp; 02 Nov 2026).
                 </p>
               </div>
@@ -1867,7 +1867,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => handleOpenPrintFor('B2_IN')}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
+                  className="px-3 py-1.5 rounded-xl text-sm font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
                   title="Download Dokumen Berita Acara PDF Bahan Masuk"
                 >
                   <FileDown className="w-3.5 h-3.5 text-emerald-600" />
@@ -1876,7 +1876,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => handleOpenPrintFor('B2_OUT')}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 flex items-center gap-1 cursor-pointer transition-colors"
+                  className="px-3 py-1.5 rounded-xl text-sm font-bold text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 flex items-center gap-1 cursor-pointer transition-colors"
                   title="Download Dokumen Berita Acara PDF Bahan Keluar Masak"
                 >
                   <FileDown className="w-3.5 h-3.5 text-indigo-600" />
@@ -1885,7 +1885,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => handleOpenRestock()}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 flex items-center gap-1 cursor-pointer"
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
                   <span>+ Masuk</span>
@@ -1893,7 +1893,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => handleOpenUsage()}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 flex items-center gap-1 cursor-pointer"
                 >
                   <MinusCircle className="w-3.5 h-3.5" />
                   <span>- Pakai</span>
@@ -1901,7 +1901,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={handleDownloadMovementsCSV}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center gap-1 cursor-pointer"
                 >
                   <FileDown className="w-3.5 h-3.5 text-blue-600" />
                   <span>Export CSV</span>
@@ -1910,7 +1910,7 @@ export default function StockMonitoringPage() {
             </div>
 
             {/* Filter Mutasi */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="bg-white rounded-xl border border-line p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="relative flex-1">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
@@ -1918,7 +1918,7 @@ export default function StockMonitoringPage() {
                   value={movementSearch}
                   onChange={(e) => setMovementSearch(e.target.value)}
                   placeholder="Cari transaksi mutasi, no referensi, atau nama bahan..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full bg-slate-50 border border-line rounded-xl pl-10 pr-4 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-600"
                 />
               </div>
 
@@ -1926,7 +1926,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => { setMovementFilterType('ALL'); setMovementSearch(''); }}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer ${
                     movementFilterType === 'ALL' && !movementSearch ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
@@ -1935,7 +1935,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => { setMovementFilterType('OUT'); setMovementSearch('2026-11-03'); }}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer ${
                     movementFilterType === 'OUT' && movementSearch === '2026-11-03' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
@@ -1944,7 +1944,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => { setMovementFilterType('IN'); setMovementSearch('2026-11-02'); }}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer ${
                     movementFilterType === 'IN' && movementSearch === '2026-11-02' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
@@ -1953,7 +1953,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => { setMovementFilterType('OUT'); setMovementSearch('2026-11-02'); }}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer ${
                     movementFilterType === 'OUT' && movementSearch === '2026-11-02' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
@@ -1962,7 +1962,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => { setMovementFilterType('IN'); setMovementSearch('2026-11-01'); }}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer ${
                     movementFilterType === 'IN' && movementSearch === '2026-11-01' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
@@ -1974,41 +1974,41 @@ export default function StockMonitoringPage() {
             {/* Mobile Movements Cards (md:hidden) */}
             <div className="md:hidden space-y-2.5">
               {filteredMovements.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400">
+                <div className="bg-white rounded-xl border border-line p-8 text-center text-slate-400">
                   Tidak ada catatan mutasi yang cocok.
                 </div>
               ) : (
                 filteredMovements.map((m) => (
                   <div
                     key={m.id}
-                    className="bg-white rounded-2xl border border-slate-200 p-3.5 shadow-xs space-y-2"
+                    className="bg-white rounded-xl border border-line p-3.5 space-y-2"
                   >
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="font-mono text-[10px] text-slate-500">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="font-mono text-xs text-slate-500">
                         <strong>{m.date}</strong> &bull; {m.time} WIB
                       </div>
                       <div>
                         {m.type === 'IN' && (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                             + MASUK (02 NOV)
                           </span>
                         )}
                         {m.type === 'OUT' && (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-indigo-100 text-indigo-800 border border-indigo-200">
+                          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
                             - KELUAR MASAK (03 NOV)
                           </span>
                         )}
                         {m.type === 'ADJUST' && (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-800 border border-amber-200">
+                          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
                             ± OPNAME
                           </span>
                         )}
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-slate-900 text-xs">{m.itemName}</h4>
+                      <h4 className="font-bold text-slate-900 text-sm">{m.itemName}</h4>
                       <span
-                        className={`font-mono font-black text-sm ${
+                        className={`font-mono font-bold text-sm ${
                           m.type === 'IN'
                             ? 'text-emerald-700'
                             : m.type === 'OUT'
@@ -2020,21 +2020,21 @@ export default function StockMonitoringPage() {
                         {m.qty} {m.uom}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-[10px] text-slate-500 border-t border-slate-100 pt-1.5 font-mono">
+                    <div className="flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-1.5 font-mono">
                       <span>Ref: <strong className="text-slate-700">{m.reference}</strong></span>
                       <span>Sisa: <strong className="text-slate-800">{m.balanceAfter} {m.uom}</strong></span>
                     </div>
-                    {m.notes && <p className="text-[10px] text-slate-500 italic">{m.notes}</p>}
+                    {m.notes && <p className="text-xs text-slate-500 italic">{m.notes}</p>}
                   </div>
                 ))
               )}
             </div>
 
             {/* Desktop Table Movements (hidden md:block) */}
-            <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="hidden md:block bg-white rounded-xl border border-line overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-black tracking-wider">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 border-b border-line text-slate-600 text-xs font-bold ">
                     <tr>
                       <th className="py-3 px-4">Waktu &amp; Ref</th>
                       <th className="py-3 px-3">Jenis</th>
@@ -2054,23 +2054,23 @@ export default function StockMonitoringPage() {
                     ) : (
                       filteredMovements.map((m) => (
                         <tr key={m.id} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-3 px-4 font-mono text-[11px]">
+                          <td className="py-3 px-4 font-mono text-[13px]">
                             <div className="font-bold text-slate-800">{m.date}</div>
-                            <div className="text-slate-400 text-[10px]">{m.time} WIB &bull; {m.reference}</div>
+                            <div className="text-slate-400 text-xs">{m.time} WIB &bull; {m.reference}</div>
                           </td>
                           <td className="py-3 px-3">
                             {m.type === 'IN' && (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                                 + MASUK (02 NOV)
                               </span>
                             )}
                             {m.type === 'OUT' && (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-100 text-indigo-800 border border-indigo-200">
+                              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
                                 - KELUAR MASAK (03 NOV)
                               </span>
                             )}
                             {m.type === 'ADJUST' && (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200">
+                              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
                                 ± OPNAME
                               </span>
                             )}
@@ -2093,9 +2093,9 @@ export default function StockMonitoringPage() {
                           <td className="py-3 px-3 text-right font-mono text-slate-600 font-bold">
                             {m.balanceAfter} {m.uom}
                           </td>
-                          <td className="py-3 px-4 text-[11px]">
+                          <td className="py-3 px-4 text-[13px]">
                             <div className="font-bold text-slate-700">{m.loggedBy}</div>
-                            <div className="text-slate-500 text-[10px]">{m.notes || '-'}</div>
+                            <div className="text-slate-500 text-xs">{m.notes || '-'}</div>
                           </td>
                         </tr>
                       ))
@@ -2110,28 +2110,28 @@ export default function StockMonitoringPage() {
         {/* ============ TAB 4: KALKULATOR RESEP & BOM MASAK (1.553 PORSI) ============ */}
         {activeMainTab === 'bom' && (
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-2">
+            <div className="bg-white rounded-xl border border-line p-5 space-y-2">
               <div className="flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-blue-600" />
-                <h3 className="text-base font-black text-slate-900">
+                <h3 className="text-base font-bold text-slate-900">
                   Kalkulator Kebutuhan Bahan Masak Dapur (BOM 1.553 Porsi)
                 </h3>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-sm text-slate-600 leading-relaxed">
                 Kebutuhan bahan pangan untuk pengolahan menu sajian 1.553 Porsi MBG tanggal <strong>Selasa, 03 November 2026</strong> telah terpenuhi 100% dari penerimaan logistik tgl 02 November 2026.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Box 1: Ayam Giling & Telur */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+              <div className="bg-white rounded-xl border border-line p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <span className="text-xs font-black uppercase text-blue-800 bg-blue-50 px-2 py-0.5 rounded">
+                  <span className="text-sm font-bold text-ink bg-ink/5 px-2 py-0.5 rounded">
                     Protein Hewani (Ayam &amp; Telur)
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">60 KG + 3 KG</span>
+                  <span className="text-xs font-mono text-slate-400">60 KG + 3 KG</span>
                 </div>
-                <div className="space-y-1 text-xs">
+                <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Ayam Giling:</span>
                     <strong className="font-mono">60 KG</strong>
@@ -2152,14 +2152,14 @@ export default function StockMonitoringPage() {
               </div>
 
               {/* Box 2: Tahu Kuning & Kulit Tahu */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+              <div className="bg-white rounded-xl border border-line p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <span className="text-xs font-black uppercase text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
+                  <span className="text-sm font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
                     Tahu Kuning &amp; Kulit Tahu
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">3.200 PCS Keluar</span>
+                  <span className="text-xs font-mono text-slate-400">3.200 PCS Keluar</span>
                 </div>
-                <div className="space-y-1 text-xs">
+                <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Tahu Kuning (Lauk):</span>
                     <strong className="font-mono">1.600 PCS</strong>
@@ -2180,14 +2180,14 @@ export default function StockMonitoringPage() {
               </div>
 
               {/* Box 3: Sayur Mayur (Wortel, Kembang Kol, Daun Bawang) */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+              <div className="bg-white rounded-xl border border-line p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <span className="text-xs font-black uppercase text-green-800 bg-green-50 px-2 py-0.5 rounded">
+                  <span className="text-sm font-bold text-green-800 bg-green-50 px-2 py-0.5 rounded">
                     Sayur Mayur Segar
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">72 KG Keluar Masak</span>
+                  <span className="text-xs font-mono text-slate-400">72 KG Keluar Masak</span>
                 </div>
-                <div className="space-y-1 text-xs">
+                <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Kembang Kol:</span>
                     <strong className="font-mono">35 KG</strong>
@@ -2208,14 +2208,14 @@ export default function StockMonitoringPage() {
               </div>
 
               {/* Box 4: Buah Segar Jeruk Manis */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+              <div className="bg-white rounded-xl border border-line p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <span className="text-xs font-black uppercase text-orange-800 bg-orange-50 px-2 py-0.5 rounded">
+                  <span className="text-sm font-bold text-orange-800 bg-orange-50 px-2 py-0.5 rounded">
                     Buah Segar (Jeruk Manis)
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">1.600 PCS Keluar</span>
+                  <span className="text-xs font-mono text-slate-400">1.600 PCS Keluar</span>
                 </div>
-                <div className="space-y-1 text-xs">
+                <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Total Jeruk Manis:</span>
                     <strong className="font-mono">1.600 PCS</strong>
@@ -2236,14 +2236,14 @@ export default function StockMonitoringPage() {
               </div>
 
               {/* Box 5: Beras & Minyak Bumbu */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+              <div className="bg-white rounded-xl border border-line p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <span className="text-xs font-black uppercase text-amber-800 bg-amber-50 px-2 py-0.5 rounded">
+                  <span className="text-sm font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">
                     Beras, Minyak &amp; Bumbu
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">Habis Terpakai</span>
+                  <span className="text-xs font-mono text-slate-400">Habis Terpakai</span>
                 </div>
-                <div className="space-y-1 text-xs">
+                <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Beras:</span>
                     <strong className="font-mono">100 KG</strong>
@@ -2264,14 +2264,14 @@ export default function StockMonitoringPage() {
               </div>
 
               {/* Box 6: Verifikasi Pagu MBG & Suplier Tunggal */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+              <div className="bg-white rounded-xl border border-line p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <span className="text-xs font-black uppercase text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
+                  <span className="text-sm font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
                     Suplier Resmi Yayasan
                   </span>
-                  <span className="text-[10px] font-mono text-emerald-700 font-bold">100% Klop</span>
+                  <span className="text-xs font-mono text-emerald-700 font-bold">100% Klop</span>
                 </div>
-                <div className="space-y-1 text-xs">
+                <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Mitra Suplier:</span>
                     <strong className="text-slate-900 truncate max-w-[130px]" title="Yayasan Berkat Makmur Sentosa">
@@ -2280,7 +2280,7 @@ export default function StockMonitoringPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Realisasi Porsi:</span>
-                    <strong className="font-mono text-blue-900">1.553 Porsi / Hari</strong>
+                    <strong className="font-mono text-ink">1.553 Porsi / Hari</strong>
                   </div>
                   <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
                     <span>Status SPJ Dokumen:</span>
@@ -2296,11 +2296,11 @@ export default function StockMonitoringPage() {
       {/* ============ MODAL 0: TAMBAH MASTER BAHAN BAKU BARU ============ */}
       {showAddItemModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-xs no-print">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+          <div className="bg-white rounded-xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-line max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-line pb-3 mb-4">
               <div className="flex items-center gap-2">
                 <PlusCircle className="w-5 h-5 text-blue-600" />
-                <h3 className="text-base font-black text-slate-900">Tambah Master Bahan Baku Baru</h3>
+                <h3 className="text-base font-bold text-slate-900">Tambah Master Bahan Baku Baru</h3>
               </div>
               <button
                 type="button"
@@ -2311,7 +2311,7 @@ export default function StockMonitoringPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmitAddItem} className="space-y-4 text-xs">
+            <form onSubmit={handleSubmitAddItem} className="space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Kode SKU</label>
@@ -2321,7 +2321,7 @@ export default function StockMonitoringPage() {
                     value={formAddSku}
                     onChange={(e) => setFormAddSku(e.target.value)}
                     placeholder="BGN-SKU-001"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                    className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
                 <div>
@@ -2337,7 +2337,7 @@ export default function StockMonitoringPage() {
                         setFormAddLocation('Gudang Kering');
                       }
                     }}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
+                    className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
                   >
                     <option value="Bahan Kering">Bahan Kering (Gudang Kering)</option>
                     <option value="Rempah">Rempah (Gudang Kering)</option>
@@ -2358,7 +2358,7 @@ export default function StockMonitoringPage() {
                   value={formAddName}
                   onChange={(e) => setFormAddName(e.target.value)}
                   placeholder="Cth: TEPUNG TERIGU / DORRY FILLET"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 uppercase"
+                  className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 "
                 />
               </div>
 
@@ -2371,7 +2371,7 @@ export default function StockMonitoringPage() {
                     value={formAddUom}
                     onChange={(e) => setFormAddUom(e.target.value)}
                     placeholder="KG, L, POUCH, BTL, PAPAN, KRAT"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600 uppercase"
+                    className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600 "
                   />
                 </div>
                 <div>
@@ -2379,7 +2379,7 @@ export default function StockMonitoringPage() {
                   <select
                     value={formAddLocation}
                     onChange={(e) => setFormAddLocation(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
+                    className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
                   >
                     <option value="Gudang Basah">Gudang Basah (Protein Hewani, Buah &amp; Sayur)</option>
                     <option value="Gudang Kering">Gudang Kering (Bahan Kering, Rempah, Nabati / Sisanya)</option>
@@ -2396,7 +2396,7 @@ export default function StockMonitoringPage() {
                     min="0"
                     value={formAddInitialStock}
                     onChange={(e) => setFormAddInitialStock(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                    className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
                 <div>
@@ -2407,7 +2407,7 @@ export default function StockMonitoringPage() {
                     min="0"
                     value={formAddMinAlert}
                     onChange={(e) => setFormAddMinAlert(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                    className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
                 <div>
@@ -2418,7 +2418,7 @@ export default function StockMonitoringPage() {
                     min="0"
                     value={formAddDailyUsage}
                     onChange={(e) => setFormAddDailyUsage(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                    className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
               </div>
@@ -2430,7 +2430,7 @@ export default function StockMonitoringPage() {
                   value={formAddSupplier}
                   onChange={(e) => setFormAddSupplier(e.target.value)}
                   placeholder="Nama supplier..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-medium text-slate-900 focus:outline-none focus:border-blue-600"
                 />
               </div>
 
@@ -2444,7 +2444,7 @@ export default function StockMonitoringPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-ink hover:bg-ink-soft text-white font-bold cursor-pointer"
                 >
                   Simpan Bahan
                 </button>
@@ -2457,11 +2457,11 @@ export default function StockMonitoringPage() {
       {/* ============ MODAL 1: RESTOCK / PENERIMAAN BAHAN MASUK ============ */}
       {showRestockModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-xs no-print">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+          <div className="bg-white rounded-xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-line max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-line pb-3 mb-4">
               <div className="flex items-center gap-2">
                 <PlusCircle className="w-5 h-5 text-emerald-600" />
-                <h3 className="text-base font-black text-slate-900">Catat Bahan Baku Masuk</h3>
+                <h3 className="text-base font-bold text-slate-900">Catat Bahan Baku Masuk</h3>
               </div>
               <button
                 type="button"
@@ -2472,7 +2472,7 @@ export default function StockMonitoringPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmitRestock} className="space-y-4 text-xs">
+            <form onSubmit={handleSubmitRestock} className="space-y-4 text-sm">
               <div>
                 <label className="font-bold text-slate-700 block mb-1">Pilih Bahan Baku</label>
                 <select
@@ -2482,7 +2482,7 @@ export default function StockMonitoringPage() {
                     const item = stockItems.find((i) => i.id === e.target.value);
                     if (item) setFormRestockVendor(item.supplierName);
                   }}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
+                  className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
                 >
                   {stockItems.map((item) => (
                     <option key={item.id} value={item.id}>
@@ -2500,7 +2500,7 @@ export default function StockMonitoringPage() {
                     required
                     value={formRestockDate}
                     onChange={(e) => setFormRestockDate(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900"
+                    className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-bold text-slate-900"
                   />
                 </div>
                 <div>
@@ -2513,7 +2513,7 @@ export default function StockMonitoringPage() {
                       value={formRestockQty}
                       onChange={(e) => setFormRestockQty(parseFloat(e.target.value) || 0)}
                       required
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-900"
+                      className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-mono font-bold text-slate-900"
                     />
                     <span className="font-mono font-bold text-slate-600 px-2">
                       {stockItems.find((i) => i.id === formRestockItemId)?.uom || ''}
@@ -2529,7 +2529,7 @@ export default function StockMonitoringPage() {
                   value={formRestockInvoice}
                   onChange={(e) => setFormRestockInvoice(e.target.value)}
                   placeholder="GRN-20261102-01..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono text-slate-900"
+                  className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-mono text-slate-900"
                 />
               </div>
 
@@ -2539,7 +2539,7 @@ export default function StockMonitoringPage() {
                   rows={2}
                   value={formRestockNotes}
                   onChange={(e) => setFormRestockNotes(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium text-slate-900"
+                  className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-medium text-slate-900"
                 />
               </div>
 
@@ -2553,7 +2553,7 @@ export default function StockMonitoringPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer"
                 >
                   Simpan Penerimaan
                 </button>
@@ -2566,11 +2566,11 @@ export default function StockMonitoringPage() {
       {/* ============ MODAL 2: POTONG STOK PEMAKAIAN DAPUR ============ */}
       {showUsageModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-xs no-print">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+          <div className="bg-white rounded-xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-line max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-line pb-3 mb-4">
               <div className="flex items-center gap-2">
                 <MinusCircle className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-base font-black text-slate-900">Potong Pemakaian Masak Dapur</h3>
+                <h3 className="text-base font-bold text-slate-900">Potong Pemakaian Masak Dapur</h3>
               </div>
               <button
                 type="button"
@@ -2581,7 +2581,7 @@ export default function StockMonitoringPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmitUsage} className="space-y-4 text-xs">
+            <form onSubmit={handleSubmitUsage} className="space-y-4 text-sm">
               <div>
                 <label className="font-bold text-slate-700 block mb-1">Bahan yang Digunakan</label>
                 <select
@@ -2591,7 +2591,7 @@ export default function StockMonitoringPage() {
                     const item = stockItems.find((i) => i.id === e.target.value);
                     if (item && item.currentStock > 0) setFormUsageQty(item.currentStock);
                   }}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
+                  className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-bold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
                 >
                   {stockItems.map((item) => (
                     <option key={item.id} value={item.id}>
@@ -2611,7 +2611,7 @@ export default function StockMonitoringPage() {
                     value={formUsageQty}
                     onChange={(e) => setFormUsageQty(parseFloat(e.target.value) || 0)}
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-900"
+                    className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-mono font-bold text-slate-900"
                   />
                 </div>
                 <div>
@@ -2620,7 +2620,7 @@ export default function StockMonitoringPage() {
                     type="text"
                     disabled
                     value={stockItems.find((i) => i.id === formUsageItemId)?.uom || ''}
-                    className="w-full bg-slate-100 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-500 font-mono"
+                    className="w-full bg-slate-100 border border-line rounded-xl p-2.5 font-bold text-slate-500 font-mono"
                   />
                 </div>
               </div>
@@ -2632,7 +2632,7 @@ export default function StockMonitoringPage() {
                   value={formUsageMenu}
                   onChange={(e) => setFormUsageMenu(e.target.value)}
                   placeholder="Cth: Nasi Putih Dorry Fillet &amp; Buncis 1.553 Porsi"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium text-slate-900"
+                  className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-medium text-slate-900"
                 />
               </div>
 
@@ -2642,7 +2642,7 @@ export default function StockMonitoringPage() {
                   rows={2}
                   value={formUsageNotes}
                   onChange={(e) => setFormUsageNotes(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium text-slate-900"
+                  className="w-full bg-slate-50 border border-line rounded-xl p-2.5 font-medium text-slate-900"
                 />
               </div>
 
@@ -2656,7 +2656,7 @@ export default function StockMonitoringPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold cursor-pointer"
                 >
                   Eksekusi Potong Stok
                 </button>
@@ -2669,13 +2669,13 @@ export default function StockMonitoringPage() {
       {/* ============ MODAL 3: DETAIL KARTU STOK ITEM ============ */}
       {showItemDetailModal && selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-xs no-print">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div className="bg-white rounded-xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-line max-h-[90vh] overflow-y-auto space-y-4">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
-                <span className="font-mono text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                <span className="font-mono text-xs font-bold text-ink bg-ink/5 px-1.5 py-0.5 rounded">
                   {selectedItem.sku}
                 </span>
-                <h3 className="text-base font-black text-slate-900 mt-1">{selectedItem.name}</h3>
+                <h3 className="text-base font-bold text-slate-900 mt-1">{selectedItem.name}</h3>
               </div>
               <button
                 type="button"
@@ -2686,39 +2686,39 @@ export default function StockMonitoringPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase font-bold block">Golongan</span>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-line">
+                <span className="text-xs text-slate-500 font-bold block">Golongan</span>
                 <strong className="text-slate-900">{selectedItem.category}</strong>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase font-bold block">Lokasi Simpan</span>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-line">
+                <span className="text-xs text-slate-500 font-bold block">Lokasi Simpan</span>
                 <strong className="text-slate-900">{selectedItem.storageLocation}</strong>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase font-bold block">Masuk (02 Nov 2026)</span>
-                <strong className="text-emerald-700 text-sm font-mono font-black">
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-line">
+                <span className="text-xs text-slate-500 font-bold block">Masuk (02 Nov 2026)</span>
+                <strong className="text-emerald-700 text-sm font-mono font-bold">
                   {selectedItem.initialStock} {selectedItem.uom}
                 </strong>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase font-bold block">Keluar Masak (03 Nov)</span>
-                <strong className="text-indigo-700 text-sm font-mono font-black">
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-line">
+                <span className="text-xs text-slate-500 font-bold block">Keluar Masak (03 Nov)</span>
+                <strong className="text-indigo-700 text-sm font-mono font-bold">
                   {selectedItem.usedStock} {selectedItem.uom}
                 </strong>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 col-span-2">
-                <span className="text-[10px] text-slate-500 uppercase font-bold block">Sisa Stok Fisik Gudang</span>
-                <strong className="text-slate-900 text-base font-mono font-black">
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-line col-span-2">
+                <span className="text-xs text-slate-500 font-bold block">Sisa Stok Fisik Gudang</span>
+                <strong className="text-slate-900 text-base font-mono font-bold">
                   {selectedItem.currentStock} {selectedItem.uom}
                 </strong>
-                <span className="text-[10px] text-emerald-600 font-bold block mt-0.5">
+                <span className="text-xs text-emerald-600 font-bold block mt-0.5">
                   ✓ Selesai dimasak untuk 1.553 Porsi MBG tgl 02 Nov 2026
                 </span>
               </div>
             </div>
 
-            <div className="border-t border-slate-100 pt-3 space-y-1 text-xs">
+            <div className="border-t border-slate-100 pt-3 space-y-1 text-sm">
               <div className="flex justify-between">
                 <span className="text-slate-500">Tanggal Masuk:</span>
                 <span className="font-mono font-bold text-slate-800">{selectedItem.lastRestockDate}</span>
@@ -2732,7 +2732,7 @@ export default function StockMonitoringPage() {
                 <strong className="text-slate-900">{selectedItem.supplierName}</strong>
               </div>
               {selectedItem.notes && (
-                <div className="text-slate-500 text-[11px] pt-1">
+                <div className="text-slate-500 text-[13px] pt-1">
                   <em>{selectedItem.notes}</em>
                 </div>
               )}
@@ -2742,7 +2742,7 @@ export default function StockMonitoringPage() {
               <button
                 type="button"
                 onClick={() => handleDeleteItem(selectedItem.id, selectedItem.name)}
-                className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 font-bold text-xs cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 font-bold text-sm cursor-pointer"
               >
                 Hapus Bahan
               </button>
@@ -2753,14 +2753,14 @@ export default function StockMonitoringPage() {
                     setShowItemDetailModal(false);
                     handleOpenRestock(selectedItem);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs cursor-pointer hover:bg-emerald-700"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-sm cursor-pointer hover:bg-emerald-700"
                 >
                   + Restock
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowItemDetailModal(false)}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs cursor-pointer hover:bg-slate-200"
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm cursor-pointer hover:bg-slate-200"
                 >
                   Tutup
                 </button>
