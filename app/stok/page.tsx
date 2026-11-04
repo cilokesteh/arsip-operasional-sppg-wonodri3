@@ -45,7 +45,7 @@ import {
   generateStockCSV,
   generateMovementsCSV,
   DEFAULT_STOCK_ITEMS_ALL,
-  DEFAULT_STOCK_MOVEMENTS_66,
+  DEFAULT_STOCK_MOVEMENTS,
   OpnameSession,
   loadOpnameDraftFromStorage,
   saveOpnameDraftToStorage,
@@ -78,16 +78,25 @@ export default function StockMonitoringPage() {
   const [opnameSearch, setOpnameSearch] = useState<string>('');
   const [isOpnameDirty, setIsOpnameDirty] = useState<boolean>(false);
 
-  // Modal Print Type: Masuk (02 Nov), Keluar Masak (03 Nov), atau Rekap Mutasi
-  const [printReportType, setPrintReportType] = useState<'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'MUTASI'>('B2_OUT');
+  // Modal Print Type: Masuk/Keluar Masak per Batch, atau Rekap Mutasi
+  const [printReportType, setPrintReportType] = useState<'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'MUTASI'>('B5_OUT');
 
-  const handleOpenPrintFor = (type: 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'MUTASI') => {
+  const handleOpenPrintFor = (type: 'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'MUTASI') => {
     setPrintReportType(type);
     setShowPrintModal(true);
   };
 
   // Items untuk Dokumen Berita Acara A4
   const reportItems = useMemo(() => {
+    if (printReportType === 'B5_OUT' || printReportType === 'B5_IN') {
+      return stockItems.filter((i) => i.batch === '05-NOV');
+    }
+    if (printReportType === 'B4_OUT' || printReportType === 'B4_IN') {
+      return stockItems.filter((i) => i.batch === '04-NOV');
+    }
+    if (printReportType === 'B3_OUT' || printReportType === 'B3_IN') {
+      return stockItems.filter((i) => i.batch === '03-NOV');
+    }
     if (printReportType === 'B2_OUT' || printReportType === 'B2_IN') {
       return stockItems.filter((i) => i.batch === '02-NOV');
     }
@@ -634,11 +643,11 @@ export default function StockMonitoringPage() {
 
   // Reset to Baseline: Kedua Siklus Mutasi Penuh (Batch 1 & Batch 2 - 66 Mutasi)
   const handleResetToBaseline = () => {
-    if (window.confirm('Muat ulang seluruh riwayat mutasi (Batch 01 Nov & Batch 02 Nov - 66 Mutasi)?')) {
+    if (window.confirm('Muat ulang seluruh riwayat mutasi (Batch 01-05 Nov — 186 Mutasi)?')) {
       setStockItems(DEFAULT_STOCK_ITEMS_ALL);
-      setMovements(DEFAULT_STOCK_MOVEMENTS_66);
+      setMovements(DEFAULT_STOCK_MOVEMENTS);
       saveStockToStorage(DEFAULT_STOCK_ITEMS_ALL);
-      saveMovementsToStorage(DEFAULT_STOCK_MOVEMENTS_66);
+      saveMovementsToStorage(DEFAULT_STOCK_MOVEMENTS);
       clearOpnameDraftFromStorage();
       const newOpname = loadOpnameDraftFromStorage(DEFAULT_STOCK_ITEMS_ALL);
       setOpnameSession(newOpname);
@@ -835,7 +844,7 @@ export default function StockMonitoringPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleOpenPrintFor('B2_IN')}
+              onClick={() => handleOpenPrintFor('B5_IN')}
               className="px-3 py-2 rounded-xl text-sm font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
               title="Download Dokumen PDF Bahan Masuk"
             >
@@ -844,7 +853,7 @@ export default function StockMonitoringPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleOpenPrintFor('B2_OUT')}
+              onClick={() => handleOpenPrintFor('B5_OUT')}
               className="px-3 py-2 rounded-xl text-sm font-bold text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
               title="Download Dokumen PDF Bahan Keluar Masak"
             >
@@ -861,7 +870,7 @@ export default function StockMonitoringPage() {
             <div className="space-y-0.5">
               <span className="text-[13px] font-bold text-slate-500">Total Bahan Baku</span>
               <div className="text-xl sm:text-2xl font-bold text-slate-900">{summary.totalItems} Item</div>
-              <span className="text-xs text-slate-500 font-medium">Masuk 01 &bull; Keluar 02 Nov</span>
+              <span className="text-xs text-slate-500 font-medium">Batch 01–05 Nov 2026</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-ink/5 border border-ink/15 flex items-center justify-center shrink-0">
               <Boxes className="w-5 h-5 text-blue-600" />
@@ -1160,6 +1169,9 @@ export default function StockMonitoringPage() {
                   className="flex-1 min-w-0 bg-slate-50 border border-line rounded-xl px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer truncate"
                 >
                   <option value="ALL">Semua Bahan ({stockItems.length})</option>
+                  <option value="05-NOV">Batch 05 Nov → Masak 06 Nov ({stockItems.filter(i => i.batch === '05-NOV').length})</option>
+                  <option value="04-NOV">Batch 04 Nov → Masak 05 Nov ({stockItems.filter(i => i.batch === '04-NOV').length})</option>
+                  <option value="03-NOV">Batch 03 Nov → Masak 04 Nov ({stockItems.filter(i => i.batch === '03-NOV').length})</option>
                   <option value="02-NOV">Batch 02 Nov → Masak 03 Nov ({stockItems.filter(i => i.batch === '02-NOV').length})</option>
                   <option value="01-NOV">Batch 01 Nov → Masak 02 Nov ({stockItems.filter(i => i.batch === '01-NOV').length})</option>
                 </select>
@@ -1843,7 +1855,7 @@ export default function StockMonitoringPage() {
               <div className="flex items-center gap-1.5 flex-wrap">
                 <button
                   type="button"
-                  onClick={() => handleOpenPrintFor('B2_IN')}
+                  onClick={() => handleOpenPrintFor('B5_IN')}
                   className="px-3 py-1.5 rounded-xl text-sm font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
                   title="Download Dokumen Berita Acara PDF Bahan Masuk"
                 >
@@ -1852,7 +1864,7 @@ export default function StockMonitoringPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleOpenPrintFor('B2_OUT')}
+                  onClick={() => handleOpenPrintFor('B5_OUT')}
                   className="px-3 py-1.5 rounded-xl text-sm font-bold text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 flex items-center gap-1 cursor-pointer transition-colors"
                   title="Download Dokumen Berita Acara PDF Bahan Keluar Masak"
                 >
@@ -2743,63 +2755,37 @@ export default function StockMonitoringPage() {
                 </div>
               </div>
 
-              {/* Selector 5 Dokumen Berita Acara */}
-              <div className="flex items-center gap-1 bg-slate-200/80 p-1 rounded-xl overflow-x-auto no-scrollbar max-w-full">
-                <button
-                  type="button"
-                  onClick={() => setPrintReportType('B2_OUT')}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                    printReportType === 'B2_OUT'
-                      ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'text-slate-700 hover:text-slate-900'
-                  }`}
+              {/* Selector Dokumen Berita Acara (Dropdown) */}
+              <div className="flex items-center gap-2">
+                <select
+                  value={printReportType}
+                  onChange={(e) => setPrintReportType(e.target.value as typeof printReportType)}
+                  className="flex-1 min-w-0 bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer"
                 >
-                  Masak 03 Nov (17)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPrintReportType('B2_IN')}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                    printReportType === 'B2_IN'
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'text-slate-700 hover:text-slate-900'
-                  }`}
-                >
-                  Masuk 02 Nov (17)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPrintReportType('B1_OUT')}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                    printReportType === 'B1_OUT'
-                      ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'text-slate-700 hover:text-slate-900'
-                  }`}
-                >
-                  Masak 02 Nov (16)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPrintReportType('B1_IN')}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                    printReportType === 'B1_IN'
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'text-slate-700 hover:text-slate-900'
-                  }`}
-                >
-                  Masuk 01 Nov (16)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPrintReportType('MUTASI')}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                    printReportType === 'MUTASI'
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'text-slate-700 hover:text-slate-900'
-                  }`}
-                >
-                  Rekap Mutasi (66)
-                </button>
+                  <optgroup label="Batch 5 — Masuk 05 Nov / Masak 06 Nov">
+                    <option value="B5_OUT">📤 Keluar Masak 06 Nov (22)</option>
+                    <option value="B5_IN">📥 Masuk 05 Nov (22)</option>
+                  </optgroup>
+                  <optgroup label="Batch 4 — Masuk 04 Nov / Masak 05 Nov">
+                    <option value="B4_OUT">📤 Keluar Masak 05 Nov (20)</option>
+                    <option value="B4_IN">📥 Masuk 04 Nov (20)</option>
+                  </optgroup>
+                  <optgroup label="Batch 3 — Masuk 03 Nov / Masak 04 Nov">
+                    <option value="B3_OUT">📤 Keluar Masak 04 Nov (18)</option>
+                    <option value="B3_IN">📥 Masuk 03 Nov (18)</option>
+                  </optgroup>
+                  <optgroup label="Batch 2 — Masuk 02 Nov / Masak 03 Nov">
+                    <option value="B2_OUT">📤 Keluar Masak 03 Nov (17)</option>
+                    <option value="B2_IN">📥 Masuk 02 Nov (17)</option>
+                  </optgroup>
+                  <optgroup label="Batch 1 — Masuk 01 Nov / Masak 02 Nov">
+                    <option value="B1_OUT">📤 Keluar Masak 02 Nov (16)</option>
+                    <option value="B1_IN">📥 Masuk 01 Nov (16)</option>
+                  </optgroup>
+                  <optgroup label="Rekap">
+                    <option value="MUTASI">📊 Rekap Mutasi (186)</option>
+                  </optgroup>
+                </select>
               </div>
 
               <div className="flex items-center gap-2">
@@ -2859,13 +2845,25 @@ export default function StockMonitoringPage() {
                 {/* Judul Dokumen Sesuai Pilihan */}
                 <div className="text-center space-y-1">
                   <h3 className="text-sm sm:text-base font-black uppercase underline tracking-wider text-slate-950">
+                    {printReportType === 'B5_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (06 NOV 2026)'}
+                    {printReportType === 'B5_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (05 NOV 2026)'}
+                    {printReportType === 'B4_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (05 NOV 2026)'}
+                    {printReportType === 'B4_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (04 NOV 2026)'}
+                    {printReportType === 'B3_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (04 NOV 2026)'}
+                    {printReportType === 'B3_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (03 NOV 2026)'}
                     {printReportType === 'B2_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (03 NOV 2026)'}
                     {printReportType === 'B2_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (02 NOV 2026)'}
                     {printReportType === 'B1_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (02 NOV 2026)'}
                     {printReportType === 'B1_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (01 NOV 2026)'}
-                    {printReportType === 'MUTASI' && 'BUKU REGISTER REKAPITULASI MUTASI BAHAN BAKU (01 - 03 NOV 2026)'}
+                    {printReportType === 'MUTASI' && 'BUKU REGISTER REKAPITULASI MUTASI BAHAN BAKU (01 - 06 NOV 2026)'}
                   </h3>
                   <p className="text-[10px] font-mono text-slate-600">
+                    {printReportType === 'B5_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1106'}
+                    {printReportType === 'B5_IN' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1105'}
+                    {printReportType === 'B4_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1105'}
+                    {printReportType === 'B4_IN' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1104'}
+                    {printReportType === 'B3_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1104'}
+                    {printReportType === 'B3_IN' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1103'}
                     {printReportType === 'B2_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1103'}
                     {printReportType === 'B2_IN' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1102'}
                     {printReportType === 'B1_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1102'}
@@ -2873,16 +2871,34 @@ export default function StockMonitoringPage() {
                     {printReportType === 'MUTASI' && 'Nomor: REG-MUTASI/SPPG-SMG3/BGN/2026/11'}
                   </p>
                   <p className="text-[11px] text-slate-700 font-bold">
+                    {printReportType === 'B5_OUT' && 'Tanggal Pengolahan Masak: Jumat, 06 November 2026'}
+                    {printReportType === 'B5_IN' && 'Tanggal Penerimaan: Kamis, 05 November 2026'}
+                    {printReportType === 'B4_OUT' && 'Tanggal Pengolahan Masak: Kamis, 05 November 2026'}
+                    {printReportType === 'B4_IN' && 'Tanggal Penerimaan: Rabu, 04 November 2026'}
+                    {printReportType === 'B3_OUT' && 'Tanggal Pengolahan Masak: Rabu, 04 November 2026'}
+                    {printReportType === 'B3_IN' && 'Tanggal Penerimaan: Selasa, 03 November 2026'}
                     {printReportType === 'B2_OUT' && 'Tanggal Pengolahan Masak: Selasa, 03 November 2026'}
                     {printReportType === 'B2_IN' && 'Tanggal Penerimaan: Senin, 02 November 2026'}
                     {printReportType === 'B1_OUT' && 'Tanggal Pengolahan Masak: Senin, 02 November 2026'}
                     {printReportType === 'B1_IN' && 'Tanggal Penerimaan: Minggu, 01 November 2026'}
-                    {printReportType === 'MUTASI' && 'Periode Mutasi: 01 s/d 03 November 2026'}
+                    {printReportType === 'MUTASI' && 'Periode Mutasi: 01 s/d 06 November 2026'}
                   </p>
                 </div>
 
                 {/* Narasi Resmi Sesuai Pilihan */}
                 <p className="text-[11px] leading-relaxed text-justify text-slate-800">
+                  {printReportType === 'B5_OUT' &&
+                    'Pada hari ini, Jumat tanggal 06 November 2026 pukul 05:00 WIB, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 5 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Nasi Putih, Mongolian Chicken, Tahu Goreng Marinasi, Sayur Orak Arik, Buah Kurma) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                  {printReportType === 'B5_IN' &&
+                    'Pada hari ini, Kamis tanggal 05 November 2026 pukul 04:30 WIB, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 5 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                  {printReportType === 'B4_OUT' &&
+                    'Pada hari ini, Kamis tanggal 05 November 2026 pukul 05:00 WIB, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 4 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Nasi Putih, Bistik Ayam, Tempe Goreng, Brokoli Wortel Steamed, Buah Anggur Merah) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                  {printReportType === 'B4_IN' &&
+                    'Pada hari ini, Rabu tanggal 04 November 2026 pukul 04:30 WIB, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 4 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                  {printReportType === 'B3_OUT' &&
+                    'Pada hari ini, Rabu tanggal 04 November 2026 pukul 05:00 WIB, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 3 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Kentang Goreng, Telur Katsu, Edamame, Tumis Pakcoy Jagung, Buah Kelengkeng, Sauce Asam Manis) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                  {printReportType === 'B3_IN' &&
+                    'Pada hari ini, Selasa tanggal 03 November 2026 pukul 04:30 WIB, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 3 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B2_OUT' &&
                     'Pada hari ini, Selasa tanggal 03 November 2026 pukul 05:00 WIB, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 2 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Nasi Putih, Rolade Ayam Kulit Tahu, Tahu Kuning Goreng, Sup Kembang Kol Wortel, Buah Jeruk Manis) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B2_IN' &&
@@ -2892,7 +2908,7 @@ export default function StockMonitoringPage() {
                   {printReportType === 'B1_IN' &&
                     'Pada hari ini, Minggu tanggal 01 November 2026 pukul 04:30 WIB, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 1 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'MUTASI' &&
-                    'Rekapitulasi mutasi siklus bahan baku makanan Program MBG 1.553 Porsi SPPG Wonodri 3 periode 01 s/d 03 November 2026 pasokan dari Yayasan Berkat Makmur Sentosa, mencakup seluruh kuantitas penerimaan barang masuk dan pengeluaran masak dapur secara penuh dengan rincian sebagai berikut:'}
+                    'Rekapitulasi mutasi siklus bahan baku makanan Program MBG 1.553 Porsi SPPG Wonodri 3 periode 01 s/d 06 November 2026 pasokan dari Yayasan Berkat Makmur Sentosa, mencakup seluruh kuantitas penerimaan barang masuk dan pengeluaran masak dapur secara penuh dengan rincian sebagai berikut:'}
                 </p>
 
                 {/* Tabel Dokumen A4 */}

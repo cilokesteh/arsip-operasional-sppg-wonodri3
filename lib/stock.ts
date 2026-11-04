@@ -24,7 +24,7 @@ export interface StockItem {
   supplierName: string;
   lastRestockDate: string; // YYYY-MM-DD
   lastUsageDate: string; // YYYY-MM-DD
-  batch: '01-NOV' | '02-NOV' | 'ALL';
+  batch: '01-NOV' | '02-NOV' | '03-NOV' | '04-NOV' | '05-NOV' | 'ALL';
   notes?: string;
 }
 
@@ -255,15 +255,15 @@ export const BATCH_1_ITEMS: StockItem[] = [
     uom: 'KG',
     storageLocation: 'Gudang Basah',
     currentStock: 0,
-    initialStock: 65,
-    usedStock: 65,
+    initialStock: 90,
+    usedStock: 90,
     minStockAlert: 20,
-    dailyUsageAvg: 65,
+    dailyUsageAvg: 90,
     supplierName: SUPPLIER_YAYASAN,
     lastRestockDate: '2026-11-01',
     lastUsageDate: '2026-11-02',
     batch: '01-NOV',
-    notes: 'Batch 1: Masuk 65 KG (01 Nov) -> Keluar masak 65 KG (02 Nov) lauk hewani',
+    notes: 'Batch 1: Masuk 90 KG (01 Nov) -> Keluar masak 90 KG (02 Nov) lauk hewani',
   },
   {
     id: 'b1-12',
@@ -667,12 +667,187 @@ export const BATCH_2_ITEMS: StockItem[] = [
   },
 ];
 
-// Gabungan 33 Item Master Bahan Baku
-export const DEFAULT_STOCK_ITEMS_ALL: StockItem[] = [...BATCH_2_ITEMS, ...BATCH_1_ITEMS];
+// BATCH 3: 18 Bahan Masuk 03 Nov 2026 -> Keluar Masak 04 Nov 2026
+// Menu: Kentang Goreng, Telur Katsu, Edamame, Tumis Pakcoy Jagung, Kelengkeng, Sauce Asam Manis
+export const BATCH_3_ITEMS: StockItem[] = [
+  { id: 'b3-01', sku: 'BGN-BHK-301', name: 'TEPUNG TERIGU', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 5, usedStock: 5, minStockAlert: 2, dailyUsageAvg: 5, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 5 KG (03 Nov) -> Keluar masak 5 KG (04 Nov)' },
+  { id: 'b3-02', sku: 'BGN-BHK-302', name: 'TEPUNG PANIR', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 20, usedStock: 20, minStockAlert: 5, dailyUsageAvg: 20, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 20 KG (03 Nov) -> Keluar masak 20 KG (04 Nov)' },
+  { id: 'b3-03', sku: 'BGN-BHK-303', name: 'MINYAK GORENG', category: 'Bahan Kering', uom: 'L', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 36, usedStock: 36, minStockAlert: 10, dailyUsageAvg: 36, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 36 L (03 Nov) -> Keluar masak 36 L (04 Nov)' },
+  { id: 'b3-04', sku: 'BGN-BHK-304', name: 'GULA PASIR', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 3, usedStock: 3, minStockAlert: 1, dailyUsageAvg: 3, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 3 KG (03 Nov) -> Keluar masak 3 KG (04 Nov)' },
+  { id: 'b3-05', sku: 'BGN-BHK-305', name: 'ROYCO', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 2 KG (03 Nov) -> Keluar masak 2 KG (04 Nov)' },
+  { id: 'b3-06', sku: 'BGN-BHK-306', name: 'SAUCE TOMAT', category: 'Bahan Kering', uom: 'JIR', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 1, usedStock: 1, minStockAlert: 1, dailyUsageAvg: 1, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 1 JIR (03 Nov) -> Keluar masak 1 JIR (04 Nov)' },
+  { id: 'b3-07', sku: 'BGN-BHK-307', name: 'TEPUNG MAIZENA', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 2 KG (03 Nov) -> Keluar masak 2 KG (04 Nov)' },
+  { id: 'b3-08', sku: 'BGN-RMP-301', name: 'BAWANG PUTIH', category: 'Rempah', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 1, usedStock: 1, minStockAlert: 1, dailyUsageAvg: 1, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 1 KG (03 Nov) -> Keluar masak 1 KG (04 Nov)' },
+  { id: 'b3-09', sku: 'BGN-RMP-302', name: 'BAWANG BOMBAY', category: 'Rempah', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 1, usedStock: 1, minStockAlert: 1, dailyUsageAvg: 1, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 1 KG (03 Nov) -> Keluar masak 1 KG (04 Nov)' },
+  { id: 'b3-10', sku: 'BGN-PRH-301', name: 'TELUR AYAM', category: 'Protein Hewani', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 100, usedStock: 100, minStockAlert: 25, dailyUsageAvg: 100, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 100 KG (03 Nov) -> Keluar masak 100 KG (04 Nov) untuk Telur Katsu' },
+  { id: 'b3-11', sku: 'BGN-PRN-301', name: 'EDAMAME', category: 'Protein Nabati', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 30, usedStock: 30, minStockAlert: 8, dailyUsageAvg: 30, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 30 KG (03 Nov) -> Keluar masak 30 KG (04 Nov)' },
+  { id: 'b3-12', sku: 'BGN-SYR-301', name: 'KENTANG LOKAL', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 170, usedStock: 170, minStockAlert: 40, dailyUsageAvg: 170, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 170 KG (03 Nov) -> Keluar masak 170 KG (04 Nov) Kentang Goreng' },
+  { id: 'b3-13', sku: 'BGN-SYR-302', name: 'DAUN BAWANG', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 2 KG (03 Nov) -> Keluar masak 2 KG (04 Nov)' },
+  { id: 'b3-14', sku: 'BGN-SYR-303', name: 'WORTEL', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 3, usedStock: 3, minStockAlert: 1, dailyUsageAvg: 3, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 3 KG (03 Nov) -> Keluar masak 3 KG (04 Nov)' },
+  { id: 'b3-15', sku: 'BGN-SYR-304', name: 'PAKCOY', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 30, usedStock: 30, minStockAlert: 8, dailyUsageAvg: 30, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 30 KG (03 Nov) -> Keluar masak 30 KG (04 Nov)' },
+  { id: 'b3-16', sku: 'BGN-SYR-305', name: 'JAGUNG PIPIL', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 30, usedStock: 30, minStockAlert: 8, dailyUsageAvg: 30, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 30 KG (03 Nov) -> Keluar masak 30 KG (04 Nov)' },
+  { id: 'b3-17', sku: 'BGN-SYR-306', name: 'TOMAT MERAH', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 5, usedStock: 5, minStockAlert: 2, dailyUsageAvg: 5, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 5 KG (03 Nov) -> Keluar masak 5 KG (04 Nov)' },
+  { id: 'b3-18', sku: 'BGN-BUH-301', name: 'KELENGKENG', category: 'Buah', uom: 'KRAT', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 6, usedStock: 6, minStockAlert: 2, dailyUsageAvg: 6, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-03', lastUsageDate: '2026-11-04', batch: '03-NOV', notes: 'Batch 3: Masuk 6 KRAT (03 Nov) -> Keluar 6 KRAT (04 Nov) buah segar' },
+];
 
-// Register 66 Mutasi Lengkap:
-// 16 Masuk (01 Nov) + 16 Keluar Masak (02 Nov) + 17 Masuk (02 Nov) + 17 Keluar Masak (03 Nov)
-export const DEFAULT_STOCK_MOVEMENTS_66: StockMovement[] = [
+// BATCH 4: 20 Bahan Masuk 04 Nov 2026 -> Keluar Masak 05 Nov 2026
+// Menu: Nasi Putih, Bistik Ayam, Tempe Goreng, Brokoli Wortel Steamed, Anggur Merah
+export const BATCH_4_ITEMS: StockItem[] = [
+  { id: 'b4-01', sku: 'BGN-BHK-401', name: 'BERAS', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 100, usedStock: 100, minStockAlert: 25, dailyUsageAvg: 100, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 100 KG (04 Nov) -> Keluar masak 100 KG (05 Nov)' },
+  { id: 'b4-02', sku: 'BGN-BHK-402', name: 'TEPUNG TERIGU', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 23, usedStock: 23, minStockAlert: 6, dailyUsageAvg: 23, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 23 KG (04 Nov) -> Keluar masak 23 KG (05 Nov)' },
+  { id: 'b4-03', sku: 'BGN-BHK-403', name: 'ROYCO', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 3, usedStock: 3, minStockAlert: 1, dailyUsageAvg: 3, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 3 KG (04 Nov) -> Keluar masak 3 KG (05 Nov)' },
+  { id: 'b4-04', sku: 'BGN-BHK-404', name: 'SAUCE TOMAT', category: 'Bahan Kering', uom: 'JIR', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 1, usedStock: 1, minStockAlert: 1, dailyUsageAvg: 1, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 1 JIR (04 Nov) -> Keluar masak 1 JIR (05 Nov)' },
+  { id: 'b4-05', sku: 'BGN-BHK-405', name: 'SAUCE SAMBAL', category: 'Bahan Kering', uom: 'L', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 2 L (04 Nov) -> Keluar masak 2 L (05 Nov)' },
+  { id: 'b4-06', sku: 'BGN-BHK-406', name: 'GULA PASIR', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 2 KG (04 Nov) -> Keluar masak 2 KG (05 Nov)' },
+  { id: 'b4-07', sku: 'BGN-BHK-407', name: 'TEPUNG MAIZENA', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 2 KG (04 Nov) -> Keluar masak 2 KG (05 Nov)' },
+  { id: 'b4-08', sku: 'BGN-BHK-408', name: 'SAUCE INGGRIS', category: 'Bahan Kering', uom: 'BOTOL', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 1, usedStock: 1, minStockAlert: 1, dailyUsageAvg: 1, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 1 BOTOL (04 Nov) -> Keluar masak 1 BOTOL (05 Nov)' },
+  { id: 'b4-09', sku: 'BGN-BHK-409', name: 'KECAP MANIS', category: 'Bahan Kering', uom: 'L', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 2 L (04 Nov) -> Keluar masak 2 L (05 Nov)' },
+  { id: 'b4-10', sku: 'BGN-BHK-410', name: 'MINYAK GORENG', category: 'Bahan Kering', uom: 'L', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 36, usedStock: 36, minStockAlert: 10, dailyUsageAvg: 36, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 36 L (04 Nov) -> Keluar masak 36 L (05 Nov)' },
+  { id: 'b4-11', sku: 'BGN-BHK-411', name: 'GARAM', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 2 KG (04 Nov) -> Keluar masak 2 KG (05 Nov)' },
+  { id: 'b4-12', sku: 'BGN-RMP-401', name: 'BAWANG PUTIH', category: 'Rempah', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 1, usedStock: 1, minStockAlert: 1, dailyUsageAvg: 1, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 1 KG (04 Nov) -> Keluar masak 1 KG (05 Nov)' },
+  { id: 'b4-13', sku: 'BGN-RMP-402', name: 'BAWANG BOMBAY', category: 'Rempah', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 2 KG (04 Nov) -> Keluar masak 2 KG (05 Nov)' },
+  { id: 'b4-14', sku: 'BGN-PRH-401', name: 'AYAM DADA FILLET', category: 'Protein Hewani', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 63, usedStock: 63, minStockAlert: 15, dailyUsageAvg: 63, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 63 KG (04 Nov) -> Keluar masak 63 KG (05 Nov) Bistik Ayam' },
+  { id: 'b4-15', sku: 'BGN-PRH-402', name: 'TELUR AYAM', category: 'Protein Hewani', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 3, usedStock: 3, minStockAlert: 1, dailyUsageAvg: 3, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 3 KG (04 Nov) -> Keluar masak 3 KG (05 Nov)' },
+  { id: 'b4-16', sku: 'BGN-PRN-401', name: 'TEMPE', category: 'Protein Nabati', uom: 'PAPAN', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 80, usedStock: 80, minStockAlert: 20, dailyUsageAvg: 80, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 80 PAPAN (04 Nov) -> Keluar masak 80 PAPAN (05 Nov)' },
+  { id: 'b4-17', sku: 'BGN-SYR-401', name: 'BROKOLI', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 35, usedStock: 35, minStockAlert: 10, dailyUsageAvg: 35, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 35 KG (04 Nov) -> Keluar masak 35 KG (05 Nov)' },
+  { id: 'b4-18', sku: 'BGN-SYR-402', name: 'WORTEL', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 30, usedStock: 30, minStockAlert: 8, dailyUsageAvg: 30, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 30 KG (04 Nov) -> Keluar masak 30 KG (05 Nov)' },
+  { id: 'b4-19', sku: 'BGN-SYR-403', name: 'TOMAT MERAH', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 5, usedStock: 5, minStockAlert: 2, dailyUsageAvg: 5, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 5 KG (04 Nov) -> Keluar masak 5 KG (05 Nov)' },
+  { id: 'b4-20', sku: 'BGN-BUH-401', name: 'ANGGUR MERAH', category: 'Buah', uom: 'KRAT', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 11, usedStock: 11, minStockAlert: 3, dailyUsageAvg: 11, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 11 KRAT (04 Nov) -> Keluar 11 KRAT (05 Nov) buah segar' },
+];
+
+// BATCH 5: 22 Bahan Masuk 05 Nov 2026 -> Keluar Masak 06 Nov 2026
+// Menu: Nasi putih, Mongolian Chicken, Tahu Goreng Marinasi, Sayur Orak Arik, Kurma
+export const BATCH_5_ITEMS: StockItem[] = [
+  { id: 'b5-01', sku: 'BGN-BHK-501', name: 'BERAS', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 100, usedStock: 100, minStockAlert: 25, dailyUsageAvg: 100, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 100 KG (05 Nov) -> Keluar masak 100 KG (06 Nov)' },
+  { id: 'b5-02', sku: 'BGN-BHK-502', name: 'TEPUNG TERIGU', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 20, usedStock: 20, minStockAlert: 5, dailyUsageAvg: 20, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 20 KG (05 Nov) -> Keluar masak 20 KG (06 Nov)' },
+  { id: 'b5-03', sku: 'BGN-BHK-503', name: 'ROYCO', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 3, usedStock: 3, minStockAlert: 1, dailyUsageAvg: 3, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 3 KG (05 Nov) -> Keluar masak 3 KG (06 Nov)' },
+  { id: 'b5-04', sku: 'BGN-BHK-504', name: 'KECAP ASIN', category: 'Bahan Kering', uom: 'BTL', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 3, usedStock: 3, minStockAlert: 1, dailyUsageAvg: 3, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 3 BTL (05 Nov) -> Keluar masak 3 BTL (06 Nov)' },
+  { id: 'b5-05', sku: 'BGN-BHK-505', name: 'SAUCE TIRAM', category: 'Bahan Kering', uom: 'L', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 1, usedStock: 1, minStockAlert: 1, dailyUsageAvg: 1, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 1 L (05 Nov) -> Keluar masak 1 L (06 Nov)' },
+  { id: 'b5-06', sku: 'BGN-BHK-506', name: 'BROWN SUGAR', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 2 KG (05 Nov) -> Keluar masak 2 KG (06 Nov)' },
+  { id: 'b5-07', sku: 'BGN-BHK-507', name: 'MINYAK WIJEN', category: 'Bahan Kering', uom: 'BTL', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 1, usedStock: 1, minStockAlert: 1, dailyUsageAvg: 1, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 1 BTL (05 Nov) -> Keluar masak 1 BTL (06 Nov)' },
+  { id: 'b5-08', sku: 'BGN-BHK-508', name: 'TEPUNG MAIZENA', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 2 KG (05 Nov) -> Keluar masak 2 KG (06 Nov)' },
+  { id: 'b5-09', sku: 'BGN-BHK-509', name: 'WIJEN', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 0.1, usedStock: 0.1, minStockAlert: 0.05, dailyUsageAvg: 0.1, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 0.1 KG (05 Nov) -> Keluar masak 0.1 KG (06 Nov)' },
+  { id: 'b5-10', sku: 'BGN-BHK-510', name: 'MINYAK GORENG', category: 'Bahan Kering', uom: 'L', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 54, usedStock: 54, minStockAlert: 15, dailyUsageAvg: 54, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 54 L (05 Nov) -> Keluar masak 54 L (06 Nov)' },
+  { id: 'b5-11', sku: 'BGN-BHK-511', name: 'KECAP MANIS', category: 'Bahan Kering', uom: 'L', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 1, usedStock: 1, minStockAlert: 1, dailyUsageAvg: 1, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 1 L (05 Nov) -> Keluar masak 1 L (06 Nov)' },
+  { id: 'b5-12', sku: 'BGN-BHK-512', name: 'GARAM', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 0.25, usedStock: 0.25, minStockAlert: 0.1, dailyUsageAvg: 0.25, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 0.25 KG (05 Nov) -> Keluar masak 0.25 KG (06 Nov)' },
+  { id: 'b5-13', sku: 'BGN-RMP-501', name: 'BAWANG PUTIH', category: 'Rempah', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 2 KG (05 Nov) -> Keluar masak 2 KG (06 Nov)' },
+  { id: 'b5-14', sku: 'BGN-RMP-502', name: 'BAWANG BOMBAY', category: 'Rempah', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 2, usedStock: 2, minStockAlert: 1, dailyUsageAvg: 2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 2 KG (05 Nov) -> Keluar masak 2 KG (06 Nov)' },
+  { id: 'b5-15', sku: 'BGN-RMP-503', name: 'LADA BUBUK', category: 'Rempah', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 0.2, usedStock: 0.2, minStockAlert: 0.05, dailyUsageAvg: 0.2, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 0.2 KG (05 Nov) -> Keluar masak 0.2 KG (06 Nov)' },
+  { id: 'b5-16', sku: 'BGN-RMP-504', name: 'JAHE', category: 'Rempah', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 1, usedStock: 1, minStockAlert: 1, dailyUsageAvg: 1, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 1 KG (05 Nov) -> Keluar masak 1 KG (06 Nov)' },
+  { id: 'b5-17', sku: 'BGN-PRH-501', name: 'AYAM FILLET', category: 'Protein Hewani', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 63, usedStock: 63, minStockAlert: 15, dailyUsageAvg: 63, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 63 KG (05 Nov) -> Keluar masak 63 KG (06 Nov) Mongolian Chicken' },
+  { id: 'b5-18', sku: 'BGN-PRH-502', name: 'TELUR AYAM', category: 'Protein Hewani', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 3, usedStock: 3, minStockAlert: 1, dailyUsageAvg: 3, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 3 KG (05 Nov) -> Keluar masak 3 KG (06 Nov)' },
+  { id: 'b5-19', sku: 'BGN-PRN-501', name: 'TAHU KUNING', category: 'Protein Nabati', uom: 'PCS', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 1600, usedStock: 1600, minStockAlert: 200, dailyUsageAvg: 1600, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 1.600 PCS (05 Nov) -> Keluar masak 1.600 PCS (06 Nov) Tahu Goreng Marinasi' },
+  { id: 'b5-20', sku: 'BGN-SYR-501', name: 'WORTEL', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 30, usedStock: 30, minStockAlert: 8, dailyUsageAvg: 30, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 30 KG (05 Nov) -> Keluar masak 30 KG (06 Nov) Orak Arik' },
+  { id: 'b5-21', sku: 'BGN-SYR-502', name: 'KUBIS', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 30, usedStock: 30, minStockAlert: 8, dailyUsageAvg: 30, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 30 KG (05 Nov) -> Keluar masak 30 KG (06 Nov) Orak Arik' },
+  { id: 'b5-22', sku: 'BGN-BUH-501', name: 'KURMA', category: 'Buah', uom: 'PCS', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 3900, usedStock: 3900, minStockAlert: 500, dailyUsageAvg: 3900, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-05', lastUsageDate: '2026-11-06', batch: '05-NOV', notes: 'Batch 5: Masuk 3.900 PCS (05 Nov) -> Keluar 3.900 PCS (06 Nov) buah kurma' },
+];
+
+// Gabungan Semua Item Master Bahan Baku (5 Batch = 93 Item)
+export const DEFAULT_STOCK_ITEMS_ALL: StockItem[] = [...BATCH_5_ITEMS, ...BATCH_4_ITEMS, ...BATCH_3_ITEMS, ...BATCH_2_ITEMS, ...BATCH_1_ITEMS];
+
+// Register 186 Mutasi Lengkap (5 Siklus):
+// B1: 16 Masuk (01 Nov) + 16 Keluar (02 Nov) = 32
+// B2: 17 Masuk (02 Nov) + 17 Keluar (03 Nov) = 34
+// B3: 18 Masuk (03 Nov) + 18 Keluar (04 Nov) = 36
+// B4: 20 Masuk (04 Nov) + 20 Keluar (05 Nov) = 40
+// B5: 22 Masuk (05 Nov) + 22 Keluar (06 Nov) = 44
+export const DEFAULT_STOCK_MOVEMENTS: StockMovement[] = [
+  // --- 22 KELUAR MASAK BATCH 5 (06 NOV 2026) ---
+  ...BATCH_5_ITEMS.map((item, idx) => ({
+    id: `mov-20261106-${String(idx + 1).padStart(2, '0')}`,
+    date: '2026-11-06',
+    time: '05:00',
+    itemId: item.id,
+    itemName: item.name,
+    type: 'OUT' as const,
+    qty: item.usedStock,
+    uom: item.uom,
+    balanceAfter: 0,
+    reference: 'BOM-MSK-20261106',
+    loggedBy: 'Seksi Pengolahan Dapur',
+    notes: 'Batch 5: Pemakaian masak 1.553 Porsi MBG tgl 06 Nov 2026 (Mongolian Chicken, Tahu Goreng Marinasi, Sayur Orak Arik, Kurma)',
+  })),
+
+  // --- 22 MASUK BATCH 5 (05 NOV 2026) ---
+  ...BATCH_5_ITEMS.map((item, idx) => ({
+    id: `mov-20261105-in-${String(idx + 1).padStart(2, '0')}`,
+    date: '2026-11-05',
+    time: '04:30',
+    itemId: item.id,
+    itemName: item.name,
+    type: 'IN' as const,
+    qty: item.initialStock,
+    uom: item.uom,
+    balanceAfter: item.initialStock,
+    reference: 'GRN-20261105-01',
+    loggedBy: 'Nur Khafidin (Petugas Timbangan)',
+    notes: `Batch 5: Penerimaan bahan baku masuk dari ${SUPPLIER_YAYASAN} tgl 05 Nov 2026`,
+  })),
+
+  // --- 20 KELUAR MASAK BATCH 4 (05 NOV 2026) ---
+  ...BATCH_4_ITEMS.map((item, idx) => ({
+    id: `mov-20261105-out-${String(idx + 1).padStart(2, '0')}`,
+    date: '2026-11-05',
+    time: '05:00',
+    itemId: item.id,
+    itemName: item.name,
+    type: 'OUT' as const,
+    qty: item.usedStock,
+    uom: item.uom,
+    balanceAfter: 0,
+    reference: 'BOM-MSK-20261105',
+    loggedBy: 'Seksi Pengolahan Dapur',
+    notes: 'Batch 4: Pemakaian masak 1.553 Porsi MBG tgl 05 Nov 2026 (Bistik Ayam, Tempe Goreng, Brokoli Wortel Steamed, Anggur Merah)',
+  })),
+
+  // --- 20 MASUK BATCH 4 (04 NOV 2026) ---
+  ...BATCH_4_ITEMS.map((item, idx) => ({
+    id: `mov-20261104-in-${String(idx + 1).padStart(2, '0')}`,
+    date: '2026-11-04',
+    time: '04:30',
+    itemId: item.id,
+    itemName: item.name,
+    type: 'IN' as const,
+    qty: item.initialStock,
+    uom: item.uom,
+    balanceAfter: item.initialStock,
+    reference: 'GRN-20261104-01',
+    loggedBy: 'Nur Khafidin (Petugas Timbangan)',
+    notes: `Batch 4: Penerimaan bahan baku masuk dari ${SUPPLIER_YAYASAN} tgl 04 Nov 2026`,
+  })),
+
+  // --- 18 KELUAR MASAK BATCH 3 (04 NOV 2026) ---
+  ...BATCH_3_ITEMS.map((item, idx) => ({
+    id: `mov-20261104-out-${String(idx + 1).padStart(2, '0')}`,
+    date: '2026-11-04',
+    time: '05:00',
+    itemId: item.id,
+    itemName: item.name,
+    type: 'OUT' as const,
+    qty: item.usedStock,
+    uom: item.uom,
+    balanceAfter: 0,
+    reference: 'BOM-MSK-20261104',
+    loggedBy: 'Seksi Pengolahan Dapur',
+    notes: 'Batch 3: Pemakaian masak 1.553 Porsi MBG tgl 04 Nov 2026 (Kentang Goreng, Telur Katsu, Edamame, Tumis Pakcoy Jagung, Kelengkeng)',
+  })),
+
+  // --- 18 MASUK BATCH 3 (03 NOV 2026) ---
+  ...BATCH_3_ITEMS.map((item, idx) => ({
+    id: `mov-20261103-in-${String(idx + 1).padStart(2, '0')}`,
+    date: '2026-11-03',
+    time: '04:30',
+    itemId: item.id,
+    itemName: item.name,
+    type: 'IN' as const,
+    qty: item.initialStock,
+    uom: item.uom,
+    balanceAfter: item.initialStock,
+    reference: 'GRN-20261103-01',
+    loggedBy: 'Nur Khafidin (Petugas Timbangan)',
+    notes: `Batch 3: Penerimaan bahan baku masuk dari ${SUPPLIER_YAYASAN} tgl 03 Nov 2026`,
+  })),
+
   // --- 17 KELUAR MASAK BATCH 2 (03 NOV 2026) ---
   ...BATCH_2_ITEMS.map((item, idx) => ({
     id: `mov-20261103-${String(idx + 1).padStart(2, '0')}`,
@@ -786,12 +961,12 @@ export function saveStockToStorage(items: StockItem[]): void {
 }
 
 export function loadMovementsFromStorage(): StockMovement[] {
-  if (typeof window === 'undefined') return DEFAULT_STOCK_MOVEMENTS_66;
+  if (typeof window === 'undefined') return DEFAULT_STOCK_MOVEMENTS;
   try {
     const raw = localStorage.getItem(ARSIP_STOCK_MOVEMENTS_KEY);
     if (!raw) {
-      saveMovementsToStorage(DEFAULT_STOCK_MOVEMENTS_66);
-      return DEFAULT_STOCK_MOVEMENTS_66;
+      saveMovementsToStorage(DEFAULT_STOCK_MOVEMENTS);
+      return DEFAULT_STOCK_MOVEMENTS;
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
@@ -800,7 +975,7 @@ export function loadMovementsFromStorage(): StockMovement[] {
   } catch (err) {
     console.error('Failed to load movements from localStorage:', err);
   }
-  return DEFAULT_STOCK_MOVEMENTS_66;
+  return DEFAULT_STOCK_MOVEMENTS;
 }
 
 export function saveMovementsToStorage(movements: StockMovement[]): void {
