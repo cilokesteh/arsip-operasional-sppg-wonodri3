@@ -55,7 +55,7 @@ import {
 
 export default function StockMonitoringPage() {
   const [stockItems, setStockItems] = useState<StockItem[]>(DEFAULT_STOCK_ITEMS_ALL);
-  const [selectedBatch, setSelectedBatch] = useState<'ALL' | '02-NOV' | '01-NOV'>('ALL');
+  const [selectedBatch, setSelectedBatch] = useState<string>('ALL');
   const [movements, setMovements] = useState<StockMovement[]>([]);
 
   // Active Main Workflow Tab
@@ -1150,42 +1150,19 @@ export default function StockMonitoringPage() {
                 </div>
               </div>
 
-              {/* Batch Filter Bar */}
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1 pb-1 border-b border-slate-100">
-                <span className="text-xs font-bold text-slate-400 shrink-0">Filter Batch:</span>
-                <button
-                  type="button"
-                  onClick={() => setSelectedBatch('ALL')}
-                  className={`px-2.5 py-1 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer transition-colors ${
-                    selectedBatch === 'ALL'
-                      ? 'bg-slate-900 text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+              {/* Batch Filter Dropdown */}
+              <div className="flex items-center gap-2 pt-1 pb-1 border-b border-slate-100">
+                <label htmlFor="batch-filter" className="text-xs font-bold text-slate-400 shrink-0">Filter Batch:</label>
+                <select
+                  id="batch-filter"
+                  value={selectedBatch}
+                  onChange={(e) => setSelectedBatch(e.target.value)}
+                  className="flex-1 min-w-0 bg-slate-50 border border-line rounded-xl px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer truncate"
                 >
-                  Semua Bahan ({stockItems.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedBatch('02-NOV')}
-                  className={`px-2.5 py-1 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer transition-colors ${
-                    selectedBatch === '02-NOV'
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  Batch 02 Nov &rarr; Masak 03 Nov (17)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedBatch('01-NOV')}
-                  className={`px-2.5 py-1 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer transition-colors ${
-                    selectedBatch === '01-NOV'
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  Batch 01 Nov &rarr; Masak 02 Nov (16)
-                </button>
+                  <option value="ALL">Semua Bahan ({stockItems.length})</option>
+                  <option value="02-NOV">Batch 02 Nov → Masak 03 Nov ({stockItems.filter(i => i.batch === '02-NOV').length})</option>
+                  <option value="01-NOV">Batch 01 Nov → Masak 02 Nov ({stockItems.filter(i => i.batch === '01-NOV').length})</option>
+                </select>
               </div>
 
               {/* Category Pills Bar */}
@@ -1922,52 +1899,32 @@ export default function StockMonitoringPage() {
                 />
               </div>
 
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                <button
-                  type="button"
-                  onClick={() => { setMovementFilterType('ALL'); setMovementSearch(''); }}
-                  className={`px-2.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer ${
-                    movementFilterType === 'ALL' && !movementSearch ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+              <div className="flex items-center gap-2 flex-wrap">
+                <select
+                  value={
+                    movementFilterType === 'ALL' && !movementSearch ? 'ALL'
+                    : movementFilterType === 'OUT' && movementSearch === '2026-11-03' ? 'OUT_1103'
+                    : movementFilterType === 'IN' && movementSearch === '2026-11-02' ? 'IN_1102'
+                    : movementFilterType === 'OUT' && movementSearch === '2026-11-02' ? 'OUT_1102'
+                    : movementFilterType === 'IN' && movementSearch === '2026-11-01' ? 'IN_1101'
+                    : 'ALL'
+                  }
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v === 'ALL') { setMovementFilterType('ALL'); setMovementSearch(''); }
+                    else if (v === 'OUT_1103') { setMovementFilterType('OUT'); setMovementSearch('2026-11-03'); }
+                    else if (v === 'IN_1102') { setMovementFilterType('IN'); setMovementSearch('2026-11-02'); }
+                    else if (v === 'OUT_1102') { setMovementFilterType('OUT'); setMovementSearch('2026-11-02'); }
+                    else if (v === 'IN_1101') { setMovementFilterType('IN'); setMovementSearch('2026-11-01'); }
+                  }}
+                  className="flex-1 min-w-0 bg-slate-50 border border-line rounded-xl px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer"
                 >
-                  Semua Mutasi ({movements.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMovementFilterType('OUT'); setMovementSearch('2026-11-03'); }}
-                  className={`px-2.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer ${
-                    movementFilterType === 'OUT' && movementSearch === '2026-11-03' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  - Masak 03 Nov (17)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMovementFilterType('IN'); setMovementSearch('2026-11-02'); }}
-                  className={`px-2.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer ${
-                    movementFilterType === 'IN' && movementSearch === '2026-11-02' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  + Masuk 02 Nov (17)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMovementFilterType('OUT'); setMovementSearch('2026-11-02'); }}
-                  className={`px-2.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer ${
-                    movementFilterType === 'OUT' && movementSearch === '2026-11-02' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  - Masak 02 Nov (16)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMovementFilterType('IN'); setMovementSearch('2026-11-01'); }}
-                  className={`px-2.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap cursor-pointer ${
-                    movementFilterType === 'IN' && movementSearch === '2026-11-01' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  + Masuk 01 Nov (16)
-                </button>
+                  <option value="ALL">Semua Mutasi ({movements.length})</option>
+                  <option value="OUT_1103">- Masak 03 Nov (17)</option>
+                  <option value="IN_1102">+ Masuk 02 Nov (17)</option>
+                  <option value="OUT_1102">- Masak 02 Nov (16)</option>
+                  <option value="IN_1101">+ Masuk 01 Nov (16)</option>
+                </select>
               </div>
             </div>
 
