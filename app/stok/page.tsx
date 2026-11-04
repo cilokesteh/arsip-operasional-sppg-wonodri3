@@ -2892,7 +2892,7 @@ export default function StockMonitoringPage() {
                   {printReportType === 'B5_IN' &&
                     'Pada hari ini, Kamis tanggal 05 November 2026 pukul 04:30 WIB, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 5 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B4_OUT' &&
-                    'Pada hari ini, Kamis tanggal 05 November 2026 pukul 05:00 WIB, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 4 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Nasi Putih, Bistik Ayam, Tempe Goreng, Brokoli Wortel Steamed, Buah Anggur Merah) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                    'Pada hari ini, Kamis tanggal 05 November 2026 pukul 05:00 WIB, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 4 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Nasi Putih, Bistik Ayam, Tempe Goreng, Buncis Wortel Steamed, Buah Anggur Merah) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B4_IN' &&
                     'Pada hari ini, Rabu tanggal 04 November 2026 pukul 04:30 WIB, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 4 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B3_OUT' &&

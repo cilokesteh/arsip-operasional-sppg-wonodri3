@@ -691,7 +691,7 @@ export const BATCH_3_ITEMS: StockItem[] = [
 ];
 
 // BATCH 4: 20 Bahan Masuk 04 Nov 2026 -> Keluar Masak 05 Nov 2026
-// Menu: Nasi Putih, Bistik Ayam, Tempe Goreng, Brokoli Wortel Steamed, Anggur Merah
+// Menu: Nasi Putih, Bistik Ayam, Tempe Goreng, Buncis Wortel Steamed, Anggur Merah
 export const BATCH_4_ITEMS: StockItem[] = [
   { id: 'b4-01', sku: 'BGN-BHK-401', name: 'BERAS', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 100, usedStock: 100, minStockAlert: 25, dailyUsageAvg: 100, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 100 KG (04 Nov) -> Keluar masak 100 KG (05 Nov)' },
   { id: 'b4-02', sku: 'BGN-BHK-402', name: 'TEPUNG TERIGU', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 23, usedStock: 23, minStockAlert: 6, dailyUsageAvg: 23, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 23 KG (04 Nov) -> Keluar masak 23 KG (05 Nov)' },
@@ -709,7 +709,7 @@ export const BATCH_4_ITEMS: StockItem[] = [
   { id: 'b4-14', sku: 'BGN-PRH-401', name: 'AYAM DADA FILLET', category: 'Protein Hewani', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 63, usedStock: 63, minStockAlert: 15, dailyUsageAvg: 63, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 63 KG (04 Nov) -> Keluar masak 63 KG (05 Nov) Bistik Ayam' },
   { id: 'b4-15', sku: 'BGN-PRH-402', name: 'TELUR AYAM', category: 'Protein Hewani', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 3, usedStock: 3, minStockAlert: 1, dailyUsageAvg: 3, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 3 KG (04 Nov) -> Keluar masak 3 KG (05 Nov)' },
   { id: 'b4-16', sku: 'BGN-PRN-401', name: 'TEMPE', category: 'Protein Nabati', uom: 'PAPAN', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 80, usedStock: 80, minStockAlert: 20, dailyUsageAvg: 80, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 80 PAPAN (04 Nov) -> Keluar masak 80 PAPAN (05 Nov)' },
-  { id: 'b4-17', sku: 'BGN-SYR-401', name: 'BROKOLI', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 35, usedStock: 35, minStockAlert: 10, dailyUsageAvg: 35, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 35 KG (04 Nov) -> Keluar masak 35 KG (05 Nov)' },
+  { id: 'b4-17', sku: 'BGN-SYR-401', name: 'BUNCIS', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 35, usedStock: 35, minStockAlert: 10, dailyUsageAvg: 35, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 35 KG (04 Nov) -> Keluar masak 35 KG (05 Nov)' },
   { id: 'b4-18', sku: 'BGN-SYR-402', name: 'WORTEL', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 30, usedStock: 30, minStockAlert: 8, dailyUsageAvg: 30, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 30 KG (04 Nov) -> Keluar masak 30 KG (05 Nov)' },
   { id: 'b4-19', sku: 'BGN-SYR-403', name: 'TOMAT MERAH', category: 'Sayur', uom: 'KG', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 5, usedStock: 5, minStockAlert: 2, dailyUsageAvg: 5, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 5 KG (04 Nov) -> Keluar masak 5 KG (05 Nov)' },
   { id: 'b4-20', sku: 'BGN-BUH-401', name: 'ANGGUR MERAH', category: 'Buah', uom: 'KRAT', storageLocation: 'Gudang Basah', currentStock: 0, initialStock: 11, usedStock: 11, minStockAlert: 3, dailyUsageAvg: 11, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-04', lastUsageDate: '2026-11-05', batch: '04-NOV', notes: 'Batch 4: Masuk 11 KRAT (04 Nov) -> Keluar 11 KRAT (05 Nov) buah segar' },
@@ -797,7 +797,7 @@ export const DEFAULT_STOCK_MOVEMENTS: StockMovement[] = [
     balanceAfter: 0,
     reference: 'BOM-MSK-20261105',
     loggedBy: 'Seksi Pengolahan Dapur',
-    notes: 'Batch 4: Pemakaian masak 1.553 Porsi MBG tgl 05 Nov 2026 (Bistik Ayam, Tempe Goreng, Brokoli Wortel Steamed, Anggur Merah)',
+    notes: 'Batch 4: Pemakaian masak 1.553 Porsi MBG tgl 05 Nov 2026 (Bistik Ayam, Tempe Goreng, Buncis Wortel Steamed, Anggur Merah)',
   })),
 
   // --- 20 MASUK BATCH 4 (04 NOV 2026) ---
@@ -943,14 +943,16 @@ export function loadStockFromStorage(): StockItem[] {
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      // Auto-merge batch baru bila belum tersimpan di localStorage klien
+      // Auto-merge batch baru atau perbaikan nama bahan (Brokoli -> Buncis)
       const existingIds = new Set(parsed.map((item: StockItem) => item.id));
       const hasMissing = DEFAULT_STOCK_ITEMS_ALL.some((item) => !existingIds.has(item.id));
-      if (hasMissing) {
+      const hasBrokoliOld = parsed.some((item: StockItem) => item.id === 'b4-17' && item.name === 'BROKOLI');
+      if (hasMissing || hasBrokoliOld) {
         const merged = DEFAULT_STOCK_ITEMS_ALL.map((def) => {
           const found = parsed.find((p: StockItem) => p.id === def.id);
           if (!found) return def;
           if (def.id === 'b1-11' && found.initialStock === 65) return def; // Update Dorry 65 -> 90 KG per RKB
+          if (def.id === 'b4-17' && found.name === 'BROKOLI') return def; // Update Brokoli -> Buncis per instruksi Tuan
           return found;
         });
         saveStockToStorage(merged);
@@ -1215,7 +1217,18 @@ export function loadOpnameDraftFromStorage(items: StockItem[]): OpnameSession {
     if (!raw) return defaultSession;
     const parsed = JSON.parse(raw);
     if (parsed && Array.isArray(parsed.rows) && parsed.rows.length > 0) {
+      // Update nama bahan jika ada perubahan master (Brokoli -> Buncis)
+      let needsOpnameUpdate = false;
+      const updatedRows = parsed.rows.map((row: OpnameRow) => {
+        if (row.itemId === 'b4-17' && row.name === 'BROKOLI') {
+          needsOpnameUpdate = true;
+          return { ...row, name: 'BUNCIS' };
+        }
+        return row;
+      });
+
       if (parsed.rows.length < items.length) {
+        needsOpnameUpdate = true;
         const existingRowIds = new Set(parsed.rows.map((r: OpnameRow) => r.itemId));
         const missingRows = items
           .filter((item) => !existingRowIds.has(item.id))
@@ -1230,7 +1243,11 @@ export function loadOpnameDraftFromStorage(items: StockItem[]): OpnameSession {
             physicalQty: item.currentStock,
             notes: 'Kondisi fisik kemasan baik / habis terpakai',
           }));
-        const updatedSession = { ...parsed, rows: [...parsed.rows, ...missingRows] };
+        updatedRows.push(...missingRows);
+      }
+
+      if (needsOpnameUpdate) {
+        const updatedSession = { ...parsed, rows: updatedRows };
         saveOpnameDraftToStorage(updatedSession);
         return updatedSession;
       }
