@@ -943,6 +943,19 @@ export function loadStockFromStorage(): StockItem[] {
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
+      // Auto-merge batch baru bila belum tersimpan di localStorage klien
+      const existingIds = new Set(parsed.map((item: StockItem) => item.id));
+      const hasMissing = DEFAULT_STOCK_ITEMS_ALL.some((item) => !existingIds.has(item.id));
+      if (hasMissing) {
+        const merged = DEFAULT_STOCK_ITEMS_ALL.map((def) => {
+          const found = parsed.find((p: StockItem) => p.id === def.id);
+          if (!found) return def;
+          if (def.id === 'b1-11' && found.initialStock === 65) return def; // Update Dorry 65 -> 90 KG per RKB
+          return found;
+        });
+        saveStockToStorage(merged);
+        return merged;
+      }
       return parsed;
     }
   } catch (err) {
@@ -970,6 +983,14 @@ export function loadMovementsFromStorage(): StockMovement[] {
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
+      // Auto-merge riwayat mutasi batch baru bila belum tersimpan di klien
+      const existingIds = new Set(parsed.map((m: StockMovement) => m.id));
+      const missing = DEFAULT_STOCK_MOVEMENTS.filter((m) => !existingIds.has(m.id));
+      if (missing.length > 0) {
+        const merged = [...missing, ...parsed];
+        saveMovementsToStorage(merged);
+        return merged;
+      }
       return parsed;
     }
   } catch (err) {
@@ -1194,6 +1215,25 @@ export function loadOpnameDraftFromStorage(items: StockItem[]): OpnameSession {
     if (!raw) return defaultSession;
     const parsed = JSON.parse(raw);
     if (parsed && Array.isArray(parsed.rows) && parsed.rows.length > 0) {
+      if (parsed.rows.length < items.length) {
+        const existingRowIds = new Set(parsed.rows.map((r: OpnameRow) => r.itemId));
+        const missingRows = items
+          .filter((item) => !existingRowIds.has(item.id))
+          .map((item) => ({
+            itemId: item.id,
+            sku: item.sku,
+            name: item.name,
+            category: item.category,
+            storageLocation: item.storageLocation,
+            uom: item.uom,
+            systemQty: item.currentStock,
+            physicalQty: item.currentStock,
+            notes: 'Kondisi fisik kemasan baik / habis terpakai',
+          }));
+        const updatedSession = { ...parsed, rows: [...parsed.rows, ...missingRows] };
+        saveOpnameDraftToStorage(updatedSession);
+        return updatedSession;
+      }
       return parsed;
     }
   } catch (err) {
