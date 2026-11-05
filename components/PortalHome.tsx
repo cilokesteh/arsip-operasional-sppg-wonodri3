@@ -102,6 +102,12 @@ export default function PortalHome() {
   const [inputPin, setInputPin] = useState<string>('');
   const [pinError, setPinError] = useState<string>('');
 
+  // Status sinkronisasi cloud: selama true dan tanggal terpilih belum punya
+  // menu lokal, tampilkan status memuat — BUKAN "Belum ada laporan". Laporan
+  // terbaru tersimpan di cloud, jadi menyimpulkan kosong sebelum sinkron
+  // selesai membuat pengunjung mengira laporan hari ini belum terbit.
+  const [isSyncingMenus, setIsSyncingMenus] = useState<boolean>(true);
+
   const OFFICIAL_PRINT_PIN = '91206';
 
   useEffect(() => {
@@ -151,7 +157,12 @@ export default function PortalHome() {
       /* fallback */
     }
 
-    fetchMenusFromCloud().then((cloudMenus) => {
+    // Jaring pengaman: bila cloud lambat/tidak terjangkau, jangan biarkan
+    // halaman terjebak di status memuat — tampilkan data lokal apa adanya.
+    const syncTimeout = setTimeout(() => setIsSyncingMenus(false), 8000);
+
+    fetchMenusFromCloud()
+      .then((cloudMenus) => {
       if (cloudMenus && cloudMenus.length > 0) {
         setMenuHistory((prev) => {
           /* CLOUD WINS untuk tanggal yang ADA DI CLOUD.
@@ -202,10 +213,15 @@ export default function PortalHome() {
           return merged;
         });
       }
-    });
+      })
+      .finally(() => {
+        clearTimeout(syncTimeout);
+        setIsSyncingMenus(false);
+      });
   }, []);
 
   const currentMenu = menuHistory.find((m) => m.date === selectedDate);
+  const isLoadingReport = isSyncingMenus && !currentMenu;
   const baselineBeneficiaries = getBeneficiariesForDate(selectedDate);
 
   const activeBeneficiaries = baselineBeneficiaries.map((site) => {
@@ -317,8 +333,13 @@ export default function PortalHome() {
   const hasOlder = Boolean(olderMenu);
   const hasNewer = Boolean(newerMenu);
   const latestDate = menuHistory[0]?.date;
-  const statusLabel =
-    currentMenu?.status === 'published' ? 'Diterbitkan' : currentMenu ? 'Draf' : 'Belum ada laporan';
+  const statusLabel = isLoadingReport
+    ? 'Memuat laporan…'
+    : currentMenu?.status === 'published'
+    ? 'Diterbitkan'
+    : currentMenu
+    ? 'Draf'
+    : 'Belum ada laporan';
   const statusClass =
     currentMenu?.status === 'published'
       ? 'bg-leaf-soft text-leaf'
@@ -342,6 +363,8 @@ export default function PortalHome() {
 
   /* ============ PRINT / PIN ============ */
   const handleOpenPrintModal = () => {
+    // Tidak ada laporan pada tanggal terpilih = tidak ada dokumen untuk dicetak.
+    if (!currentMenu) return;
     const sessionAuth = sessionStorage.getItem('sppg_print_auth');
     if (sessionAuth === 'true') {
       setActiveTab('dokumen');
@@ -389,12 +412,17 @@ export default function PortalHome() {
           <button
             type="button"
             onClick={handleOpenPrintModal}
-            title="Cetak dokumen resmi (perlu PIN operator)"
-            className="inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft shrink-0 cursor-pointer"
+            disabled={!currentMenu}
+            aria-label="Cetak resmi"
+            title={
+              currentMenu
+                ? 'Cetak dokumen resmi (perlu PIN operator)'
+                : 'Belum ada laporan pada tanggal ini untuk dicetak'
+            }
+            className="inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-ink"
           >
             <Printer className="w-4 h-4" aria-hidden="true" />
             <span className="hidden sm:inline">Cetak resmi</span>
-            <span className="sr-only sm:hidden">Cetak resmi</span>
           </button>
         </div>
       </header>
@@ -451,6 +479,10 @@ export default function PortalHome() {
         </div>
 
         {/* ---------- RINGKASAN ANGKA ---------- */}
+        {/* Hanya tampil bila tanggal terpilih memang punya laporan. Angka ini
+            berasal dari data master penerima manfaat, jadi menampilkannya di
+            hari tanpa laporan akan terbaca sebagai data hari itu. */}
+        {currentMenu && (
         <dl className="no-print panel grid grid-cols-3 divide-x divide-line">
           {[
             {
@@ -482,8 +514,12 @@ export default function PortalHome() {
             </div>
           ))}
         </dl>
+        )}
 
         {/* ---------- TAB ---------- */}
+        {/* Tab bagian laporan hanya bermakna bila ada laporan; tanpa laporan
+            halaman cukup menampilkan satu panel kosong (empty state). */}
+        {currentMenu && (
         <div className="no-print sticky top-14 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-paper/95 backdrop-blur border-b border-line">
           <div role="tablist" aria-label="Bagian laporan" className="flex gap-1 overflow-x-auto no-scrollbar">
             {WORKSPACE_TABS.map((tab) => {
@@ -508,9 +544,24 @@ export default function PortalHome() {
             })}
           </div>
         </div>
+        )}
 
         {/* ---------- ISI ---------- */}
-        {!currentMenu ? (
+        {isLoadingReport ? (
+          <div className="panel p-8 sm:p-12 text-center" role="status" aria-live="polite">
+            <div
+              className="w-8 h-8 border-[3px] border-line border-t-ink rounded-full animate-spin mx-auto"
+              aria-hidden="true"
+            />
+            <h2 className="font-heading text-lg font-bold mt-3">
+              Memuat laporan {formatTanggalIndo(selectedDate)}…
+            </h2>
+            <p className="text-sm text-slate-600 max-w-md mx-auto mt-2">
+              Sedang memeriksa data terbaru. Status kosong baru ditampilkan setelah
+              pemeriksaan selesai.
+            </p>
+          </div>
+        ) : !currentMenu ? (
           <div className="panel p-8 sm:p-12 text-center">
             <Clock className="w-8 h-8 text-slate-400 mx-auto" aria-hidden="true" />
             <h2 className="font-heading text-lg font-bold mt-3">

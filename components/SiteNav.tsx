@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Archive, Users, Boxes, FileSpreadsheet } from 'lucide-react';
+import { LayoutDashboard, Archive, Users, Boxes, FileSpreadsheet, Lock } from 'lucide-react';
 
 type NavItem = {
   href: string;
@@ -11,14 +11,17 @@ type NavItem = {
   icon: React.ElementType;
   /** Path lain yang dianggap bagian dari menu ini (alias halaman). */
   alsoMatches?: string[];
+  /** Halaman internal di balik PIN operator — ditandai gembok agar pengunjung
+      publik tidak mengira ini konten transparansi yang bisa langsung dibuka. */
+  locked?: boolean;
 };
 
 export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Portal', icon: LayoutDashboard },
   { href: '/arsip', label: 'Arsip', icon: Archive },
-  { href: '/absensi', label: 'Absensi', icon: Users, alsoMatches: ['/absen'] },
-  { href: '/stok', label: 'Stok', icon: Boxes, alsoMatches: ['/stock'] },
-  { href: '/admin', label: 'Operator', icon: FileSpreadsheet },
+  { href: '/absensi', label: 'Absensi', icon: Users, alsoMatches: ['/absen'], locked: true },
+  { href: '/stok', label: 'Stok', icon: Boxes, alsoMatches: ['/stock'], locked: true },
+  { href: '/admin', label: 'Operator', icon: FileSpreadsheet, locked: true },
 ];
 
 function useIsActive() {
@@ -41,6 +44,8 @@ export function TopNav() {
             key={item.href}
             href={item.href}
             aria-current={active ? 'page' : undefined}
+            aria-label={item.locked ? `${item.label} (khusus operator, perlu PIN)` : undefined}
+            title={item.locked ? 'Khusus operator (perlu PIN)' : undefined}
             className={`inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm transition-colors ${
               active
                 ? 'bg-ink text-white font-semibold'
@@ -49,6 +54,7 @@ export function TopNav() {
           >
             <item.icon className="w-4 h-4" aria-hidden="true" />
             {item.label}
+            {item.locked && <Lock className="w-3 h-3 opacity-60" aria-hidden="true" />}
           </Link>
         );
       })}
@@ -75,6 +81,8 @@ export function BottomTabs() {
               <Link
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
+                aria-label={item.locked ? `${item.label} (khusus operator, perlu PIN)` : undefined}
+                title={item.locked ? 'Khusus operator (perlu PIN)' : undefined}
                 className={`flex flex-col items-center justify-center gap-0.5 min-h-14 border-t-2 -mt-px text-xs ${
                   active
                     ? 'border-gold text-ink font-semibold'
@@ -82,7 +90,10 @@ export function BottomTabs() {
                 }`}
               >
                 <item.icon className="w-5 h-5" aria-hidden="true" />
-                {item.label}
+                <span className="inline-flex items-center gap-1">
+                  {item.label}
+                  {item.locked && <Lock className="w-3 h-3 opacity-60" aria-hidden="true" />}
+                </span>
               </Link>
             </li>
           );

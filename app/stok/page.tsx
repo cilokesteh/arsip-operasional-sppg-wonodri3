@@ -963,11 +963,11 @@ export default function StockMonitoringPage() {
             <button
               type="button"
               onClick={() => setShowPrintModal(true)}
+              aria-label="Cetak Berita Acara"
               className="inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft cursor-pointer"
             >
               <Printer className="w-4 h-4" aria-hidden="true" />
               <span className="hidden sm:inline">Cetak Berita Acara</span>
-              <span className="sr-only sm:hidden">Cetak Berita Acara</span>
             </button>
             <button
               type="button"

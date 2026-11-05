@@ -232,12 +232,12 @@ export default function ArsipPage() {
           <button
             type="button"
             onClick={() => handleOpenPrintForDate(printDateTarget || allUniqueDates[0])}
+            aria-label="Cetak SPJ"
             title="Cetak SPJ Presensi (Perlu PIN)"
             className="inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft shrink-0 cursor-pointer"
           >
             <Printer className="w-4 h-4" aria-hidden="true" />
             <span className="hidden sm:inline">Cetak SPJ</span>
-            <span className="sr-only sm:hidden">Cetak SPJ</span>
           </button>
         </div>
       </header>
@@ -449,7 +449,11 @@ export default function ArsipPage() {
                       </div>
                     )}
 
-                    {/* Ringkasan Presensi Relawan */}
+                    {/* Ringkasan Presensi Relawan — data internal (kehadiran &
+                        upah). Hanya tampil setelah sesi operator membuka kunci
+                        PIN; pengunjung publik tidak perlu melihat angka
+                        presensi kosong (0/…) atau beban upah bertanda ••••••. */}
+                    {isSalaryUnlocked && (
                     <div className="grid grid-cols-2 gap-2 text-sm pt-1">
                       <div className="bg-slate-50 border border-slate-100 rounded-lg p-2">
                         <span className="text-xs text-slate-400 block font-medium">Relawan Hadir</span>
@@ -464,6 +468,7 @@ export default function ArsipPage() {
                         </strong>
                       </div>
                     </div>
+                    )}
                   </div>
 
                   {/* Action Buttons: 3 Aksi Cepat */}
