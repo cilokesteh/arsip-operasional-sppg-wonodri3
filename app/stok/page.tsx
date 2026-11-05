@@ -994,7 +994,7 @@ export default function StockMonitoringPage() {
   }
 
   return (
-    <div className="min-h-screen bg-paper text-ink flex flex-col w-full overflow-x-hidden has-bottom-tabs">
+    <div className="min-h-screen bg-paper print:bg-white text-ink flex flex-col w-full overflow-x-hidden has-bottom-tabs">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-20 right-5 z-50 bg-ink text-white text-sm sm:text-sm font-semibold px-4 py-3 rounded-xl shadow-2xl border border-line flex items-center gap-2 animate-bounce">

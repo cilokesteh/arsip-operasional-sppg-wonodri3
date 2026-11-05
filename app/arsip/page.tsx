@@ -353,7 +353,7 @@ export default function ArsipPage() {
   };
 
   return (
-    <div className="min-h-screen bg-paper text-ink flex flex-col w-full overflow-x-hidden has-bottom-tabs">
+    <div className="min-h-screen bg-paper print:bg-white text-ink flex flex-col w-full overflow-x-hidden has-bottom-tabs">
       {/* ============ HEADER ============ */}
       <header className="bg-paper/90 backdrop-blur border-b border-line sticky top-0 z-40 no-print">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
@@ -385,7 +385,7 @@ export default function ArsipPage() {
       </header>
 
       {/* ============ MAIN CONTENT ============ */}
-      <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6">
+      <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6 print:hidden">
         <PageHeader
           eyebrow="Direktori Resmi • BGN TA 2026"
           title="Arsip Operasional & Dokumen SPPG"
@@ -767,8 +767,8 @@ export default function ArsipPage() {
 
       {/* ============ MODAL PRINT SPJ A4 ============ */}
       {showPrintModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-4xl w-full p-6 sm:p-8 space-y-6 my-8 animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto print:static print:p-0 print:bg-white print:z-auto print:block print:overflow-visible">
+          <div className="report-sheet bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-4xl w-full p-6 sm:p-8 space-y-6 my-8 animate-in fade-in print:max-h-none print:shadow-none print:border-none print:overflow-visible print:w-full print:max-w-none print:rounded-none print:p-0 print:my-0 print:space-y-3">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3 print:hidden">
               <div className="flex items-center gap-2">
                 <FileSpreadsheet className="w-5 h-5 text-leaf" />
@@ -805,8 +805,8 @@ export default function ArsipPage() {
                 </p>
               </div>
             ) : (
-            <div className="space-y-5 text-slate-900 print:text-black">
-              <div className="text-center border-b-2 border-slate-900 pb-3 space-y-1">
+            <div className="space-y-5 print:space-y-3 text-slate-900 print:text-black">
+              <div className="text-center border-b-2 border-slate-900 pb-3 print:pb-2 space-y-1 break-inside-avoid">
                 <h2 className="text-base font-black uppercase tracking-wider">
                   SATUAN PELAYANAN PROGRAM GIZI (SPPG) WONODRI 3
                 </h2>
@@ -821,18 +821,18 @@ export default function ArsipPage() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-[11px] border-collapse border border-slate-300">
+              <div className="overflow-x-auto print:overflow-visible">
+                <table className="w-full text-left text-[11px] print:text-[10px] border-collapse border border-slate-300">
                   <thead>
                     <tr className="bg-slate-100 font-bold border-b border-slate-300">
-                      <th className="p-1.5 border border-slate-300 text-center w-8">NO</th>
-                      <th className="p-1.5 border border-slate-300">NAMA LENGKAP</th>
-                      <th className="p-1.5 border border-slate-300">DIVISI</th>
-                      <th className="p-1.5 border border-slate-300 text-center">STATUS</th>
-                      <th className="p-1.5 border border-slate-300 text-center">MASUK</th>
-                      <th className="p-1.5 border border-slate-300 text-right">TARIF</th>
-                      <th className="p-1.5 border border-slate-300 text-right">HAK UPAH</th>
-                      <th className="p-1.5 border border-slate-300 text-center w-20">TTD</th>
+                      <th className="p-1.5 print:p-1 border border-slate-300 text-center w-8">NO</th>
+                      <th className="p-1.5 print:p-1 border border-slate-300">NAMA LENGKAP</th>
+                      <th className="p-1.5 print:p-1 border border-slate-300">DIVISI</th>
+                      <th className="p-1.5 print:p-1 border border-slate-300 text-center">STATUS</th>
+                      <th className="p-1.5 print:p-1 border border-slate-300 text-center">MASUK</th>
+                      <th className="p-1.5 print:p-1 border border-slate-300 text-right">TARIF</th>
+                      <th className="p-1.5 print:p-1 border border-slate-300 text-right">HAK UPAH</th>
+                      <th className="p-1.5 print:p-1 border border-slate-300 text-center w-20">TTD</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -840,17 +840,17 @@ export default function ArsipPage() {
                       const person = rosterMap.get(entry.volunteerId);
                       if (!person) return null;
                       return (
-                        <tr key={entry.id} className="border-b border-slate-200">
-                          <td className="p-1.5 border border-slate-300 text-center font-mono font-bold">
+                        <tr key={entry.id} className="border-b border-slate-200 break-inside-avoid">
+                          <td className="p-1.5 print:p-1 border border-slate-300 text-center font-mono font-bold">
                             {person.no}
                           </td>
-                          <td className="p-1.5 border border-slate-300 font-bold">
+                          <td className="p-1.5 print:p-1 border border-slate-300 font-bold">
                             {person.name}
                           </td>
-                          <td className="p-1.5 border border-slate-300 text-slate-600">
+                          <td className="p-1.5 print:p-1 border border-slate-300 text-slate-600">
                             {person.dutySection}
                           </td>
-                          <td className="p-1.5 border border-slate-300 text-center">
+                          <td className="p-1.5 print:p-1 border border-slate-300 text-center">
                             <span
                               className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                                 entry.status === 'Hadir'
@@ -863,40 +863,39 @@ export default function ArsipPage() {
                               {entry.status}
                             </span>
                           </td>
-                          <td className="p-1.5 border border-slate-300 text-center font-mono">
+                          <td className="p-1.5 print:p-1 border border-slate-300 text-center font-mono whitespace-nowrap">
                             {entry.status === 'Hadir' ? entry.checkIn : '-'}
                           </td>
-                          <td className="p-1.5 border border-slate-300 text-right font-mono">
+                          <td className="p-1.5 print:p-1 border border-slate-300 text-right font-mono whitespace-nowrap">
                             {formatRupiah(person.dailyRate)}
                           </td>
-                          <td className="p-1.5 border border-slate-300 text-right font-mono font-bold">
+                          <td className="p-1.5 print:p-1 border border-slate-300 text-right font-mono font-bold whitespace-nowrap">
                             {formatRupiah(entry.earnedAmount)}
                           </td>
-                          <td className="p-1.5 border border-slate-300 text-center font-mono text-[9px] text-slate-300">
-                            ( .................... )
+                          <td className="p-1.5 print:p-1 border border-slate-300 text-center">
+                            <span className="block border-b border-slate-400 h-5 mx-1" />
                           </td>
                         </tr>
                       );
                     })}
-                  </tbody>
-                  <tfoot>
-                    <tr className="bg-slate-100 font-bold border-t border-slate-300">
-                      <td colSpan={6} className="p-2 border border-slate-300 text-right uppercase">
+                    <tr className="bg-slate-100 font-bold border-t border-slate-300 break-inside-avoid">
+                      <td colSpan={6} className="p-2 print:p-1 border border-slate-300 text-right uppercase">
                         Total Hak Upah Relawan:
                       </td>
-                      <td className="p-2 border border-slate-300 text-right font-mono text-xs text-ink">
+                      <td className="p-2 print:p-1 border border-slate-300 text-right font-mono text-xs text-ink whitespace-nowrap">
                         {formatRupiah(printableSummary.totalEarned)}
                       </td>
-                      <td className="p-2 border border-slate-300 text-center text-[10px] text-slate-500">
+                      <td className="p-2 print:p-1 border border-slate-300 text-center text-[10px] text-slate-500">
                         {printableSummary.statusCounts.Hadir} Orang
                       </td>
                     </tr>
-                  </tfoot>
+                  </tbody>
+
                 </table>
               </div>
 
               {/* Tanda Tangan Pejabat */}
-              <div className="grid grid-cols-2 gap-8 pt-6 text-center text-xs">
+              <div className="grid grid-cols-2 gap-8 print:gap-4 pt-6 print:pt-3 text-center text-xs break-inside-avoid">
                 <div>
                   <span className="text-slate-500 block">Mengetahui / Memeriksa:</span>
                   <strong className="block pt-1 pb-16">Ahli Gizi SPPG Wonodri 3</strong>
