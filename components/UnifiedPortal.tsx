@@ -35,6 +35,7 @@ import {
   Boxes,
 } from 'lucide-react';
 import { TopNav, BottomTabs } from '@/components/SiteNav';
+import { PageHeader } from '@/components/Design';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
 import staticMenusData from '@/lib/staticMenus.json';
 import {
@@ -1000,7 +1001,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   return (
     <div className="min-h-screen bg-paper text-ink flex flex-col font-sans antialiased w-full overflow-x-hidden has-bottom-tabs">
       {/* 1. MASTER UNIFIED NAVBAR */}
-      <header className="bg-white border-b border-line sticky top-0 z-40 no-print">
+      <header className="bg-paper/90 backdrop-blur border-b border-line sticky top-0 z-40 no-print">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2.5 min-w-0" aria-label="SPPG Wonodri 3, beranda">
             <Image src="/logo.png" alt="" width={32} height={32} className="object-contain shrink-0" priority />
@@ -1067,8 +1068,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       {/* 2. BODY KONTEN PRESENSI & SDM RELAWAN */}
       <main className="max-w-6xl mx-auto w-full px-3 sm:px-4 py-4 sm:py-5 flex-1">
         <div className="space-y-4 animate-in fade-in">
+            <PageHeader
+              eyebrow="Area Operator • Presensi"
+              title="Absensi & SDM Relawan"
+              subtitle="Presensi harian, rekapitulasi, dan arsip relawan — satu sumber data dengan Arsip."
+            />
             {/* Control Bar & Sub-Tabs */}
-            <div className="bg-white rounded-xl border border-line p-2 sm:p-2.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="surface p-2 sm:p-2.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
               {/* Segmented Sub-Tabs */}
               <div className="grid grid-cols-4 sm:flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-sm font-bold w-full md:w-auto">
                 <button
