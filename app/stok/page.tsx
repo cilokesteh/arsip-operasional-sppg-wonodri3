@@ -26,6 +26,7 @@ import {
   Info,
   Save,
   Check,
+  ChevronDown,
   Scale,
   ChefHat,
   Lock,
@@ -95,6 +96,51 @@ export default function StockMonitoringPage() {
 
   // Modal Print Type: Masuk/Keluar Masak per Batch, atau Rekap Mutasi
   const [printReportType, setPrintReportType] = useState<'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'MUTASI'>('B5_OUT');
+
+  // Dropdown kustom untuk pilihan dokumen Berita Acara (pengganti <select> native
+  // yang tampil berantakan di popup Android: label grup jadi baris penuh dan
+  // teks panjang terpotong). Dropdown ini dirender aplikasi sendiri sehingga
+  // tampilannya sama di semua perangkat.
+  const [printMenuOpen, setPrintMenuOpen] = useState<boolean>(false);
+  const PRINT_REPORT_GROUPS: {
+    label: string;
+    options: { value: typeof printReportType; icon: string; title: string; count: number }[];
+  }[] = [
+    { label: 'Batch 5 — Masuk 05 Nov / Masak 06 Nov', options: [
+      { value: 'B5_OUT', icon: '📤', title: 'Keluar Masak 06 Nov', count: 22 },
+      { value: 'B5_IN', icon: '📥', title: 'Masuk 05 Nov', count: 22 },
+    ] },
+    { label: 'Batch 4 — Masuk 04 Nov / Masak 05 Nov', options: [
+      { value: 'B4_OUT', icon: '📤', title: 'Keluar Masak 05 Nov', count: 20 },
+      { value: 'B4_IN', icon: '📥', title: 'Masuk 04 Nov', count: 20 },
+    ] },
+    { label: 'Batch 3 — Masuk 03 Nov / Masak 04 Nov', options: [
+      { value: 'B3_OUT', icon: '📤', title: 'Keluar Masak 04 Nov', count: 18 },
+      { value: 'B3_IN', icon: '📥', title: 'Masuk 03 Nov', count: 18 },
+    ] },
+    { label: 'Batch 2 — Masuk 02 Nov / Masak 03 Nov', options: [
+      { value: 'B2_OUT', icon: '📤', title: 'Keluar Masak 03 Nov', count: 17 },
+      { value: 'B2_IN', icon: '📥', title: 'Masuk 02 Nov', count: 17 },
+    ] },
+    { label: 'Batch 1 — Masuk 01 Nov / Masak 02 Nov', options: [
+      { value: 'B1_OUT', icon: '📤', title: 'Keluar Masak 02 Nov', count: 16 },
+      { value: 'B1_IN', icon: '📥', title: 'Masuk 01 Nov', count: 16 },
+    ] },
+    { label: 'Rekap', options: [
+      { value: 'MUTASI', icon: '📊', title: 'Rekap Mutasi', count: 186 },
+    ] },
+  ];
+  const currentPrintOption = PRINT_REPORT_GROUPS.flatMap((g) => g.options).find((o) => o.value === printReportType) ?? PRINT_REPORT_GROUPS[0].options[0];
+
+  // Tutup menu dropdown pilihan dokumen dengan tombol Escape.
+  useEffect(() => {
+    if (!printMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPrintMenuOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [printMenuOpen]);
 
   const handleOpenPrintFor = (type: 'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'MUTASI') => {
     setPrintReportType(type);
@@ -2935,37 +2981,52 @@ export default function StockMonitoringPage() {
                 </div>
               </div>
 
-              {/* Selector Dokumen Berita Acara (Dropdown) */}
-              <div className="flex items-center gap-2">
-                <select
-                  value={printReportType}
-                  onChange={(e) => setPrintReportType(e.target.value as typeof printReportType)}
-                  className="flex-1 min-w-0 bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer"
+              {/* Selector Dokumen Berita Acara (Dropdown kustom — rapi di semua perangkat) */}
+              <div className="relative flex-1 min-w-0">
+                <button
+                  type="button"
+                  onClick={() => setPrintMenuOpen((v) => !v)}
+                  aria-haspopup="listbox"
+                  aria-expanded={printMenuOpen}
+                  className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 flex items-center gap-2 focus:outline-none focus:border-blue-600 cursor-pointer"
                 >
-                  <optgroup label="Batch 5 — Masuk 05 Nov / Masak 06 Nov">
-                    <option value="B5_OUT">📤 Keluar Masak 06 Nov (22)</option>
-                    <option value="B5_IN">📥 Masuk 05 Nov (22)</option>
-                  </optgroup>
-                  <optgroup label="Batch 4 — Masuk 04 Nov / Masak 05 Nov">
-                    <option value="B4_OUT">📤 Keluar Masak 05 Nov (20)</option>
-                    <option value="B4_IN">📥 Masuk 04 Nov (20)</option>
-                  </optgroup>
-                  <optgroup label="Batch 3 — Masuk 03 Nov / Masak 04 Nov">
-                    <option value="B3_OUT">📤 Keluar Masak 04 Nov (18)</option>
-                    <option value="B3_IN">📥 Masuk 03 Nov (18)</option>
-                  </optgroup>
-                  <optgroup label="Batch 2 — Masuk 02 Nov / Masak 03 Nov">
-                    <option value="B2_OUT">📤 Keluar Masak 03 Nov (17)</option>
-                    <option value="B2_IN">📥 Masuk 02 Nov (17)</option>
-                  </optgroup>
-                  <optgroup label="Batch 1 — Masuk 01 Nov / Masak 02 Nov">
-                    <option value="B1_OUT">📤 Keluar Masak 02 Nov (16)</option>
-                    <option value="B1_IN">📥 Masuk 01 Nov (16)</option>
-                  </optgroup>
-                  <optgroup label="Rekap">
-                    <option value="MUTASI">📊 Rekap Mutasi (186)</option>
-                  </optgroup>
-                </select>
+                  <span className="text-sm leading-none" aria-hidden="true">{currentPrintOption.icon}</span>
+                  <span className="flex-1 min-w-0 text-left truncate">{currentPrintOption.title}</span>
+                  <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-slate-100 text-[10px] font-black text-slate-500">{currentPrintOption.count}</span>
+                  <ChevronDown className={`w-4 h-4 shrink-0 text-slate-400 transition-transform ${printMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {printMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-[60]" aria-hidden="true" onClick={() => setPrintMenuOpen(false)} />
+                    <div role="listbox" aria-label="Pilih dokumen Berita Acara" className="absolute left-0 right-0 sm:left-auto sm:right-0 sm:w-[340px] mt-2 z-[70] bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden">
+                      <div className="max-h-[55vh] overflow-y-auto py-1.5">
+                        {PRINT_REPORT_GROUPS.map((group) => (
+                          <div key={group.label}>
+                            <p className="px-3.5 pt-2.5 pb-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{group.label}</p>
+                            {group.options.map((option) => {
+                              const selected = option.value === printReportType;
+                              return (
+                                <button
+                                  key={option.value}
+                                  type="button"
+                                  role="option"
+                                  aria-selected={selected}
+                                  onClick={() => { setPrintReportType(option.value); setPrintMenuOpen(false); }}
+                                  className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-bold cursor-pointer transition-colors ${selected ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50'}`}
+                                >
+                                  <span className="text-sm leading-none" aria-hidden="true">{option.icon}</span>
+                                  <span className="flex-1 min-w-0 truncate">{option.title}</span>
+                                  <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-slate-100 text-[10px] font-black text-slate-500">{option.count}</span>
+                                  {selected && <Check className="w-4 h-4 shrink-0 text-blue-600" />}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
@@ -2980,7 +3041,7 @@ export default function StockMonitoringPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowPrintModal(false)}
+                  onClick={() => { setPrintMenuOpen(false); setShowPrintModal(false); }}
                   className="p-2 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
                   title="Tutup Pratinjau"
                 >
