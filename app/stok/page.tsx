@@ -365,6 +365,25 @@ export default function StockMonitoringPage() {
     return { totalRows, itemsDiff, matchPct };
   }, [opnameSession]);
 
+  // Baris untuk dokumen PDF opname: hanya bahan yang punya kuantitas
+  // (stok sistem ATAU hasil fisik bukan 0). Bahan ber-qty 0 di kedua sisi
+  // tidak dicantumkan di output print/PDF. Tampilan layar & CSV tidak berubah.
+  const printOpnameRows = useMemo(() => {
+    if (!opnameSession) return [];
+    return opnameSession.rows.filter((r) => r.systemQty !== 0 || r.physicalQty !== 0);
+  }, [opnameSession]);
+
+  const printOpnameStats = useMemo(() => {
+    let itemsDiff = 0;
+    printOpnameRows.forEach((r) => {
+      const diff = Number((r.physicalQty - r.systemQty).toFixed(2));
+      if (diff !== 0) itemsDiff++;
+    });
+    const totalRows = printOpnameRows.length;
+    const matchPct = totalRows > 0 ? Number((((totalRows - itemsDiff) / totalRows) * 100).toFixed(1)) : 100;
+    return { totalRows, itemsDiff, matchPct };
+  }, [printOpnameRows]);
+
   // Filtered Opname Rows
   const filteredOpnameRows = useMemo(() => {
     if (!opnameSession) return [];
@@ -3401,9 +3420,9 @@ export default function StockMonitoringPage() {
 
                 {/* Ringkasan Opname */}
                 <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-[11px] font-bold text-slate-800 border border-slate-300 rounded-lg px-3 py-2">
-                  <span>Total Item: {opnameStats.totalRows}</span>
-                  <span>Item Berselisih: {opnameStats.itemsDiff}</span>
-                  <span>Kecocokan: {opnameStats.matchPct}%</span>
+                  <span>Total Item: {printOpnameStats.totalRows}</span>
+                  <span>Item Berselisih: {printOpnameStats.itemsDiff}</span>
+                  <span>Kecocokan: {printOpnameStats.matchPct}%</span>
                 </div>
 
                 {/* Tabel Hasil Opname */}
@@ -3421,33 +3440,41 @@ export default function StockMonitoringPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {opnameSession.rows.map((row, idx) => {
-                        const diff = Number((row.physicalQty - row.systemQty).toFixed(2));
-                        const fmt = (v: number) => (Number.isInteger(v) ? `${v}` : v.toFixed(2));
-                        return (
-                          <tr key={row.itemId} className={idx % 2 === 1 ? 'bg-slate-50' : ''}>
-                            <td className="border border-slate-400 px-2 py-1.5 text-center">{idx + 1}</td>
-                            <td className="border border-slate-400 px-2 py-1.5 font-bold">
-                              {row.name}
-                              <span className="block font-mono font-normal text-[9px] text-slate-500">{row.sku} &bull; {row.storageLocation}</span>
-                            </td>
-                            <td className="border border-slate-400 px-2 py-1.5 text-center">{row.uom}</td>
-                            <td className="border border-slate-400 px-2 py-1.5 text-right font-mono">{fmt(row.systemQty)}</td>
-                            <td className="border border-slate-400 px-2 py-1.5 text-right font-mono">{fmt(row.physicalQty)}</td>
-                            <td className={`border border-slate-400 px-2 py-1.5 text-right font-mono ${diff !== 0 ? 'font-black' : ''}`}>
-                              {diff > 0 ? `+${fmt(diff)}` : diff < 0 ? `-${fmt(Math.abs(diff))}` : '0'}
-                            </td>
-                            <td className="border border-slate-400 px-2 py-1.5">{row.notes || '-'}</td>
-                          </tr>
-                        );
-                      })}
+                      {printOpnameRows.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="border border-slate-400 px-2 py-4 text-center text-slate-500">
+                            Tidak ada bahan dengan kuantitas &mdash; semua item ber-qty 0 sehingga tidak dicantumkan.
+                          </td>
+                        </tr>
+                      ) : (
+                        printOpnameRows.map((row, idx) => {
+                          const diff = Number((row.physicalQty - row.systemQty).toFixed(2));
+                          const fmt = (v: number) => (Number.isInteger(v) ? `${v}` : v.toFixed(2));
+                          return (
+                            <tr key={row.itemId} className={idx % 2 === 1 ? 'bg-slate-50' : ''}>
+                              <td className="border border-slate-400 px-2 py-1.5 text-center">{idx + 1}</td>
+                              <td className="border border-slate-400 px-2 py-1.5 font-bold">
+                                {row.name}
+                                <span className="block font-mono font-normal text-[9px] text-slate-500">{row.sku} &bull; {row.storageLocation}</span>
+                              </td>
+                              <td className="border border-slate-400 px-2 py-1.5 text-center">{row.uom}</td>
+                              <td className="border border-slate-400 px-2 py-1.5 text-right font-mono">{fmt(row.systemQty)}</td>
+                              <td className="border border-slate-400 px-2 py-1.5 text-right font-mono">{fmt(row.physicalQty)}</td>
+                              <td className={`border border-slate-400 px-2 py-1.5 text-right font-mono ${diff !== 0 ? 'font-black' : ''}`}>
+                                {diff > 0 ? `+${fmt(diff)}` : diff < 0 ? `-${fmt(Math.abs(diff))}` : '0'}
+                              </td>
+                              <td className="border border-slate-400 px-2 py-1.5">{row.notes || '-'}</td>
+                            </tr>
+                          );
+                        })
+                      )}
                     </tbody>
                     <tfoot>
                       <tr className="bg-slate-100 font-bold">
                         <td colSpan={3} className="border border-slate-400 px-2 py-1.5 text-right">Total</td>
-                        <td className="border border-slate-400 px-2 py-1.5 text-right font-mono">{opnameStats.totalRows} Item</td>
+                        <td className="border border-slate-400 px-2 py-1.5 text-right font-mono">{printOpnameStats.totalRows} Item</td>
                         <td colSpan={3} className="border border-slate-400 px-2 py-1.5 text-left">
-                          {opnameStats.itemsDiff} Item Berselisih &bull; Kecocokan {opnameStats.matchPct}%
+                          {printOpnameStats.itemsDiff} Item Berselisih &bull; Kecocokan {printOpnameStats.matchPct}%
                         </td>
                       </tr>
                     </tfoot>
