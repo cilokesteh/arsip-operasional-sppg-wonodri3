@@ -93,6 +93,7 @@ export async function timingSafeEqual(a: string, b: string): Promise<boolean> {
 export interface AuthTokenPayload {
   exp: number;
   iat: number;
+  scope: string;
 }
 
 // Token sesi: payload.exp ditandatangani HMAC-SHA256 dengan
@@ -104,7 +105,11 @@ export async function signToken(secret: string, payload: AuthTokenPayload): Prom
   return `${payloadPart}.${toBase64Url(sig)}`;
 }
 
-export async function verifyTokenSignature(secret: string, token: string): Promise<boolean> {
+export async function verifyTokenSignature(
+  secret: string,
+  token: string,
+  expectedScope?: string
+): Promise<boolean> {
   try {
     const [payloadPart, sigPart] = token.split('.');
     if (!payloadPart || !sigPart) return false;
@@ -117,7 +122,9 @@ export async function verifyTokenSignature(secret: string, token: string): Promi
     const payload = JSON.parse(
       new TextDecoder().decode(fromBase64Url(payloadPart))
     ) as AuthTokenPayload;
-    return typeof payload.exp === 'number' && Date.now() < payload.exp;
+    if (typeof payload.exp !== 'number' || Date.now() >= payload.exp) return false;
+    if (expectedScope && payload.scope !== expectedScope) return false;
+    return true;
   } catch {
     return false;
   }

@@ -201,7 +201,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
   useEffect(() => {
     // Pulihkan sesi login (token diverifikasi ke server)
-    hasValidSession()
+    hasValidSession('operator')
       .then((valid) => {
         if (valid) setIsAuthenticated(true);
       })
@@ -373,7 +373,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await verifyPin(inputPasscode);
+    const result = await verifyPin(inputPasscode, 'operator');
     if (result.ok) {
       setIsAuthenticated(true);
       setLoginError('');
@@ -389,7 +389,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    clearSession();
+    clearSession('operator');
     setInputPasscode('');
   };
 

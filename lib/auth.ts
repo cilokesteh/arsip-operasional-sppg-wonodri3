@@ -1,12 +1,20 @@
 // Verifikasi PIN operator via server (Cloudflare Pages Function).
 // Nilai PIN TIDAK PERNAH ada di kode aplikasi / bundle JS — PIN hanya
-// dibandingkan di server dengan env var OPERATOR_PIN, dan browser hanya
-// menyimpan token sesi bertanda tangan (HMAC) yang kedaluwarsa 8 jam.
+// dibandingkan di server dengan env var (PIN_STOCK untuk halaman Stok,
+// PIN_OPERATOR untuk Absensi/Arsip/Admin/Portal), dan browser hanya
+// menyimpan token sesi bertanda tangan (HMAC) per scope yang kedaluwarsa
+// 8 jam.
 
-const TOKEN_KEY = 'sppg_auth_token';
+export type PinScope = 'stock' | 'operator';
 
-// Kunci sesi lama (pra-server) — dibersihkan saat login/logout baru.
+const TOKEN_KEYS: Record<PinScope, string> = {
+  stock: 'sppg_auth_token_stock',
+  operator: 'sppg_auth_token_operator',
+};
+
+// Kunci sesi lama (pra-server & pra-scope) — dibersihkan saat login/logout baru.
 const LEGACY_KEYS = [
+  'sppg_auth_token',
   'sppg_stock_auth',
   'sppg_absensi_auth',
   'sppg_admin_auth',
@@ -26,18 +34,18 @@ function clearLegacyKeys(): void {
   }
 }
 
-export async function verifyPin(pin: string): Promise<PinVerifyResult> {
+export async function verifyPin(pin: string, scope: PinScope): Promise<PinVerifyResult> {
   try {
     const res = await fetch('/api/verify-pin', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ pin }),
+      body: JSON.stringify({ pin, scope }),
     });
     if (res.ok) {
       const data = await res.json().catch(() => null);
       if (data && typeof data.token === 'string' && data.token) {
         try {
-          sessionStorage.setItem(TOKEN_KEY, data.token);
+          sessionStorage.setItem(TOKEN_KEYS[scope], data.token);
         } catch {
           // ignore
         }
@@ -54,10 +62,10 @@ export async function verifyPin(pin: string): Promise<PinVerifyResult> {
   }
 }
 
-export async function hasValidSession(): Promise<boolean> {
+export async function hasValidSession(scope: PinScope): Promise<boolean> {
   let token: string | null = null;
   try {
-    token = sessionStorage.getItem(TOKEN_KEY);
+    token = sessionStorage.getItem(TOKEN_KEYS[scope]);
   } catch {
     return false;
   }
@@ -66,7 +74,7 @@ export async function hasValidSession(): Promise<boolean> {
     const res = await fetch('/api/verify-token', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ token }),
+      body: JSON.stringify({ token, scope }),
     });
     if (!res.ok) return false;
     const data = await res.json().catch(() => null);
@@ -76,9 +84,15 @@ export async function hasValidSession(): Promise<boolean> {
   }
 }
 
-export function clearSession(): void {
+export function clearSession(scope?: PinScope): void {
   try {
-    sessionStorage.removeItem(TOKEN_KEY);
+    if (scope) {
+      sessionStorage.removeItem(TOKEN_KEYS[scope]);
+    } else {
+      (Object.keys(TOKEN_KEYS) as PinScope[]).forEach((s) =>
+        sessionStorage.removeItem(TOKEN_KEYS[s])
+      );
+    }
   } catch {
     // ignore
   }

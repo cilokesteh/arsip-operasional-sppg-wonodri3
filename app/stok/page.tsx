@@ -216,7 +216,7 @@ export default function StockMonitoringPage() {
   // Check Auth Sesi on Mount (token diverifikasi ke server)
   useEffect(() => {
     let cancelled = false;
-    hasValidSession()
+    hasValidSession('stock')
       .then((valid) => {
         if (!cancelled && valid) setIsAuthenticated(true);
       })
@@ -234,7 +234,7 @@ export default function StockMonitoringPage() {
     setIsSubmittingPin(true);
     setPinError('');
 
-    const result = await verifyPin(pinInput.trim());
+    const result = await verifyPin(pinInput.trim(), 'stock');
     if (result.ok) {
       setIsAuthenticated(true);
       setPinError('');
@@ -252,7 +252,7 @@ export default function StockMonitoringPage() {
   };
 
   const handleLockSession = () => {
-    clearSession();
+    clearSession('stock');
     setIsAuthenticated(false);
     setPinInput('');
     setPinError('');
@@ -935,7 +935,7 @@ export default function StockMonitoringPage() {
             <form onSubmit={handleVerifyPin} className="space-y-4 relative">
               <div>
                 <label className="text-[13px] font-bold text-slate-700 block mb-1.5">
-                  PIN Otoritas (5 Digit):
+                  PIN Otoritas (6 Digit):
                 </label>
                 <div className="relative">
                   <input

@@ -18,7 +18,7 @@ export default function AbsensiPage() {
     // Cek apakah operator sudah login di sesi browser ini
     // (token diverifikasi ke server)
     let cancelled = false;
-    hasValidSession()
+    hasValidSession('operator')
       .then((valid) => {
         if (!cancelled && valid) setIsAuthenticated(true);
       })
@@ -36,7 +36,7 @@ export default function AbsensiPage() {
     setIsSubmitting(true);
     setPinError('');
 
-    const result = await verifyPin(pinInput.trim());
+    const result = await verifyPin(pinInput.trim(), 'operator');
     if (result.ok) {
       setIsAuthenticated(true);
       setPinError('');
@@ -54,7 +54,7 @@ export default function AbsensiPage() {
   };
 
   const handleLockSession = () => {
-    clearSession();
+    clearSession('operator');
     setIsAuthenticated(false);
     setPinInput('');
     setPinError('');
@@ -114,7 +114,7 @@ export default function AbsensiPage() {
             <form onSubmit={handleVerifyPin} className="space-y-4 relative">
               <div>
                 <label className="text-[13px] font-bold text-slate-700 block mb-1.5">
-                  PIN Otoritas (5 Digit):
+                  PIN Otoritas (6 Digit):
                 </label>
                 <div className="relative">
                   <input

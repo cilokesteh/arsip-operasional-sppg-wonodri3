@@ -365,7 +365,7 @@ export default function PortalHome() {
   const handleOpenPrintModal = async () => {
     // Tidak ada laporan pada tanggal terpilih = tidak ada dokumen untuk dicetak.
     if (!currentMenu) return;
-    const sessionValid = await hasValidSession();
+    const sessionValid = await hasValidSession('operator');
     if (sessionValid) {
       setActiveTab('dokumen');
       setTimeout(() => window.print(), 250);
@@ -378,7 +378,7 @@ export default function PortalHome() {
 
   const handleVerifyPin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await verifyPin(inputPin.trim());
+    const result = await verifyPin(inputPin.trim(), 'operator');
     if (result.ok) {
       setShowPinModal(false);
       setInputPin('');
@@ -1376,7 +1376,7 @@ export default function PortalHome() {
             <form onSubmit={handleVerifyPin} className="space-y-3.5">
               <div>
                 <label htmlFor="pin-input" className="text-sm font-semibold text-slate-700 block mb-1.5">
-                  Masukkan PIN (5 Digit):
+                  Masukkan PIN (6 Digit):
                 </label>
                 <div className="relative">
                   <input

@@ -102,7 +102,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
   const handleVerifyPinMenu = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await verifyPin(inputPinMenu.trim());
+    const result = await verifyPin(inputPinMenu.trim(), 'operator');
     if (result.ok) {
       setShowPinModalMenu(false);
       setInputPinMenu('');
@@ -280,7 +280,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     setLedger(loadedLedger);
 
     // Pulihkan status buka upah dari sesi (token diverifikasi ke server)
-    hasValidSession()
+    hasValidSession('operator')
       .then((valid) => {
         if (valid) setIsSalaryUnlocked(true);
       })
@@ -844,7 +844,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
   const handleVerifySalaryPin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await verifyPin(pinInputSalary.trim());
+    const result = await verifyPin(pinInputSalary.trim(), 'operator');
     if (result.ok) {
       setIsSalaryUnlocked(true);
       setShowPinModalSalary(false);
@@ -868,7 +868,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
   const handleLockSalary = () => {
     setIsSalaryUnlocked(false);
-    clearSession();
+    clearSession('operator');
   };
 
   const renderSalary = (amount: number, isStrikethrough = false) => {

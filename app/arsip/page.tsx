@@ -156,7 +156,7 @@ export default function ArsipPage() {
     setLedger(loadedLedger);
 
     // Pulihkan status buka upah dari sesi (token diverifikasi ke server)
-    hasValidSession()
+    hasValidSession('operator')
       .then((valid) => {
         if (valid) setIsSalaryUnlocked(true);
       })
@@ -329,7 +329,7 @@ export default function ArsipPage() {
 
   const handleVerifyPin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await verifyPin(inputPin.trim());
+    const result = await verifyPin(inputPin.trim(), 'operator');
     if (result.ok) {
       setIsSalaryUnlocked(true);
       setShowPinModal(false);
