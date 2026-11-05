@@ -222,7 +222,7 @@
 @media print {
   @page {
     size: auto;
-    margin: 8mm 10mm 8mm 10mm;
+    margin: 5mm 10mm 5mm 10mm;
   }
 
   body {

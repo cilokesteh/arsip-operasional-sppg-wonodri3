@@ -3082,16 +3082,16 @@ export default function StockMonitoringPage() {
             {/* Document Body Wrapper with Scroll */}
             <div className="p-2 sm:p-8 bg-slate-100 overflow-y-auto flex-1 print:p-0 print:bg-white print:overflow-visible">
               {/* Genuine A4 Document Sheet */}
-              <div className="report-sheet bg-white text-slate-950 p-4 sm:p-10 border border-slate-300 rounded-xl shadow-md max-w-3xl mx-auto space-y-6 font-serif text-xs print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full">
+              <div className="report-sheet bg-white text-slate-950 p-4 sm:p-10 border border-slate-300 rounded-xl shadow-md max-w-3xl mx-auto space-y-6 print:space-y-3 font-serif text-xs print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full">
                 {/* Official KOP BGN SPPG */}
-                <div className="border-b-2 border-slate-950 pb-4 text-center relative">
+                <div className="border-b-2 border-slate-950 pb-4 print:pb-2 text-center relative">
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                     <Image
                       src="/logo.png"
                       alt="Logo BGN"
                       width={55}
                       height={55}
-                      className="object-contain shrink-0"
+                      className="object-contain shrink-0 print:w-10 print:h-10"
                       priority
                     />
                     <div className="text-center">
@@ -3109,7 +3109,7 @@ export default function StockMonitoringPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="border-t border-slate-950 mt-3 pt-0.5" />
+                  <div className="border-t border-slate-950 mt-3 print:mt-1.5 pt-0.5" />
                 </div>
 
                 {/* Judul Dokumen Sesuai Pilihan */}
@@ -3156,7 +3156,7 @@ export default function StockMonitoringPage() {
                 </div>
 
                 {/* Narasi Resmi Sesuai Pilihan */}
-                <p className="text-[11px] leading-relaxed text-justify text-slate-800">
+                <p className="text-[11px] leading-relaxed print:leading-snug text-justify text-slate-800">
                   {printReportType === 'B5_OUT' &&
                     'Pada hari ini, Jumat tanggal 06 November 2026 pukul 05:00 WIB, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 5 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Nasi Putih, Mongolian Chicken, Tahu Goreng Marinasi, Sayur Orak Arik, Buah Kurma) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B5_IN' &&
@@ -3186,53 +3186,53 @@ export default function StockMonitoringPage() {
                   <table className="w-full text-left text-[10px] border-collapse min-w-[500px]">
                     <thead className="bg-slate-100 font-bold">
                       <tr className="border-b border-slate-400">
-                        <th className="p-1.5 border-r border-slate-400 text-center w-8">NO</th>
-                        <th className="p-1.5 border-r border-slate-400">GOLONGAN</th>
-                        <th className="p-1.5 border-r border-slate-400">NAMA BAHAN MAKANAN</th>
+                        <th className="p-1.5 print:p-1 border-r border-slate-400 text-center w-8">NO</th>
+                        <th className="p-1.5 print:p-1 border-r border-slate-400">GOLONGAN</th>
+                        <th className="p-1.5 print:p-1 border-r border-slate-400">NAMA BAHAN MAKANAN</th>
                         {printReportType === 'MUTASI' ? (
                           <>
-                            <th className="p-1.5 border-r border-slate-400 text-right">MASUK (QTY)</th>
-                            <th className="p-1.5 border-r border-slate-400 text-right">MASAK (QTY)</th>
-                            <th className="p-1.5 border-r border-slate-400 text-right">SISA</th>
+                            <th className="p-1.5 print:p-1 border-r border-slate-400 text-right">MASUK (QTY)</th>
+                            <th className="p-1.5 print:p-1 border-r border-slate-400 text-right">MASAK (QTY)</th>
+                            <th className="p-1.5 print:p-1 border-r border-slate-400 text-right">SISA</th>
                           </>
                         ) : (
-                          <th className="p-1.5 border-r border-slate-400 text-right">
+                          <th className="p-1.5 print:p-1 border-r border-slate-400 text-right">
                             {printReportType.includes('IN') ? 'JUMLAH MASUK' : 'JUMLAH MASAK'}
                           </th>
                         )}
-                        <th className="p-1.5 border-r border-slate-400 text-center">SATUAN</th>
-                        <th className="p-1.5 border-r border-slate-400">LOKASI SIMPAN</th>
-                        <th className="p-1.5 text-center">KETERANGAN</th>
+                        <th className="p-1.5 print:p-1 border-r border-slate-400 text-center">SATUAN</th>
+                        <th className="p-1.5 print:p-1 border-r border-slate-400">LOKASI SIMPAN</th>
+                        <th className="p-1.5 print:p-1 text-center">KETERANGAN</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-300">
                       {reportItems.map((item, idx) => (
                         <tr key={item.id} className="hover:bg-slate-50">
-                          <td className="p-1.5 border-r border-slate-300 text-center font-mono">{idx + 1}</td>
-                          <td className="p-1.5 border-r border-slate-300 font-semibold">{item.category}</td>
-                          <td className="p-1.5 border-r border-slate-300 font-bold">{item.name}</td>
+                          <td className="p-1.5 print:p-1 border-r border-slate-300 text-center font-mono">{idx + 1}</td>
+                          <td className="p-1.5 print:p-1 border-r border-slate-300 font-semibold">{item.category}</td>
+                          <td className="p-1.5 print:p-1 border-r border-slate-300 font-bold">{item.name}</td>
                           {printReportType === 'MUTASI' ? (
                             <>
-                              <td className="p-1.5 border-r border-slate-300 text-right font-mono font-bold text-emerald-800">
+                              <td className="p-1.5 print:p-1 border-r border-slate-300 text-right font-mono font-bold text-emerald-800">
                                 {item.initialStock}
                               </td>
-                              <td className="p-1.5 border-r border-slate-300 text-right font-mono font-bold text-indigo-800">
+                              <td className="p-1.5 print:p-1 border-r border-slate-300 text-right font-mono font-bold text-indigo-800">
                                 {item.usedStock}
                               </td>
-                              <td className="p-1.5 border-r border-slate-300 text-right font-mono font-bold text-slate-900">
+                              <td className="p-1.5 print:p-1 border-r border-slate-300 text-right font-mono font-bold text-slate-900">
                                 {item.currentStock}
                               </td>
                             </>
                           ) : (
-                            <td className="p-1.5 border-r border-slate-300 text-right font-mono font-bold text-[11px]">
+                            <td className="p-1.5 print:p-1 border-r border-slate-300 text-right font-mono font-bold text-[11px]">
                               {printReportType.includes('IN') ? item.initialStock : item.usedStock}
                             </td>
                           )}
-                          <td className="p-1.5 border-r border-slate-300 text-center font-mono font-bold">
+                          <td className="p-1.5 print:p-1 border-r border-slate-300 text-center font-mono font-bold">
                             {item.uom}
                           </td>
-                          <td className="p-1.5 border-r border-slate-300">{item.storageLocation}</td>
-                          <td className="p-1.5 text-center font-medium text-emerald-800">
+                          <td className="p-1.5 print:p-1 border-r border-slate-300">{item.storageLocation}</td>
+                          <td className="p-1.5 print:p-1 text-center font-medium text-emerald-800">
                             {printReportType.includes('IN')
                               ? 'Diterima Baik'
                               : printReportType === 'MUTASI'
@@ -3244,29 +3244,29 @@ export default function StockMonitoringPage() {
                     </tbody>
                     <tfoot className="bg-slate-100 font-bold border-t-2 border-slate-400">
                       <tr>
-                        <td colSpan={3} className="p-2 border-r border-slate-400 text-right uppercase">
+                        <td colSpan={3} className="p-2 print:p-1 border-r border-slate-400 text-right uppercase">
                           {printReportType === 'MUTASI' ? 'Total Mutasi (Kg):' : 'Total Muatan Timbangan:'}
                         </td>
                         {printReportType === 'MUTASI' ? (
                           <>
-                            <td className="p-2 border-r border-slate-400 text-right font-mono text-xs text-emerald-900">
+                            <td className="p-2 print:p-1 border-r border-slate-400 text-right font-mono text-xs text-emerald-900">
                               {reportSummary.totalKgMasuk} KG
                             </td>
-                            <td className="p-2 border-r border-slate-400 text-right font-mono text-xs text-indigo-900">
+                            <td className="p-2 print:p-1 border-r border-slate-400 text-right font-mono text-xs text-indigo-900">
                               {reportSummary.totalKgKeluar} KG
                             </td>
-                            <td className="p-2 border-r border-slate-400 text-right font-mono text-xs text-slate-900">
+                            <td className="p-2 print:p-1 border-r border-slate-400 text-right font-mono text-xs text-slate-900">
                               0 KG
                             </td>
                           </>
                         ) : (
-                          <td className="p-2 border-r border-slate-400 text-right font-mono text-xs text-blue-900">
+                          <td className="p-2 print:p-1 border-r border-slate-400 text-right font-mono text-xs text-blue-900">
                             {printReportType.includes('IN') ? reportSummary.totalKgMasuk : reportSummary.totalKgKeluar} KG
                           </td>
                         )}
                         <td
                           colSpan={printReportType === 'MUTASI' ? 2 : 3}
-                          className="p-2 text-left font-mono text-[10px] text-slate-700"
+                          className="p-2 print:p-1 text-left font-mono text-[10px] text-slate-700"
                         >
                           + {reportSummary.totalQtyNonKgMasuk} Unit Satuan Lain (L/Pouch/Btl/Papan/Krat/PCS)
                         </td>
@@ -3276,9 +3276,9 @@ export default function StockMonitoringPage() {
                 </div>
 
                 {/* Formal 4-Signatory Block: Responsive grid (2x2 on mobile, 4 cols in print & desktop) */}
-                <div className="pt-6 border-t border-slate-200">
-                  <div className="grid grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 sm:gap-3 text-center text-xs">
-                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                <div className="pt-6 print:pt-3 border-t border-slate-200">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 sm:gap-3 print:gap-2 text-center text-xs">
+                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Petugas Logistik / Timbangan,
                       </p>
@@ -3290,7 +3290,7 @@ export default function StockMonitoringPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Ahli Gizi Penanggung Jawab,
                       </p>
@@ -3302,7 +3302,7 @@ export default function StockMonitoringPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Petugas Akuntansi / Keuangan,
                       </p>
@@ -3314,7 +3314,7 @@ export default function StockMonitoringPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Mengetahui / Mengesahkan,
                       </p>
@@ -3373,16 +3373,16 @@ export default function StockMonitoringPage() {
             {/* Document Body Wrapper with Scroll */}
             <div className="p-2 sm:p-8 bg-slate-100 overflow-y-auto flex-1 print:p-0 print:bg-white print:overflow-visible">
               {/* Genuine A4 Document Sheet */}
-              <div className="report-sheet bg-white text-slate-950 p-4 sm:p-10 border border-slate-300 rounded-xl shadow-md max-w-3xl mx-auto space-y-6 font-serif text-xs print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full">
+              <div className="report-sheet bg-white text-slate-950 p-4 sm:p-10 border border-slate-300 rounded-xl shadow-md max-w-3xl mx-auto space-y-6 print:space-y-3 font-serif text-xs print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full">
                 {/* Official KOP BGN SPPG */}
-                <div className="border-b-2 border-slate-950 pb-4 text-center relative">
+                <div className="border-b-2 border-slate-950 pb-4 print:pb-2 text-center relative">
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                     <Image
                       src="/logo.png"
                       alt="Logo BGN"
                       width={55}
                       height={55}
-                      className="object-contain shrink-0"
+                      className="object-contain shrink-0 print:w-10 print:h-10"
                       priority
                     />
                     <div className="text-center">
@@ -3400,7 +3400,7 @@ export default function StockMonitoringPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="border-t border-slate-950 mt-3 pt-0.5" />
+                  <div className="border-t border-slate-950 mt-3 print:mt-1.5 pt-0.5" />
                 </div>
 
                 {/* Judul Dokumen */}
@@ -3425,16 +3425,16 @@ export default function StockMonitoringPage() {
 
                 {/* Tabel Hasil Opname */}
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-slate-400 text-[11px]">
+                  <table className="w-full border-collapse border border-slate-400 text-[11px] print:text-[10px]">
                     <thead>
                       <tr className="bg-slate-100">
-                        <th className="border border-slate-400 px-2 py-1.5 text-center w-8">No</th>
-                        <th className="border border-slate-400 px-2 py-1.5 text-left">Nama Bahan</th>
-                        <th className="border border-slate-400 px-2 py-1.5 text-center">Satuan</th>
-                        <th className="border border-slate-400 px-2 py-1.5 text-right">Stok Sistem</th>
-                        <th className="border border-slate-400 px-2 py-1.5 text-right">Hasil Fisik</th>
-                        <th className="border border-slate-400 px-2 py-1.5 text-right">Selisih</th>
-                        <th className="border border-slate-400 px-2 py-1.5 text-left">Keterangan</th>
+                        <th className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-center w-8">No</th>
+                        <th className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-left">Nama Bahan</th>
+                        <th className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-center">Satuan</th>
+                        <th className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-right">Stok Sistem</th>
+                        <th className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-right">Hasil Fisik</th>
+                        <th className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-right">Selisih</th>
+                        <th className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-left">Keterangan</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -3450,18 +3450,18 @@ export default function StockMonitoringPage() {
                           const fmt = (v: number) => (Number.isInteger(v) ? `${v}` : v.toFixed(2));
                           return (
                             <tr key={row.itemId} className={idx % 2 === 1 ? 'bg-slate-50' : ''}>
-                              <td className="border border-slate-400 px-2 py-1.5 text-center">{idx + 1}</td>
-                              <td className="border border-slate-400 px-2 py-1.5 font-bold">
+                              <td className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-center">{idx + 1}</td>
+                              <td className="border border-slate-400 px-2 py-1.5 print:py-0.5 font-bold">
                                 {row.name}
-                                <span className="block font-mono font-normal text-[9px] text-slate-500">{row.sku} &bull; {row.storageLocation}</span>
+                                <span className="block font-mono font-normal text-[9px] text-slate-500 print:hidden">{row.sku} &bull; {row.storageLocation}</span>
                               </td>
-                              <td className="border border-slate-400 px-2 py-1.5 text-center">{row.uom}</td>
-                              <td className="border border-slate-400 px-2 py-1.5 text-right font-mono">{fmt(row.systemQty)}</td>
-                              <td className="border border-slate-400 px-2 py-1.5 text-right font-mono">{fmt(row.physicalQty)}</td>
-                              <td className={`border border-slate-400 px-2 py-1.5 text-right font-mono ${diff !== 0 ? 'font-black' : ''}`}>
+                              <td className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-center">{row.uom}</td>
+                              <td className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-right font-mono">{fmt(row.systemQty)}</td>
+                              <td className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-right font-mono">{fmt(row.physicalQty)}</td>
+                              <td className={`border border-slate-400 px-2 py-1.5 print:py-0.5 text-right font-mono ${diff !== 0 ? 'font-black' : ''}`}>
                                 {diff > 0 ? `+${fmt(diff)}` : diff < 0 ? `-${fmt(Math.abs(diff))}` : '0'}
                               </td>
-                              <td className="border border-slate-400 px-2 py-1.5">{row.notes || '-'}</td>
+                              <td className="border border-slate-400 px-2 py-1.5 print:py-0.5">{row.notes || '-'}</td>
                             </tr>
                           );
                         })
@@ -3469,9 +3469,9 @@ export default function StockMonitoringPage() {
                     </tbody>
                     <tfoot>
                       <tr className="bg-slate-100 font-bold">
-                        <td colSpan={3} className="border border-slate-400 px-2 py-1.5 text-right">Total</td>
-                        <td className="border border-slate-400 px-2 py-1.5 text-right font-mono">{printOpnameStats.totalRows} Item</td>
-                        <td colSpan={3} className="border border-slate-400 px-2 py-1.5 text-left">
+                        <td colSpan={3} className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-right">Total</td>
+                        <td className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-right font-mono">{printOpnameStats.totalRows} Item</td>
+                        <td colSpan={3} className="border border-slate-400 px-2 py-1.5 print:py-0.5 text-left">
                           {printOpnameStats.itemsDiff} Item Berselisih &bull; Kecocokan {printOpnameStats.matchPct}%
                         </td>
                       </tr>
@@ -3485,9 +3485,9 @@ export default function StockMonitoringPage() {
                 </p>
 
                 {/* Formal 4-Signatory Block: Responsive grid (2x2 on mobile, 4 cols in print & desktop) */}
-                <div className="pt-6 border-t border-slate-200">
-                  <div className="grid grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 sm:gap-3 text-center text-xs">
-                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                <div className="pt-6 print:pt-3 border-t border-slate-200">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 sm:gap-3 print:gap-2 text-center text-xs">
+                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Petugas Logistik / Timbangan,
                       </p>
@@ -3499,7 +3499,7 @@ export default function StockMonitoringPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Ahli Gizi Penanggung Jawab,
                       </p>
@@ -3511,7 +3511,7 @@ export default function StockMonitoringPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Petugas Akuntansi / Keuangan,
                       </p>
@@ -3523,7 +3523,7 @@ export default function StockMonitoringPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Mengetahui / Mengesahkan,
                       </p>
