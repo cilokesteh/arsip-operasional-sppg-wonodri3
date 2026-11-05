@@ -3278,7 +3278,7 @@ export default function StockMonitoringPage() {
                 {/* Formal 4-Signatory Block: Responsive grid (2x2 on mobile, 4 cols in print & desktop) */}
                 <div className="pt-6 print:pt-3 border-t border-slate-200">
                   <div className="grid grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 sm:gap-3 print:gap-2 text-center text-xs">
-                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Petugas Logistik / Timbangan,
                       </p>
@@ -3290,7 +3290,7 @@ export default function StockMonitoringPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Ahli Gizi Penanggung Jawab,
                       </p>
@@ -3302,7 +3302,7 @@ export default function StockMonitoringPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Petugas Akuntansi / Keuangan,
                       </p>
@@ -3314,7 +3314,7 @@ export default function StockMonitoringPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Mengetahui / Mengesahkan,
                       </p>
@@ -3487,7 +3487,7 @@ export default function StockMonitoringPage() {
                 {/* Formal 4-Signatory Block: Responsive grid (2x2 on mobile, 4 cols in print & desktop) */}
                 <div className="pt-6 print:pt-3 border-t border-slate-200">
                   <div className="grid grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 sm:gap-3 print:gap-2 text-center text-xs">
-                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Petugas Logistik / Timbangan,
                       </p>
@@ -3499,7 +3499,7 @@ export default function StockMonitoringPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Ahli Gizi Penanggung Jawab,
                       </p>
@@ -3511,7 +3511,7 @@ export default function StockMonitoringPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Petugas Akuntansi / Keuangan,
                       </p>
@@ -3523,7 +3523,7 @@ export default function StockMonitoringPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-12 print:space-y-3 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
                         Mengetahui / Mengesahkan,
                       </p>
