@@ -675,13 +675,13 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
   // JIKA BELUM LOGIN
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0b1e3a] text-white flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-sm bg-white text-[#0d1b2e] rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+      <div className="min-h-screen bg-paper text-ink flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-sm panel p-6 sm:p-8 space-y-6">
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-[#e8f2fe] text-[#1759ab] flex items-center justify-center mx-auto shadow-xs border border-[#cfe4fc]">
-              <Lock className="w-7 h-7 text-[#1759ab]" />
+            <div className="w-14 h-14 rounded-2xl bg-gold-soft text-gold-ink flex items-center justify-center mx-auto border border-gold/40">
+              <Lock className="w-7 h-7" />
             </div>
-            <h1 className="font-bold text-lg sm:text-xl text-[#0b1e3a]">
+            <h1 className="font-bold text-lg sm:text-xl text-ink">
               Akses Panel Admin
             </h1>
             <p className="text-sm text-slate-500">
@@ -700,7 +700,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                   placeholder="Ketik kode akses..."
                   value={inputPasscode}
                   onChange={(e) => setInputPasscode(e.target.value)}
-                  className="w-full pl-9 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1759ab] focus:outline-none font-mono"
+                  className="w-full pl-9 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-gold focus:outline-none font-mono"
                   required
                   autoFocus
                 />
@@ -717,7 +717,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-[#1759ab] hover:bg-[#1d6fd0] transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-ink hover:bg-ink-soft transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Masuk ke Panel Kendali</span>
             </button>
@@ -726,7 +726,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
           <div className="text-center pt-2 border-t border-slate-100">
             <Link
               href="/"
-              className="text-sm font-bold text-slate-500 hover:text-[#1759ab] transition-colors"
+              className="text-sm font-bold text-slate-500 hover:text-ink transition-colors"
             >
               ← Kembali ke Halaman Publik
             </Link>
@@ -809,7 +809,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
             onClick={() => setActiveTab('input')}
             className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'input'
-                ? 'bg-white text-[#1759ab]'
+                ? 'bg-white text-ink'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -824,7 +824,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
             }}
             className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'list'
-                ? 'bg-white text-[#1759ab]'
+                ? 'bg-white text-ink'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >

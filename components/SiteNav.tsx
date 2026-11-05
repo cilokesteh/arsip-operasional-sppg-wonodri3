@@ -24,6 +24,65 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/admin', label: 'Operator', icon: FileSpreadsheet, locked: true },
 ];
 
+/**
+ * Footer resmi bersama untuk halaman publik (Portal & Arsip).
+ * Memakai warna ink sebagai penutup halaman agar identitas portal
+ * terasa utuh: header terang, isi di atas paper, footer ink.
+ */
+export function SiteFooter() {
+  return (
+    <footer className="no-print bg-ink text-white mt-auto">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <div className="grid gap-8 sm:grid-cols-3">
+          <div>
+            <p className="font-heading font-bold text-[15px] leading-tight">SPPG Wonodri 3</p>
+            <p className="text-sm text-white/70 mt-1 leading-relaxed">
+              Portal transparansi operasional Dapur Makan Bergizi Gratis (MBG) —
+              Wonodri, Semarang Selatan, Kota Semarang.
+            </p>
+          </div>
+          <nav aria-label="Jelajahi portal">
+            <p className="text-xs font-bold uppercase tracking-wider text-gold">Jelajahi</p>
+            <ul className="mt-3 space-y-2 text-sm">
+              <li>
+                <Link href="/" className="text-white/85 hover:text-white">
+                  Portal — laporan harian
+                </Link>
+              </li>
+              <li>
+                <Link href="/arsip" className="text-white/85 hover:text-white">
+                  Arsip operasional
+                </Link>
+              </li>
+            </ul>
+          </nav>
+          <nav aria-label="Area operator">
+            <p className="text-xs font-bold uppercase tracking-wider text-gold">Area Operator</p>
+            <ul className="mt-3 space-y-2 text-sm">
+              {NAV_ITEMS.filter((i) => i.locked).map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="inline-flex items-center gap-1.5 text-white/85 hover:text-white"
+                  >
+                    {item.label}
+                    <Lock className="w-3 h-3 opacity-60" aria-hidden="true" />
+                    <span className="sr-only">(khusus operator, perlu PIN)</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+        <div className="border-t border-white/15 mt-8 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-white/60">
+          <span>© 2026 SPPG Wonodri 3, Kota Semarang</span>
+          <span>Badan Gizi Nasional, Republik Indonesia</span>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 function useIsActive() {
   const pathname = usePathname() || '/';
   return (item: NavItem) => {

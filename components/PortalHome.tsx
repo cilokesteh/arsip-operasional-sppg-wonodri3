@@ -55,7 +55,7 @@ import { toIsoDateLocal } from '@/lib/attendance';
 import { fetchMenusFromCloud, saveSingleMenuToCloud } from '@/lib/cloudSync';
 import staticMenusData from '@/lib/staticMenus.json';
 import OfficialReport from '@/components/OfficialReport';
-import { TopNav, BottomTabs } from '@/components/SiteNav';
+import { TopNav, BottomTabs, SiteFooter } from '@/components/SiteNav';
 
 type WorkspaceTab = 'overview' | 'menu' | 'akg' | 'dapur' | 'distribusi' | 'dokumen';
 
@@ -887,7 +887,7 @@ export default function PortalHome() {
                     <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                       {[
                         { label: 'Suhu Masak', value: '> 85°C', icon: Flame, tint: 'text-rose-600' },
-                        { label: 'Gramasi Porsi', value: 'Sesuai AKG', icon: ScaleIcon, tint: 'text-blue-600' },
+                        { label: 'Gramasi Porsi', value: 'Sesuai AKG', icon: ScaleIcon, tint: 'text-gold' },
                         { label: 'Higienitas', value: 'Terjaga', icon: ShieldCheck, tint: 'text-emerald-600' },
                       ].map((s) => (
                         <div
@@ -1060,7 +1060,7 @@ export default function PortalHome() {
                     </p>
                   ) : (
                     <div className="relative">
-                      <div className="hidden md:block absolute left-[19px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-emerald-300 via-blue-300 to-slate-200" />
+                      <div className="hidden md:block absolute left-[19px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-leaf/50 via-gold/50 to-line" />
                       <ol className="space-y-4">
                         {currentMenu.photos.map((p, idx) => {
                           const StepIcon = STEP_ICONS[p.step] || Package;
@@ -1321,12 +1321,7 @@ export default function PortalHome() {
       </main>
 
       {/* ============ FOOTER ============ */}
-      <footer className="no-print border-t border-line bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 text-sm text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-          <span>Portal transparansi operasional SPPG Wonodri 3, Kota Semarang</span>
-          <span>Badan Gizi Nasional, Republik Indonesia</span>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <BottomTabs />
 
