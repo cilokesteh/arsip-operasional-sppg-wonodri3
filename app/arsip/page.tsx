@@ -34,6 +34,7 @@ import {
   AttendanceStatus,
   VolunteerProfile,
 } from '@/lib/attendance';
+import { verifyPin, hasValidSession } from '@/lib/auth';
 
 const ATTENDANCE_CLOUD_URL = 'https://sppg-sync-worker.cilokesteh.workers.dev/api/attendance';
 
@@ -147,7 +148,6 @@ export default function ArsipPage() {
   const [showPinModal, setShowPinModal] = useState<boolean>(false);
   const [inputPin, setInputPin] = useState<string>('');
   const [pinError, setPinError] = useState<string>('');
-  const OFFICIAL_PIN = '91206';
 
   useEffect(() => {
     const loadedRoster = loadRosterFromStorage();
@@ -155,10 +155,12 @@ export default function ArsipPage() {
     setRoster(loadedRoster);
     setLedger(loadedLedger);
 
-    try {
-      const unlocked = sessionStorage.getItem('sppg_salary_unlocked') === 'true';
-      setIsSalaryUnlocked(unlocked);
-    } catch {}
+    // Pulihkan status buka upah dari sesi (token diverifikasi ke server)
+    hasValidSession()
+      .then((valid) => {
+        if (valid) setIsSalaryUnlocked(true);
+      })
+      .catch(() => {});
 
     try {
       const rawV1 = localStorage.getItem('sppg_synced_menus');
@@ -325,19 +327,21 @@ export default function ArsipPage() {
     }
   };
 
-  const handleVerifyPin = (e: React.FormEvent) => {
+  const handleVerifyPin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputPin.trim() === OFFICIAL_PIN) {
+    const result = await verifyPin(inputPin.trim());
+    if (result.ok) {
       setIsSalaryUnlocked(true);
-      try {
-        sessionStorage.setItem('sppg_salary_unlocked', 'true');
-      } catch {}
       setShowPinModal(false);
       setShowPrintModal(true);
       setInputPin('');
       setPinError('');
-    } else {
+    } else if (result.reason === 'wrong') {
       setPinError('PIN verifikasi salah! Khusus pimpinan/operator resmi.');
+    } else if (result.reason === 'rate_limited') {
+      setPinError('Terlalu banyak percobaan salah. Coba lagi dalam 10 menit.');
+    } else {
+      setPinError('Verifikasi PIN belum dikonfigurasi di server. Hubungi pengurus SPPG.');
     }
   };
 

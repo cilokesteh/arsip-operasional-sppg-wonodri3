@@ -51,6 +51,7 @@ import {
   Flame,
 } from 'lucide-react';
 import { formatTanggalIndo } from '@/lib/dateUtils';
+import { verifyPin, hasValidSession } from '@/lib/auth';
 import { toIsoDateLocal } from '@/lib/attendance';
 import { fetchMenusFromCloud, saveSingleMenuToCloud } from '@/lib/cloudSync';
 import staticMenusData from '@/lib/staticMenus.json';
@@ -108,7 +109,6 @@ export default function PortalHome() {
   // selesai membuat pengunjung mengira laporan hari ini belum terbit.
   const [isSyncingMenus, setIsSyncingMenus] = useState<boolean>(true);
 
-  const OFFICIAL_PRINT_PIN = '91206';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -362,11 +362,11 @@ export default function PortalHome() {
   }, []);
 
   /* ============ PRINT / PIN ============ */
-  const handleOpenPrintModal = () => {
+  const handleOpenPrintModal = async () => {
     // Tidak ada laporan pada tanggal terpilih = tidak ada dokumen untuk dicetak.
     if (!currentMenu) return;
-    const sessionAuth = sessionStorage.getItem('sppg_print_auth');
-    if (sessionAuth === 'true') {
+    const sessionValid = await hasValidSession();
+    if (sessionValid) {
       setActiveTab('dokumen');
       setTimeout(() => window.print(), 250);
     } else {
@@ -376,17 +376,21 @@ export default function PortalHome() {
     }
   };
 
-  const handleVerifyPin = (e: React.FormEvent) => {
+  const handleVerifyPin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputPin.trim() === OFFICIAL_PRINT_PIN) {
-      sessionStorage.setItem('sppg_print_auth', 'true');
+    const result = await verifyPin(inputPin.trim());
+    if (result.ok) {
       setShowPinModal(false);
       setInputPin('');
       setPinError('');
       setActiveTab('dokumen');
       setTimeout(() => window.print(), 300);
-    } else {
+    } else if (result.reason === 'wrong') {
       setPinError('PIN verifikasi salah! Khusus operator resmi.');
+    } else if (result.reason === 'rate_limited') {
+      setPinError('Terlalu banyak percobaan salah. Coba lagi dalam 10 menit.');
+    } else {
+      setPinError('Verifikasi PIN belum dikonfigurasi di server. Hubungi pengurus SPPG.');
     }
   };
 

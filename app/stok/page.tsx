@@ -58,9 +58,8 @@ import {
   clearOpnameDraftFromStorage,
   generateOpnameCSV,
 } from '@/lib/stock';
+import { verifyPin, hasValidSession, clearSession } from '@/lib/auth';
 
-const OFFICIAL_PIN = '91206';
-const STOCK_AUTH_KEY = 'sppg_stock_auth';
 
 export default function StockMonitoringPage() {
   // Security PIN Gate State
@@ -214,47 +213,46 @@ export default function StockMonitoringPage() {
     }, 4000);
   };
 
-  // Check Auth Sesi on Mount
+  // Check Auth Sesi on Mount (token diverifikasi ke server)
   useEffect(() => {
-    try {
-      const auth = sessionStorage.getItem(STOCK_AUTH_KEY);
-      if (auth === 'true') {
-        setIsAuthenticated(true);
-      }
-    } catch {
-      // ignore
-    } finally {
-      setIsAuthReady(true);
-    }
+    let cancelled = false;
+    hasValidSession()
+      .then((valid) => {
+        if (!cancelled && valid) setIsAuthenticated(true);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setIsAuthReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleVerifyPin = (e: React.FormEvent) => {
+  const handleVerifyPin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmittingPin(true);
     setPinError('');
 
-    if (pinInput.trim() === OFFICIAL_PIN) {
-      try {
-        sessionStorage.setItem(STOCK_AUTH_KEY, 'true');
-      } catch {
-        // ignore
-      }
+    const result = await verifyPin(pinInput.trim());
+    if (result.ok) {
       setIsAuthenticated(true);
       setPinError('');
       setPinInput('');
-    } else {
+    } else if (result.reason === 'wrong') {
       setPinError('PIN salah! Akses modul stok khusus pengurus & tim logistik resmi SPPG.');
       setPinInput('');
+    } else if (result.reason === 'rate_limited') {
+      setPinError('Terlalu banyak percobaan salah. Coba lagi dalam 10 menit.');
+      setPinInput('');
+    } else {
+      setPinError('Verifikasi PIN belum dikonfigurasi di server. Hubungi pengurus SPPG.');
     }
     setIsSubmittingPin(false);
   };
 
   const handleLockSession = () => {
-    try {
-      sessionStorage.removeItem(STOCK_AUTH_KEY);
-    } catch {
-      // ignore
-    }
+    clearSession();
     setIsAuthenticated(false);
     setPinInput('');
     setPinError('');

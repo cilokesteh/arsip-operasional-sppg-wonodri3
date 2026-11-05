@@ -37,6 +37,7 @@ import {
 import { TopNav, BottomTabs } from '@/components/SiteNav';
 import { PageHeader } from '@/components/Design';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
+import { verifyPin, hasValidSession, clearSession } from '@/lib/auth';
 import staticMenusData from '@/lib/staticMenus.json';
 import {
   AttendanceEntry,
@@ -98,18 +99,21 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   const [showPinModalMenu, setShowPinModalMenu] = useState<boolean>(false);
   const [inputPinMenu, setInputPinMenu] = useState<string>('');
   const [pinErrorMenu, setPinErrorMenu] = useState<string>('');
-  const OFFICIAL_PRINT_PIN = '91206';
 
-  const handleVerifyPinMenu = (e: React.FormEvent) => {
+  const handleVerifyPinMenu = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputPinMenu.trim() === OFFICIAL_PRINT_PIN) {
-      sessionStorage.setItem('sppg_print_auth', 'true');
+    const result = await verifyPin(inputPinMenu.trim());
+    if (result.ok) {
       setShowPinModalMenu(false);
       setInputPinMenu('');
       setPinErrorMenu('');
       setTimeout(() => window.print(), 300);
-    } else {
+    } else if (result.reason === 'wrong') {
       setPinErrorMenu('PIN verifikasi salah! Khusus operator resmi.');
+    } else if (result.reason === 'rate_limited') {
+      setPinErrorMenu('Terlalu banyak percobaan salah. Coba lagi dalam 10 menit.');
+    } else {
+      setPinErrorMenu('Verifikasi PIN belum dikonfigurasi di server. Hubungi pengurus SPPG.');
     }
   };
 
@@ -275,12 +279,12 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     setRoster(loadedRoster);
     setLedger(loadedLedger);
 
-    try {
-      const isUnlocked = sessionStorage.getItem('sppg_salary_unlocked') === 'true';
-      setIsSalaryUnlocked(isUnlocked);
-    } catch {
-      // ignore
-    }
+    // Pulihkan status buka upah dari sesi (token diverifikasi ke server)
+    hasValidSession()
+      .then((valid) => {
+        if (valid) setIsSalaryUnlocked(true);
+      })
+      .catch(() => {});
 
     let activeDate = selectedDate;
     if (typeof window !== 'undefined') {
@@ -838,15 +842,11 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     setShowPinModalSalary(true);
   };
 
-  const handleVerifySalaryPin = (e: React.FormEvent) => {
+  const handleVerifySalaryPin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pinInputSalary.trim() === OFFICIAL_PRINT_PIN) {
+    const result = await verifyPin(pinInputSalary.trim());
+    if (result.ok) {
       setIsSalaryUnlocked(true);
-      try {
-        sessionStorage.setItem('sppg_salary_unlocked', 'true');
-      } catch {
-        // ignore
-      }
       setShowPinModalSalary(false);
       setPinInputSalary('');
       setPinErrorSalary('');
@@ -857,18 +857,18 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
         executeExportCsv();
       }
       setPinPendingActionSalary(null);
-    } else {
+    } else if (result.reason === 'wrong') {
       setPinErrorSalary('PIN salah! Akses khusus pimpinan/operator resmi.');
+    } else if (result.reason === 'rate_limited') {
+      setPinErrorSalary('Terlalu banyak percobaan salah. Coba lagi dalam 10 menit.');
+    } else {
+      setPinErrorSalary('Verifikasi PIN belum dikonfigurasi di server. Hubungi pengurus SPPG.');
     }
   };
 
   const handleLockSalary = () => {
     setIsSalaryUnlocked(false);
-    try {
-      sessionStorage.removeItem('sppg_salary_unlocked');
-    } catch {
-      // ignore
-    }
+    clearSession();
   };
 
   const renderSalary = (amount: number, isStrikethrough = false) => {
@@ -893,7 +893,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   };
 
   const handleExportCsv = () => {
-    // Unduh rekap CSV dapat langsung dijalankan oleh operator yang sudah lolos login PIN 91206 di halaman absensi
+    // Unduh rekap CSV dapat langsung dijalankan oleh operator yang sudah lolos login PIN di halaman absensi
     executeExportCsv();
   };
 

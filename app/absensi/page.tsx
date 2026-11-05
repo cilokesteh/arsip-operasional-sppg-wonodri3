@@ -4,9 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Lock, KeyRound, ShieldAlert, ShieldCheck, ArrowLeft, LogOut } from 'lucide-react';
 import { UnifiedPortal } from '@/components/UnifiedPortal';
+import { verifyPin, hasValidSession, clearSession } from '@/lib/auth';
 
-const OFFICIAL_PIN = '91206';
-const AUTH_STORAGE_KEY = 'sppg_absensi_auth';
 
 export default function AbsensiPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -17,45 +16,45 @@ export default function AbsensiPage() {
 
   useEffect(() => {
     // Cek apakah operator sudah login di sesi browser ini
-    try {
-      const auth = sessionStorage.getItem(AUTH_STORAGE_KEY);
-      if (auth === 'true') {
-        setIsAuthenticated(true);
-      }
-    } catch {
-      // ignore storage error
-    } finally {
-      setIsReady(true);
-    }
+    // (token diverifikasi ke server)
+    let cancelled = false;
+    hasValidSession()
+      .then((valid) => {
+        if (!cancelled && valid) setIsAuthenticated(true);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setIsReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleVerifyPin = (e: React.FormEvent) => {
+  const handleVerifyPin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setPinError('');
 
-    if (pinInput.trim() === OFFICIAL_PIN) {
-      try {
-        sessionStorage.setItem(AUTH_STORAGE_KEY, 'true');
-      } catch {
-        // ignore
-      }
+    const result = await verifyPin(pinInput.trim());
+    if (result.ok) {
       setIsAuthenticated(true);
       setPinError('');
       setPinInput('');
-    } else {
+    } else if (result.reason === 'wrong') {
       setPinError('PIN salah! Akses presensi relawan khusus pengurus & operator resmi SPPG.');
       setPinInput('');
+    } else if (result.reason === 'rate_limited') {
+      setPinError('Terlalu banyak percobaan salah. Coba lagi dalam 10 menit.');
+      setPinInput('');
+    } else {
+      setPinError('Verifikasi PIN belum dikonfigurasi di server. Hubungi pengurus SPPG.');
     }
     setIsSubmitting(false);
   };
 
   const handleLockSession = () => {
-    try {
-      sessionStorage.removeItem(AUTH_STORAGE_KEY);
-    } catch {
-      // ignore
-    }
+    clearSession();
     setIsAuthenticated(false);
     setPinInput('');
     setPinError('');

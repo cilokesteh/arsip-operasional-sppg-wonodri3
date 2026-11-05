@@ -30,6 +30,7 @@ import {
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
 import { DailyMenuRecord, getBeneficiariesForDate } from '@/lib/data';
 import { fetchMenusFromCloud, saveSingleMenuToCloud, saveMenusToCloud } from '@/lib/cloudSync';
+import { verifyPin, hasValidSession, clearSession } from '@/lib/auth';
 
 interface AKGInputRaw {
   groupName: string;
@@ -41,7 +42,6 @@ interface AKGInputRaw {
   fiberG: string;
 }
 
-const DEFAULT_PASSCODE = '91206';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -200,10 +200,12 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
   };
 
   useEffect(() => {
-    const authStatus = sessionStorage.getItem('sppg_admin_auth');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
-    }
+    // Pulihkan sesi login (token diverifikasi ke server)
+    hasValidSession()
+      .then((valid) => {
+        if (valid) setIsAuthenticated(true);
+      })
+      .catch(() => {});
     loadSavedMenus();
 
     try {
@@ -369,21 +371,25 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
     alert('Form dikosongkan. Siap untuk input baru.');
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputPasscode === DEFAULT_PASSCODE) {
+    const result = await verifyPin(inputPasscode);
+    if (result.ok) {
       setIsAuthenticated(true);
-      sessionStorage.setItem('sppg_admin_auth', 'true');
       setLoginError('');
       loadSavedMenus();
-    } else {
+    } else if (result.reason === 'wrong') {
       setLoginError('Kode akses salah! Silakan coba lagi.');
+    } else if (result.reason === 'rate_limited') {
+      setLoginError('Terlalu banyak percobaan salah. Coba lagi dalam 10 menit.');
+    } else {
+      setLoginError('Verifikasi kode akses belum dikonfigurasi di server. Hubungi pengurus SPPG.');
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    sessionStorage.removeItem('sppg_admin_auth');
+    clearSession();
     setInputPasscode('');
   };
 
