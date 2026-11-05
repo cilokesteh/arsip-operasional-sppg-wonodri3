@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -26,12 +26,106 @@ import {
   loadRosterFromStorage,
   loadLedgerFromStorage,
   calculatePeriodSummary,
-  buildDailyEntries,
+  saveLedgerToStorage,
   formatRupiah,
   formatIndoDate,
   AttendanceEntry,
+  AttendanceStatus,
   VolunteerProfile,
 } from '@/lib/attendance';
+
+const ATTENDANCE_CLOUD_URL = 'https://sppg-sync-worker.cilokesteh.workers.dev/api/attendance';
+
+function isValidPhoto(photo: unknown): photo is string {
+  if (!photo || typeof photo !== 'string') return false;
+  if (!photo.startsWith('data:image/')) return false;
+  return photo.length >= 2048;
+}
+
+interface CloudAttendanceRecord {
+  volunteerId: string;
+  time?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  photoUrl?: string;
+  checkInPhoto?: string;
+  distanceMeters?: number;
+  isWithinRadius?: boolean;
+  status?: AttendanceStatus;
+  notes?: string;
+  paid?: boolean;
+  earnedAmount?: number;
+}
+
+/**
+ * Gabungkan catatan presensi cloud satu tanggal ke ledger — logika yang
+ * sama persis dengan sinkronisasi cloud di modul Absensi (UnifiedPortal),
+ * supaya angka Arsip dan Absensi selalu identik untuk tanggal yang sama.
+ */
+function mergeCloudAttendanceDay(
+  ledger: AttendanceEntry[],
+  date: string,
+  records: CloudAttendanceRecord[],
+  rosterMap: Map<string, VolunteerProfile>
+): AttendanceEntry[] {
+  const others = ledger.filter((e) => e.date !== date);
+  const dayMap = new Map<string, AttendanceEntry>(
+    ledger.filter((e) => e.date === date).map((e) => [e.volunteerId, e])
+  );
+
+  records.forEach((cloud) => {
+    const person = rosterMap.get(cloud.volunteerId);
+    if (!person) return;
+    const existing = dayMap.get(cloud.volunteerId);
+    const cloudStatus = (cloud.status as AttendanceStatus) || 'Hadir';
+    const isPresent = cloudStatus === 'Hadir' && person.isActive;
+    const isAslap = cloud.volunteerId === 'v-1';
+    const base: AttendanceEntry =
+      existing ||
+      ({
+        id: `${date}:${cloud.volunteerId}`,
+        volunteerId: cloud.volunteerId,
+        date,
+        status: cloudStatus,
+        checkIn: isAslap ? '00:00' : person.defaultCheckIn,
+        checkOut: isAslap ? '23:59' : person.defaultCheckOut,
+        scheduledIn: person.defaultCheckIn,
+        scheduledOut: person.defaultCheckOut,
+        lateMinutes: 0,
+        overtimeMinutes: 0,
+        earnedAmount: isPresent ? person.dailyRate : 0,
+        notes: '',
+        paid: false,
+        recordedAt: new Date().toISOString(),
+        recordedBy: 'Cloud SPPG',
+      } as AttendanceEntry);
+    const finalCheckOut =
+      cloud.checkOutTime ||
+      (isAslap ? '23:59' : (base.checkOut === '13:00' ? person.defaultCheckOut : base.checkOut) || person.defaultCheckOut);
+    dayMap.set(cloud.volunteerId, {
+      ...base,
+      status: cloudStatus,
+      checkIn: cloud.checkInTime || cloud.time || (isAslap ? '00:00' : base.checkIn),
+      checkOut: finalCheckOut,
+      earnedAmount: isPresent ? person.dailyRate : 0,
+      notes:
+        cloud.notes ||
+        (cloud.isWithinRadius
+          ? `📍 Realtime Selfie (${cloud.distanceMeters ?? 0}m)`
+          : `⚠️ Luar Dapur (${cloud.distanceMeters ?? 0}m)`),
+      photoUrl: isValidPhoto(cloud.checkInPhoto || cloud.photoUrl)
+        ? (cloud.checkInPhoto || cloud.photoUrl)
+        : base.photoUrl,
+      distanceMeters: cloud.distanceMeters ?? base.distanceMeters,
+      isWithinRadius: cloud.isWithinRadius ?? base.isWithinRadius,
+      paid: cloud.paid ?? base.paid,
+    });
+  });
+
+  return [...others, ...Array.from(dayMap.values())].sort(
+    (a, b) => a.date.localeCompare(b.date) || a.volunteerId.localeCompare(b.volunteerId)
+  );
+}
 
 export default function ArsipPage() {
   const [roster, setRoster] = useState<VolunteerProfile[]>(DEFAULT_ROSTER_40);
@@ -166,12 +260,55 @@ export default function ArsipPage() {
     return map;
   }, [roster]);
 
-  // Printable entries for SPJ modal
+  // Sinkronisasi presensi cloud — sumber data yang sama dengan modul
+  // Absensi. Sebelumnya Arsip hanya membaca ledger bawaan (impor Excel,
+  // berhenti 31 Okt 2026), sehingga angkanya berbeda dari Absensi yang
+  // membaca cloud. Kini setiap tanggal yang ditampilkan/di cetak ditarik
+  // dari cloud dan digabungkan ke ledger dengan logika yang sama.
+  const cloudSyncedDatesRef = useRef<Set<string>>(new Set());
+  const ledgerLoadedRef = useRef<boolean>(false);
+  const [isDataLoaded, setIsDataLoaded] = useState<boolean>(false);
+
+  useEffect(() => {
+    ledgerLoadedRef.current = true;
+    setIsDataLoaded(true);
+  }, []);
+
+  // Simpan ledger hasil gabungan cloud ke storage lokal (kunci yang sama
+  // dengan modul Absensi) agar muatan berikutnya langsung konsisten.
+  useEffect(() => {
+    if (ledgerLoadedRef.current && ledger.length > 0) {
+      saveLedgerToStorage(ledger);
+    }
+  }, [ledger]);
+
+  useEffect(() => {
+    if (!isDataLoaded) return;
+    const datesToSync = new Set<string>([...paginatedDates, printDateTarget]);
+    datesToSync.forEach((dateStr) => {
+      if (!dateStr || cloudSyncedDatesRef.current.has(dateStr)) return;
+      cloudSyncedDatesRef.current.add(dateStr);
+      (async () => {
+        try {
+          const res = await fetch(`${ATTENDANCE_CLOUD_URL}?date=${dateStr}`);
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.success && Array.isArray(data.records) && data.records.length > 0) {
+            setLedger((prev) => mergeCloudAttendanceDay(prev, dateStr, data.records, rosterMap));
+          }
+        } catch {
+          // Cloud tidak terjangkau: tetap pakai ledger bawaan apa adanya.
+        }
+      })();
+    });
+  }, [paginatedDates, printDateTarget, rosterMap, isDataLoaded]);
+
+  // Printable entries for SPJ modal — hanya data presensi yang benar-benar
+  // tercatat. Tanggal tanpa data tidak lagi diisi daftar karangan dari
+  // roster; modal menampilkan pemberitahuan bahwa data belum tersedia.
   const printableEntries = useMemo(() => {
-    const target = ledger.filter((e) => e.date === printDateTarget);
-    if (target.length > 0) return target;
-    return buildDailyEntries(roster, printDateTarget);
-  }, [printDateTarget, ledger, roster]);
+    return ledger.filter((e) => e.date === printDateTarget);
+  }, [printDateTarget, ledger]);
 
   const printableSummary = useMemo(() => calculatePeriodSummary(printableEntries), [printableEntries]);
 
@@ -390,7 +527,9 @@ export default function ArsipPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {paginatedDates.map((dateStr) => {
               const dayRecords = ledger.filter((e) => e.date === dateStr);
-              const summary = calculatePeriodSummary(dayRecords.length > 0 ? dayRecords : buildDailyEntries(roster, dateStr));
+              // Hanya data presensi yang benar-benar tercatat — tanggal
+              // tanpa data tidak diisi ringkasan karangan dari roster.
+              const summary = dayRecords.length > 0 ? calculatePeriodSummary(dayRecords) : null;
               const menu = menuByDate.get(dateStr);
               const d = new Date(`${dateStr}T12:00:00`);
               const dayOfWeek = d.getDay();
@@ -453,7 +592,12 @@ export default function ArsipPage() {
                         upah). Hanya tampil setelah sesi operator membuka kunci
                         PIN; pengunjung publik tidak perlu melihat angka
                         presensi kosong (0/…) atau beban upah bertanda ••••••. */}
-                    {isSalaryUnlocked && (
+                    {isSalaryUnlocked && !summary && (
+                    <p className="text-[13px] text-slate-400 italic pt-1">
+                      Belum ada data presensi tercatat untuk tanggal ini.
+                    </p>
+                    )}
+                    {isSalaryUnlocked && summary && (
                     <div className="grid grid-cols-2 gap-2 text-sm pt-1">
                       <div className="bg-slate-50 border border-slate-100 rounded-lg p-2">
                         <span className="text-xs text-slate-400 block font-medium">Relawan Hadir</span>
@@ -653,7 +797,8 @@ export default function ArsipPage() {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-3.5 py-1.5 bg-ink hover:bg-ink-soft text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer"
+                  disabled={printableEntries.length === 0}
+                  className="px-3.5 py-1.5 bg-ink hover:bg-ink-soft text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Printer className="w-4 h-4" />
                   <span>Cetak / PDF</span>
@@ -668,6 +813,15 @@ export default function ArsipPage() {
               </div>
             </div>
 
+            {printableEntries.length === 0 ? (
+              <div className="border border-dashed border-line rounded-xl p-8 text-center space-y-2">
+                <p className="font-bold text-slate-900">Belum ada data presensi untuk tanggal ini</p>
+                <p className="text-sm text-slate-500 max-w-md mx-auto">
+                  Lembar SPJ hanya diterbitkan dari data presensi yang benar-benar tercatat
+                  (sinkron dengan modul Absensi). Tanggal: {formatIndoDate(printDateTarget)}.
+                </p>
+              </div>
+            ) : (
             <div className="space-y-5 text-slate-900 print:text-black">
               <div className="text-center border-b-2 border-slate-900 pb-3 space-y-1">
                 <h2 className="text-base font-black uppercase tracking-wider">
@@ -774,6 +928,7 @@ export default function ArsipPage() {
                 </div>
               </div>
             </div>
+            )}
           </div>
         </div>
       )}
