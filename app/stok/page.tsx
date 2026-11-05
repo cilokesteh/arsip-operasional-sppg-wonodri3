@@ -28,6 +28,11 @@ import {
   Check,
   Scale,
   ChefHat,
+  Lock,
+  KeyRound,
+  ShieldAlert,
+  ShieldCheck,
+  ArrowLeft,
 } from 'lucide-react';
 import { TopNav, BottomTabs } from '@/components/SiteNav';
 import {
@@ -53,7 +58,17 @@ import {
   generateOpnameCSV,
 } from '@/lib/stock';
 
+const OFFICIAL_PIN = '91206';
+const STOCK_AUTH_KEY = 'sppg_stock_auth';
+
 export default function StockMonitoringPage() {
+  // Security PIN Gate State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthReady, setIsAuthReady] = useState<boolean>(false);
+  const [pinInput, setPinInput] = useState<string>('');
+  const [pinError, setPinError] = useState<string>('');
+  const [isSubmittingPin, setIsSubmittingPin] = useState<boolean>(false);
+
   const [stockItems, setStockItems] = useState<StockItem[]>(DEFAULT_STOCK_ITEMS_ALL);
   const [selectedBatch, setSelectedBatch] = useState<string>('ALL');
   const [movements, setMovements] = useState<StockMovement[]>([]);
@@ -150,6 +165,52 @@ export default function StockMonitoringPage() {
     setTimeout(() => {
       setToastMessage(null);
     }, 4000);
+  };
+
+  // Check Auth Sesi on Mount
+  useEffect(() => {
+    try {
+      const auth = sessionStorage.getItem(STOCK_AUTH_KEY);
+      if (auth === 'true') {
+        setIsAuthenticated(true);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsAuthReady(true);
+    }
+  }, []);
+
+  const handleVerifyPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingPin(true);
+    setPinError('');
+
+    if (pinInput.trim() === OFFICIAL_PIN) {
+      try {
+        sessionStorage.setItem(STOCK_AUTH_KEY, 'true');
+      } catch {
+        // ignore
+      }
+      setIsAuthenticated(true);
+      setPinError('');
+      setPinInput('');
+    } else {
+      setPinError('PIN salah! Akses modul stok khusus pengurus & tim logistik resmi SPPG.');
+      setPinInput('');
+    }
+    setIsSubmittingPin(false);
+  };
+
+  const handleLockSession = () => {
+    try {
+      sessionStorage.removeItem(STOCK_AUTH_KEY);
+    } catch {
+      // ignore
+    }
+    setIsAuthenticated(false);
+    setPinInput('');
+    setPinError('');
   };
 
   // Load Initial Data on Mount
@@ -756,6 +817,121 @@ export default function StockMonitoringPage() {
     );
   };
 
+  // Jangan render sebelum client hydration selesai untuk cegah visual flicker
+  if (!isAuthReady) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm font-semibold text-slate-400">Memeriksa hak akses stok...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Jika belum terautentikasi: Tampilkan Fullscreen Security Gate
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-white flex flex-col justify-between p-4 sm:p-6 selection:bg-blue-600 selection:text-white">
+        {/* Top Navbar Minimalis */}
+        <div className="max-w-md w-full mx-auto flex items-center justify-between pt-2">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-800 px-3 py-1.5 rounded-lg transition-colors border border-slate-700/60"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Kembali ke Beranda</span>
+          </Link>
+          <span className="text-[13px] font-mono text-slate-500 font-bold tracking-widest">
+            SPPG-RESTRICTED
+          </span>
+        </div>
+
+        {/* Card Form PIN */}
+        <div className="max-w-md w-full mx-auto my-auto py-8">
+          <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+            {/* Glow Accent */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Header Badge & Icon */}
+            <div className="text-center mb-6 relative">
+              <div className="inline-flex p-3.5 rounded-2xl bg-gradient-to-tr from-blue-600/30 to-indigo-600/20 border border-blue-500/30 text-blue-400 shadow-inner mb-3">
+                <Lock className="w-7 h-7" />
+              </div>
+              <div className="inline-block mx-auto mb-2 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-xs font-semibold text-rose-400">
+                Akses Terbatas Logistik
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                Monitoring Stok Bahan Baku
+              </h1>
+              <p className="text-sm text-slate-400 mt-1.5 leading-relaxed font-normal">
+                Data inventaris, stok opname, dan mutasi dapur SPPG Wonodri 3 dilindungi. Masukkan PIN Otoritas resmi untuk membuka.
+              </p>
+            </div>
+
+            {/* Form PIN */}
+            <form onSubmit={handleVerifyPin} className="space-y-4 relative">
+              <div>
+                <label className="text-[13px] font-bold text-slate-300 block mb-1.5">
+                  PIN Otoritas (5 Digit):
+                </label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={10}
+                    placeholder="•••••"
+                    value={pinInput}
+                    onChange={(e) => setPinInput(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 text-base text-center tracking-widest font-mono text-white bg-slate-950/80 border border-slate-700/80 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all placeholder:text-slate-600"
+                    required
+                    autoFocus
+                  />
+                  <KeyRound className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                </div>
+              </div>
+
+              {pinError && (
+                <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800/80 text-sm font-semibold text-rose-300 flex items-start gap-2 animate-shake">
+                  <ShieldAlert className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+                  <span>{pinError}</span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmittingPin || !pinInput.trim()}
+                className="w-full py-3 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-900/40 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Verifikasi & Buka Data Stok</span>
+              </button>
+            </form>
+
+            {/* Navigasi Alternatif */}
+            <div className="mt-6 pt-5 border-t border-slate-800/80 flex flex-col gap-2 text-center">
+              <Link
+                href="/arsip"
+                className="text-sm font-bold text-slate-400 hover:text-blue-400 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <span>Buka Dokumen Arsip Publik</span>
+                <span>&rarr;</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="max-w-md w-full mx-auto text-center pb-2">
+          <p className="text-xs text-slate-500 font-medium">
+            Program MBG 1.553 Porsi &bull; SPPG Wonodri 3 Kota Semarang
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-paper text-ink flex flex-col w-full overflow-x-hidden has-bottom-tabs">
       {/* Toast Notification */}
@@ -783,15 +959,26 @@ export default function StockMonitoringPage() {
 
           <TopNav />
 
-          <button
-            type="button"
-            onClick={() => setShowPrintModal(true)}
-            className="inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft shrink-0 cursor-pointer"
-          >
-            <Printer className="w-4 h-4" aria-hidden="true" />
-            <span className="hidden sm:inline">Cetak Berita Acara</span>
-            <span className="sr-only sm:hidden">Cetak Berita Acara</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowPrintModal(true)}
+              className="inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft cursor-pointer"
+            >
+              <Printer className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Cetak Berita Acara</span>
+              <span className="sr-only sm:hidden">Cetak Berita Acara</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleLockSession}
+              title="Kunci Akses Sesi Stok"
+              className="inline-flex items-center gap-1.5 px-3 min-h-10 rounded-lg text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 cursor-pointer transition-colors"
+            >
+              <Lock className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Kunci Sesi</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -812,7 +999,7 @@ export default function StockMonitoringPage() {
               Monitoring Stok &amp; Kuantitas Bahan Masak
             </h1>
             <p className="text-sm sm:text-sm text-slate-600 leading-relaxed">
-              Tercatat 2 siklus mutasi: <strong>Batch 1</strong> (Masuk 01 Nov &bull; Masak 02 Nov) dan <strong>Batch 2</strong> (Masuk 02 Nov &bull; Masak 03 Nov) dari mitra <strong>Yayasan Berkat Makmur Sentosa</strong> untuk <strong>1.553 Porsi MBG</strong>.
+              Tercatat 5 siklus mutasi: <strong>Batch 1–5</strong> (Masuk 01–05 Nov &bull; Masak 02–06 Nov) dari mitra <strong>Yayasan Berkat Makmur Sentosa</strong> untuk <strong>1.553 Porsi MBG</strong>.
             </p>
           </div>
 
