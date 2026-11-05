@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { TopNav, BottomTabs } from '@/components/SiteNav';
+import { PageHeader } from '@/components/Design';
 import Image from 'next/image';
 import {
   CheckCircle2,
@@ -739,7 +740,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
   return (
     <div className="min-h-screen bg-paper text-ink has-bottom-tabs">
       {/* ============ HEADER ============ */}
-      <header className="bg-white border-b border-line sticky top-0 z-40 no-print">
+      <header className="bg-paper/90 backdrop-blur border-b border-line sticky top-0 z-40 no-print">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2.5 min-w-0" aria-label="SPPG Wonodri 3, beranda">
             <Image src="/logo.png" alt="" width={32} height={32} className="object-contain shrink-0" priority />
@@ -775,6 +776,11 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       </header>
 
       <main className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
+        <PageHeader
+          eyebrow="Area Operator"
+          title="Panel Operator"
+          subtitle="Input dan kelola arsip menu harian, kandungan gizi, dan dokumentasi dapur."
+        />
         {/* Floating / Top Banner Feedback Notifikasi */}
         {submitToast && (
           <div
@@ -803,13 +809,13 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
         )}
 
         {/* Toggle Mode: Input Baru vs Kelola / Edit Arsip Lama */}
-        <div className="flex bg-slate-200/70 p-1 rounded-xl max-w-sm mx-auto text-sm font-bold">
+        <div className="flex bg-white border border-line p-1 rounded-full max-w-sm mx-auto text-sm font-bold shadow-[0_1px_2px_rgb(16_34_63/0.04)]">
           <button
             type="button"
             onClick={() => setActiveTab('input')}
-            className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`flex-1 py-2 rounded-full transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'input'
-                ? 'bg-white text-ink'
+                ? 'bg-ink text-white'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -822,9 +828,9 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
               loadSavedMenus();
               setActiveTab('list');
             }}
-            className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`flex-1 py-2 rounded-full transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'list'
-                ? 'bg-white text-ink'
+                ? 'bg-ink text-white'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >

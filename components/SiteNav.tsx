@@ -31,8 +31,8 @@ export const NAV_ITEMS: NavItem[] = [
  */
 export function SiteFooter() {
   return (
-    <footer className="no-print bg-ink text-white mt-auto">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+    <footer className="no-print bg-ink text-white mt-auto border-t-2 border-gold">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
             <p className="font-heading font-bold text-[15px] leading-tight">SPPG Wonodri 3</p>
@@ -95,7 +95,7 @@ function useIsActive() {
 export function TopNav() {
   const isActive = useIsActive();
   return (
-    <nav aria-label="Menu utama" className="no-print hidden md:flex items-center gap-1">
+    <nav aria-label="Menu utama" className="no-print hidden md:flex items-center gap-1 bg-white border border-line rounded-full p-1 shadow-[0_1px_2px_rgb(16_34_63/0.04)]">
       {NAV_ITEMS.map((item) => {
         const active = isActive(item);
         return (
@@ -105,10 +105,10 @@ export function TopNav() {
             aria-current={active ? 'page' : undefined}
             aria-label={item.locked ? `${item.label} (khusus operator, perlu PIN)` : undefined}
             title={item.locked ? 'Khusus operator (perlu PIN)' : undefined}
-            className={`inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm transition-colors ${
+            className={`inline-flex items-center gap-2 px-3.5 min-h-9 rounded-full text-sm transition-colors ${
               active
-                ? 'bg-ink text-white font-semibold'
-                : 'text-slate-700 hover:bg-ink/5 hover:text-ink font-medium'
+                ? 'bg-ink text-white font-semibold shadow-sm'
+                : 'text-slate-600 hover:text-ink hover:bg-ink/5 font-medium'
             }`}
           >
             <item.icon className="w-4 h-4" aria-hidden="true" />
@@ -142,12 +142,13 @@ export function BottomTabs() {
                 aria-current={active ? 'page' : undefined}
                 aria-label={item.locked ? `${item.label} (khusus operator, perlu PIN)` : undefined}
                 title={item.locked ? 'Khusus operator (perlu PIN)' : undefined}
-                className={`flex flex-col items-center justify-center gap-0.5 min-h-14 border-t-2 -mt-px text-xs ${
+                className={`relative flex flex-col items-center justify-center gap-0.5 min-h-14 text-xs ${
                   active
-                    ? 'border-gold text-ink font-semibold'
-                    : 'border-transparent text-slate-600 font-medium'
+                    ? 'text-ink font-semibold'
+                    : 'text-slate-500 font-medium'
                 }`}
               >
+                {active && <span className="absolute top-1.5 w-1.5 h-1.5 rounded-full bg-gold" aria-hidden="true" />}
                 <item.icon className="w-5 h-5" aria-hidden="true" />
                 <span className="inline-flex items-center gap-1">
                   {item.label}

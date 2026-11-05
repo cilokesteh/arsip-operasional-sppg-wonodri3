@@ -940,7 +940,7 @@ export default function StockMonitoringPage() {
       )}
 
       {/* ============ HEADER ============ */}
-      <header className="bg-white border-b border-line sticky top-0 z-40 no-print">
+      <header className="bg-paper/90 backdrop-blur border-b border-line sticky top-0 z-40 no-print">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2.5 min-w-0" aria-label="SPPG Wonodri 3, beranda">
             <Image src="/logo.png" alt="" width={32} height={32} className="object-contain shrink-0" priority />
@@ -982,19 +982,15 @@ export default function StockMonitoringPage() {
       {/* ============ MAIN CONTENT ============ */}
       <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6 print:hidden">
         {/* Banner Header Halaman */}
-        <div className="bg-white rounded-xl border border-line p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="px-1 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                Selesai Dimasak (03 Nov 2026)
-              </span>
+              <span className="eyebrow">Selesai Dimasak (03 Nov 2026)</span>
               <span className="text-sm text-slate-400">•</span>
               <span className="text-sm text-slate-500 font-medium">BGN TA 2026 — SPPG Wonodri 3 Kota Semarang</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <Boxes className="w-6 h-6 text-blue-600" />
-              Monitoring Stok &amp; Kuantitas Bahan Masak
-            </h1>
+            <h1 className="page-title">Monitoring Stok &amp; Kuantitas Bahan Masak</h1>
+            <div className="gold-rule" aria-hidden="true" />
             <p className="text-sm sm:text-sm text-slate-600 leading-relaxed">
               Tercatat 5 siklus mutasi: <strong>Batch 1–5</strong> (Masuk 01–05 Nov &bull; Masak 02–06 Nov) dari mitra <strong>Yayasan Berkat Makmur Sentosa</strong> untuk <strong>1.553 Porsi MBG</strong>.
             </p>

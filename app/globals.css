@@ -4,8 +4,10 @@
 @theme {
   --color-ink: #10223f;
   --color-ink-soft: #1c3763;
-  --color-paper: #f5f7f4;
-  --color-line: #dde2dc;
+  --color-paper: #f7f7f5;
+  --color-line: #e3e6e1;
+  --color-muted: #5d6673;
+  --color-surface: #ffffff;
   --color-leaf: #2b7a4b;
   --color-leaf-soft: #e4f1e8;
   --color-gold: #b6821a;
@@ -31,7 +33,7 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
   }
 
   /* Fokus keyboard yang selalu terlihat */
@@ -47,19 +49,143 @@
   }
 }
 
-/* Panel: sudut membulat + bayangan sangat halus agar tidak kaku */
+/* Panel: sudut membulat + bayangan sangat halus agar tidak kaku.
+   Fase 3: radius sedikit lebih besar, bayangan lebih lembut, dan
+   permukaan putih yang sama dipakai di semua halaman. */
 .panel {
   background-color: #ffffff;
   border: 1px solid var(--color-line);
-  border-radius: 1rem;
-  box-shadow: 0 1px 2px rgb(16 34 63 / 0.04);
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 3px rgb(16 34 63 / 0.05);
 }
 
 .app-card {
   background-color: #ffffff;
   border: 1px solid var(--color-line);
-  border-radius: 1rem;
-  box-shadow: 0 1px 2px rgb(16 34 63 / 0.04);
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 3px rgb(16 34 63 / 0.05);
+}
+
+/* ---------- Fase 3: sistem desain bersama ---------- */
+/* Label kecil di atas judul halaman: satu aksen, bukan banyak badge. */
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-gold-ink);
+}
+
+/* Judul halaman: satu ukuran, satu bobot, satu jarak antar huruf. */
+.page-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  font-size: 1.65rem;
+  color: var(--color-ink);
+}
+@media (min-width: 640px) {
+  .page-title {
+    font-size: 2.25rem;
+  }
+}
+
+.page-subtitle {
+  color: var(--color-muted);
+  line-height: 1.65;
+  max-width: 42rem;
+}
+
+/* Angka statistik: polos, tabular, tanpa kotak. */
+.stat-value {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+}
+
+/* Permukaan kartu yang sama dengan .panel, untuk komponen baru. */
+.surface {
+  background-color: #ffffff;
+  border: 1px solid var(--color-line);
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 3px rgb(16 34 63 / 0.05);
+}
+
+/* Tombol: satu aksi utama (ink), sisanya sekunder (putih) atau hantu. */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border-radius: 0.75rem;
+  background-color: var(--color-ink);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+.btn-primary:hover {
+  background-color: var(--color-ink-soft);
+}
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border-radius: 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+.btn-secondary:hover {
+  background-color: rgb(16 34 63 / 0.04);
+}
+
+/* Kolom isian formulir: satu gaya di semua halaman operator. */
+.field {
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.9375rem;
+  color: var(--color-ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgb(182 130 26 / 0.15);
+}
+.field-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+/* Garis emas tipis di bawah judul: aksen, bukan dekorasi besar. */
+.gold-rule {
+  width: 2.5rem;
+  height: 3px;
+  border-radius: 999px;
+  background-color: var(--color-gold);
 }
 
 /* Ruang aman di bawah untuk tab navigasi mobile */
@@ -117,7 +243,7 @@
     width: 100% !important;
   }
 
-  .panel, .app-card {
+  .panel, .app-card, .surface {
     box-shadow: none !important;
   }
 

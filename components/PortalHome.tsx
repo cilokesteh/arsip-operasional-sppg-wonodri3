@@ -393,7 +393,7 @@ export default function PortalHome() {
   return (
     <div className="min-h-screen bg-paper text-ink flex flex-col w-full overflow-x-hidden has-bottom-tabs">
       {/* ============ HEADER ============ */}
-      <header className="bg-white border-b border-line sticky top-0 z-40 no-print">
+      <header className="bg-paper/90 backdrop-blur border-b border-line sticky top-0 z-40 no-print">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2.5 min-w-0" aria-label="SPPG Wonodri 3, beranda">
             <Image src="/logo.png" alt="" width={32} height={32} className="object-contain shrink-0" priority />
@@ -419,7 +419,7 @@ export default function PortalHome() {
                 ? 'Cetak dokumen resmi (perlu PIN operator)'
                 : 'Belum ada laporan pada tanggal ini untuk dicetak'
             }
-            className="inline-flex items-center gap-2 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-ink"
+            className="btn-primary shrink-0 disabled:hover:bg-ink"
           >
             <Printer className="w-4 h-4" aria-hidden="true" />
             <span className="hidden sm:inline">Cetak resmi</span>
@@ -432,10 +432,10 @@ export default function PortalHome() {
         {/* ---------- JUDUL + PEMILIH TANGGAL ---------- */}
         <div className="no-print flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm text-slate-600">
+            <p className="eyebrow">
               Laporan harian{currentMenu ? ` nomor ${currentMenu.menuNumber || 1}` : ''}
             </p>
-            <h1 className="font-heading text-2xl sm:text-4xl font-bold leading-tight mt-0.5">
+            <h1 className="page-title mt-1">
               {formatTanggalIndo(selectedDate)}
             </h1>
             <span
@@ -505,9 +505,9 @@ export default function PortalHome() {
             },
           ].map((stat) => (
             <div key={stat.label} className="px-3 py-1 sm:px-5 sm:py-2 min-w-0">
-              <dt className="text-xs sm:text-sm text-slate-600">{stat.label}</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500">{stat.label}</dt>
               <dd className="mt-0.5">
-                <span className="font-heading text-2xl sm:text-3xl font-bold tabular-nums">{stat.value}</span>
+                <span className="stat-value text-2xl sm:text-3xl">{stat.value}</span>
                 <span className="ml-1.5 text-xs sm:text-sm text-slate-600">{stat.unit}</span>
                 <span className="hidden sm:block text-xs text-slate-600 mt-1">{stat.detail}</span>
               </dd>

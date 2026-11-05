@@ -93,7 +93,7 @@ export default function AbsensiPage() {
 
         {/* Card Form PIN */}
         <div className="max-w-md w-full mx-auto my-auto py-8">
-          <div className="panel p-6 sm:p-8 relative overflow-hidden">
+          <div className="surface p-6 sm:p-8 relative overflow-hidden">
 
             {/* Header Badge & Icon */}
             <div className="text-center mb-6 relative">
@@ -103,7 +103,7 @@ export default function AbsensiPage() {
               <div className="inline-block mx-auto mb-2 px-2.5 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700 ">
                 Dokumen Internal Rahasia
               </div>
-              <h1 className="text-xl sm:text-2xl font-bold text-ink tracking-tight">
+              <h1 className="font-heading text-xl sm:text-2xl font-bold text-ink tracking-tight">
                 Presensi Relawan SPPG
               </h1>
               <p className="text-sm text-slate-600 mt-1.5 leading-relaxed font-normal">

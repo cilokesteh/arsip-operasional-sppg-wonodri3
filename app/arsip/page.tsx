@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { TopNav, BottomTabs, SiteFooter } from '@/components/SiteNav';
+import { PageHeader, Stat, StatRow } from '@/components/Design';
 import staticMenusData from '@/lib/staticMenus.json';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
 import { DailyMenuRecord } from '@/lib/data';
@@ -350,7 +351,7 @@ export default function ArsipPage() {
   return (
     <div className="min-h-screen bg-paper text-ink flex flex-col w-full overflow-x-hidden has-bottom-tabs">
       {/* ============ HEADER ============ */}
-      <header className="bg-white border-b border-line sticky top-0 z-40 no-print">
+      <header className="bg-paper/90 backdrop-blur border-b border-line sticky top-0 z-40 no-print">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2.5 min-w-0" aria-label="SPPG Wonodri 3, beranda">
             <Image src="/logo.png" alt="" width={32} height={32} className="object-contain shrink-0" priority />
@@ -381,40 +382,18 @@ export default function ArsipPage() {
 
       {/* ============ MAIN CONTENT ============ */}
       <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6">
-        {/* Banner Header Halaman */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
-          <div className="space-y-1.5 max-w-2xl">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-ink/5 text-ink border border-ink/15">
-                Direktori Resmi
-              </span>
-              <span className="text-sm text-slate-400">•</span>
-              <span className="text-sm text-slate-500 font-medium">BGN TA 2026</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              Arsip Operasional & Dokumen SPPG
-            </h1>
-            <p className="text-sm sm:text-sm text-slate-600 leading-relaxed">
-              Katalog seluruh riwayat harian pelaksanaan Program Makan Bergizi Gratis (MBG), mencakup menu sajian, dokumentasi alur dapur, alokasi 13 sekolah/posyandu, dan lembar SPJ presensi relawan.
-            </p>
-          </div>
-
-          {/* Quick Metrics Strip — angka polos dengan pemisah tipis */}
-          <dl className="flex divide-x divide-line shrink-0">
-            <div className="px-4 first:pl-0 text-left min-w-[96px]">
-              <dt className="text-xs font-semibold text-slate-500">Total Arsip</dt>
-              <dd className="font-heading text-xl font-bold text-slate-900">{allUniqueDates.length} Hari</dd>
-            </div>
-            <div className="px-4 text-left min-w-[96px]">
-              <dt className="text-xs font-semibold text-slate-500">Menu Tersedia</dt>
-              <dd className="font-heading text-xl font-bold text-ink">{staticMenusData.length} Menu</dd>
-            </div>
-            <div className="px-4 text-left min-w-[96px]">
-              <dt className="text-xs font-semibold text-slate-500">Porsi / Hari</dt>
-              <dd className="font-heading text-xl font-bold text-ink">1.553</dd>
-            </div>
-          </dl>
-        </div>
+        <PageHeader
+          eyebrow="Direktori Resmi • BGN TA 2026"
+          title="Arsip Operasional & Dokumen SPPG"
+          subtitle="Katalog seluruh riwayat harian pelaksanaan Program Makan Bergizi Gratis (MBG), mencakup menu sajian, dokumentasi alur dapur, alokasi 13 sekolah/posyandu, dan lembar SPJ presensi relawan."
+          actions={
+            <StatRow>
+              <Stat label="Total Arsip" value={allUniqueDates.length} unit="Hari" />
+              <Stat label="Menu Tersedia" value={staticMenusData.length} unit="Menu" />
+              <Stat label="Porsi / Hari" value="1.553" />
+            </StatRow>
+          }
+        />
 
         {/* Filter & Toolbar Bar */}
         <div className="space-y-3">
