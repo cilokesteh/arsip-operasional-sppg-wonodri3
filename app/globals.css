@@ -47,17 +47,19 @@
   }
 }
 
-/* Panel datar: garis tipis, tanpa bayangan */
+/* Panel: sudut membulat + bayangan sangat halus agar tidak kaku */
 .panel {
   background-color: #ffffff;
   border: 1px solid var(--color-line);
-  border-radius: 0.75rem;
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgb(16 34 63 / 0.04);
 }
 
 .app-card {
   background-color: #ffffff;
   border: 1px solid var(--color-line);
-  border-radius: 0.75rem;
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgb(16 34 63 / 0.04);
 }
 
 /* Ruang aman di bawah untuk tab navigasi mobile */
@@ -113,6 +115,10 @@
     padding: 0 !important;
     max-width: 100% !important;
     width: 100% !important;
+  }
+
+  .panel, .app-card {
+    box-shadow: none !important;
   }
 
   /* Pastikan foto menu tampil utuh di print / PDF tanpa terpotong */

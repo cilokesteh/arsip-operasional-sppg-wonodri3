@@ -382,7 +382,7 @@ export default function ArsipPage() {
       {/* ============ MAIN CONTENT ============ */}
       <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-8 flex-1 space-y-5 sm:space-y-6">
         {/* Banner Header Halaman */}
-        <div className="bg-white rounded-xl border border-line p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
           <div className="space-y-1.5 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-ink/5 text-ink border border-ink/15">
@@ -399,25 +399,25 @@ export default function ArsipPage() {
             </p>
           </div>
 
-          {/* Quick Metrics Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 shrink-0">
-            <div className="bg-slate-50 border border-line rounded-xl p-3 text-center min-w-[110px]">
-              <span className="text-xs font-bold text-slate-500 block">Total Arsip</span>
-              <strong className="text-lg font-bold text-slate-900">{allUniqueDates.length} Hari</strong>
+          {/* Quick Metrics Strip — angka polos dengan pemisah tipis */}
+          <dl className="flex divide-x divide-line shrink-0">
+            <div className="px-4 first:pl-0 text-left min-w-[96px]">
+              <dt className="text-xs font-semibold text-slate-500">Total Arsip</dt>
+              <dd className="font-heading text-xl font-bold text-slate-900">{allUniqueDates.length} Hari</dd>
             </div>
-            <div className="bg-ink/5/60 border border-ink/15 rounded-xl p-3 text-center min-w-[110px]">
-              <span className="text-xs font-bold text-ink block">Menu Tersedia</span>
-              <strong className="text-lg font-bold text-ink">{staticMenusData.length} Menu</strong>
+            <div className="px-4 text-left min-w-[96px]">
+              <dt className="text-xs font-semibold text-slate-500">Menu Tersedia</dt>
+              <dd className="font-heading text-xl font-bold text-ink">{staticMenusData.length} Menu</dd>
             </div>
-            <div className="col-span-2 sm:col-span-1 bg-leaf-soft border border-leaf/30 rounded-xl p-3 text-center min-w-[110px]">
-              <span className="text-xs font-bold text-leaf block">Porsi / Hari</span>
-              <strong className="text-lg font-bold text-ink">1.553</strong>
+            <div className="px-4 text-left min-w-[96px]">
+              <dt className="text-xs font-semibold text-slate-500">Porsi / Hari</dt>
+              <dd className="font-heading text-xl font-bold text-ink">1.553</dd>
             </div>
-          </div>
+          </dl>
         </div>
 
         {/* Filter & Toolbar Bar */}
-        <div className="bg-white rounded-xl border border-line p-4 space-y-3">
+        <div className="space-y-3">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             {/* Search Input */}
             <div className="relative flex-1">
@@ -540,11 +540,11 @@ export default function ArsipPage() {
               return (
                 <div
                   key={dateStr}
-                  className="bg-white rounded-xl border border-line hover:border-gold hover:shadow-md transition-all flex flex-col justify-between p-4 sm:p-5 space-y-4 group"
+                  className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgb(16_34_63/0.04)] hover:border-gold hover:shadow-md transition-all flex flex-col justify-between p-4 sm:p-5 space-y-4 group"
                 >
                   <div className="space-y-3">
                     {/* Header Card: Tanggal & Badge Hari */}
-                    <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
+                    <div className="flex items-start justify-between gap-2">
                       <div>
                         <span className={`text-xs font-bold px-2 py-0.5 rounded ${
                           isWeekend ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-700'
@@ -571,7 +571,7 @@ export default function ArsipPage() {
 
                     {/* Informasi Menu & Sajian */}
                     {menu ? (
-                      <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-1.5">
+                      <div className="bg-ink/[0.03] rounded-xl p-3 space-y-1.5">
                         <div className="flex items-center gap-1.5 text-sm font-bold text-slate-900 line-clamp-1">
                           <Utensils className="w-3.5 h-3.5 text-gold shrink-0" />
                           <span className="truncate">{menu.title}</span>
@@ -583,9 +583,9 @@ export default function ArsipPage() {
                         </p>
                       </div>
                     ) : (
-                      <div className="bg-slate-50/60 border border-dashed border-line rounded-xl p-3 text-[13px] text-slate-400 italic">
-                        {isSunday ? 'Hari Libur Rutin Dapur' : 'Dokumen Menu Belum Diunggah ke Sistem'}
-                      </div>
+                      <p className="px-1 py-1 text-[13px] text-slate-400 italic">
+                        {isSunday ? 'Hari Libur Rutin Dapur' : 'Dokumen menu belum diunggah ke sistem.'}
+                      </p>
                     )}
 
                     {/* Ringkasan Presensi Relawan — data internal (kehadiran &

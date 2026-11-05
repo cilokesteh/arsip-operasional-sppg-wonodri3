@@ -483,7 +483,7 @@ export default function PortalHome() {
             berasal dari data master penerima manfaat, jadi menampilkannya di
             hari tanpa laporan akan terbaca sebagai data hari itu. */}
         {currentMenu && (
-        <dl className="no-print panel grid grid-cols-3 divide-x divide-line">
+        <dl className="no-print grid grid-cols-3 divide-x divide-line">
           {[
             {
               label: 'Porsi hari ini',
@@ -504,7 +504,7 @@ export default function PortalHome() {
               detail: 'Dari persiapan sampai distribusi',
             },
           ].map((stat) => (
-            <div key={stat.label} className="px-3 py-3 sm:px-5 sm:py-4 min-w-0">
+            <div key={stat.label} className="px-3 py-1 sm:px-5 sm:py-2 min-w-0">
               <dt className="text-xs sm:text-sm text-slate-600">{stat.label}</dt>
               <dd className="mt-0.5">
                 <span className="font-heading text-2xl sm:text-3xl font-bold tabular-nums">{stat.value}</span>
@@ -520,8 +520,12 @@ export default function PortalHome() {
         {/* Tab bagian laporan hanya bermakna bila ada laporan; tanpa laporan
             halaman cukup menampilkan satu panel kosong (empty state). */}
         {currentMenu && (
-        <div className="no-print sticky top-14 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-paper/95 backdrop-blur border-b border-line">
-          <div role="tablist" aria-label="Bagian laporan" className="flex gap-1 overflow-x-auto no-scrollbar">
+        <div className="no-print sticky top-14 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 bg-paper/95 backdrop-blur">
+          <div
+            role="tablist"
+            aria-label="Bagian laporan"
+            className="flex gap-1 overflow-x-auto no-scrollbar bg-white border border-line rounded-full p-1 shadow-[0_1px_2px_rgb(16_34_63/0.04)] w-fit max-w-full"
+          >
             {WORKSPACE_TABS.map((tab) => {
               const active = activeTab === tab.id;
               return (
@@ -532,10 +536,10 @@ export default function PortalHome() {
                   aria-selected={active}
                   title={tab.label}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`shrink-0 px-4 min-h-11 text-sm border-b-2 -mb-px cursor-pointer transition-colors ${
+                  className={`shrink-0 px-4 min-h-10 rounded-full text-sm cursor-pointer transition-colors ${
                     active
-                      ? 'border-gold text-ink font-semibold'
-                      : 'border-transparent text-slate-600 hover:text-ink font-medium'
+                      ? 'bg-ink text-white font-semibold'
+                      : 'text-slate-600 hover:text-ink hover:bg-ink/5 font-medium'
                   }`}
                 >
                   {tab.short}
