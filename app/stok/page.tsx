@@ -175,6 +175,7 @@ export default function StockMonitoringPage() {
   const [showUsageModal, setShowUsageModal] = useState<boolean>(false);
   const [showItemDetailModal, setShowItemDetailModal] = useState<boolean>(false);
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+  const [showOpnamePrintModal, setShowOpnamePrintModal] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<StockItem | null>(null);
 
   // Form State for Tambah Master Bahan Baru
@@ -1771,6 +1772,17 @@ export default function StockMonitoringPage() {
 
                   <button
                     type="button"
+                    onClick={() => opnameSession && setShowOpnamePrintModal(true)}
+                    disabled={!opnameSession}
+                    className="px-3 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Pratinjau & Download Hasil Opname sebagai PDF (A4)"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>Cetak PDF</span>
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={handleResetOpnameDraft}
                     className="text-slate-400 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors"
                     title="Reset Draf Opname ke Saldo Sistem"
@@ -3245,6 +3257,207 @@ export default function StockMonitoringPage() {
                     </tfoot>
                   </table>
                 </div>
+
+                {/* Formal 4-Signatory Block: Responsive grid (2x2 on mobile, 4 cols in print & desktop) */}
+                <div className="pt-6 border-t border-slate-200">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 sm:gap-3 text-center text-xs">
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                      <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
+                        Petugas Logistik / Timbangan,
+                      </p>
+                      <div>
+                        <p className="font-bold underline uppercase text-slate-950 text-[11px] sm:text-xs">
+                          Nur Khafidin
+                        </p>
+                        <p className="text-[9px] sm:text-[10px] text-slate-500">Staf Logistik SPPG</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                      <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
+                        Ahli Gizi Penanggung Jawab,
+                      </p>
+                      <div>
+                        <p className="font-bold underline uppercase text-slate-950 text-[11px] sm:text-xs">
+                          Sintia Mariam, A.Md.Gz
+                        </p>
+                        <p className="text-[9px] sm:text-[10px] text-slate-500">Ahli Gizi SPPG</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                      <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
+                        Petugas Akuntansi / Keuangan,
+                      </p>
+                      <div>
+                        <p className="font-bold underline uppercase text-slate-950 text-[11px] sm:text-xs">
+                          Salsabiila Zainima, S.Ak
+                        </p>
+                        <p className="text-[9px] sm:text-[10px] text-slate-500">Akuntan SPPG</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
+                      <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
+                        Mengetahui / Mengesahkan,
+                      </p>
+                      <div>
+                        <p className="font-bold underline uppercase text-slate-950 text-[11px] sm:text-xs">
+                          Dicky Yusuf Mulyadi, S.M.
+                        </p>
+                        <p className="text-[9px] sm:text-[10px] text-slate-500">Kepala SPPG Wonodri 3</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============ MODAL 5: CETAK BERITA ACARA STOCK OPNAME A4 (PDF) ============ */}
+      {showOpnamePrintModal && opnameSession && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs print:static print:p-0 print:bg-white print:z-auto print:block">
+          <div className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 flex flex-col max-h-[95vh] overflow-hidden print:max-h-none print:shadow-none print:border-none print:overflow-visible print:w-full print:max-w-none print:rounded-none">
+            {/* Modal Header Toolbar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 p-3 sm:p-4 bg-slate-50 no-print gap-3 shrink-0">
+              <div className="flex items-center gap-2">
+                <Printer className="w-5 h-5 text-blue-600 shrink-0" />
+                <div>
+                  <h3 className="text-xs sm:text-sm font-black text-slate-900 leading-tight">
+                    Pratinjau Dokumen Stock Opname (A4)
+                  </h3>
+                  <p className="text-[10px] text-slate-500">Standar Resmi Badan Gizi Nasional (BGN)</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer transition-colors"
+                  title="Download atau Simpan sebagai PDF (A4)"
+                >
+                  <FileDown className="w-4 h-4 shrink-0" />
+                  <span>Download / Simpan PDF</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowOpnamePrintModal(false)}
+                  className="p-2 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+                  title="Tutup Pratinjau"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Document Body Wrapper with Scroll */}
+            <div className="p-2 sm:p-8 bg-slate-100 overflow-y-auto flex-1 print:p-0 print:bg-white print:overflow-visible">
+              {/* Genuine A4 Document Sheet */}
+              <div className="report-sheet bg-white text-slate-950 p-4 sm:p-10 border border-slate-300 rounded-xl shadow-md max-w-3xl mx-auto space-y-6 font-serif text-xs print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full">
+                {/* Official KOP BGN SPPG */}
+                <div className="border-b-2 border-slate-950 pb-4 text-center relative">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <Image
+                      src="/logo.png"
+                      alt="Logo BGN"
+                      width={55}
+                      height={55}
+                      className="object-contain shrink-0"
+                      priority
+                    />
+                    <div className="text-center">
+                      <h4 className="text-[11px] sm:text-xs uppercase font-bold tracking-widest text-slate-800">
+                        BADAN GIZI NASIONAL
+                      </h4>
+                      <h2 className="text-sm sm:text-base font-black uppercase tracking-tight text-slate-950">
+                        SATUAN PELAYANAN PROGRAM GIZI (SPPG) WONODRI 3
+                      </h2>
+                      <p className="text-[10px] text-slate-600 mt-0.5">
+                        Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang, Jawa Tengah
+                      </p>
+                      <p className="text-[10px] font-mono text-slate-500">
+                        Pagu Layanan: 1.553 Porsi / Hari &bull; 12 Sekolah &amp; 1 Posyandu &bull; Kode Satpel: SPPG-SMG-003
+                      </p>
+                    </div>
+                  </div>
+                  <div className="border-t border-slate-950 mt-3 pt-0.5" />
+                </div>
+
+                {/* Judul Dokumen */}
+                <div className="text-center space-y-1">
+                  <h3 className="text-sm sm:text-base font-black uppercase underline tracking-wider text-slate-950">
+                    Berita Acara Stock Opname Bahan Baku
+                  </h3>
+                  <p className="text-[11px] font-bold text-slate-700">
+                    Nomor: {opnameSession.id} &nbsp;&bull;&nbsp; Tanggal: {new Date(`${opnameSession.date}T00:00:00`).toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                  <p className="text-[10px] text-slate-600">
+                    Pemeriksa: {opnameSession.checkerName} &nbsp;&bull;&nbsp; Status: {opnameSession.status === 'completed' ? 'Selesai & Diterapkan' : 'Draf'}
+                  </p>
+                </div>
+
+                {/* Ringkasan Opname */}
+                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-[11px] font-bold text-slate-800 border border-slate-300 rounded-lg px-3 py-2">
+                  <span>Total Item: {opnameStats.totalRows}</span>
+                  <span>Item Berselisih: {opnameStats.itemsDiff}</span>
+                  <span>Kecocokan: {opnameStats.matchPct}%</span>
+                </div>
+
+                {/* Tabel Hasil Opname */}
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-slate-400 text-[11px]">
+                    <thead>
+                      <tr className="bg-slate-100">
+                        <th className="border border-slate-400 px-2 py-1.5 text-center w-8">No</th>
+                        <th className="border border-slate-400 px-2 py-1.5 text-left">Nama Bahan</th>
+                        <th className="border border-slate-400 px-2 py-1.5 text-center">Satuan</th>
+                        <th className="border border-slate-400 px-2 py-1.5 text-right">Stok Sistem</th>
+                        <th className="border border-slate-400 px-2 py-1.5 text-right">Hasil Fisik</th>
+                        <th className="border border-slate-400 px-2 py-1.5 text-right">Selisih</th>
+                        <th className="border border-slate-400 px-2 py-1.5 text-left">Keterangan</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {opnameSession.rows.map((row, idx) => {
+                        const diff = Number((row.physicalQty - row.systemQty).toFixed(2));
+                        const fmt = (v: number) => (Number.isInteger(v) ? `${v}` : v.toFixed(2));
+                        return (
+                          <tr key={row.itemId} className={idx % 2 === 1 ? 'bg-slate-50' : ''}>
+                            <td className="border border-slate-400 px-2 py-1.5 text-center">{idx + 1}</td>
+                            <td className="border border-slate-400 px-2 py-1.5 font-bold">
+                              {row.name}
+                              <span className="block font-mono font-normal text-[9px] text-slate-500">{row.sku} &bull; {row.storageLocation}</span>
+                            </td>
+                            <td className="border border-slate-400 px-2 py-1.5 text-center">{row.uom}</td>
+                            <td className="border border-slate-400 px-2 py-1.5 text-right font-mono">{fmt(row.systemQty)}</td>
+                            <td className="border border-slate-400 px-2 py-1.5 text-right font-mono">{fmt(row.physicalQty)}</td>
+                            <td className={`border border-slate-400 px-2 py-1.5 text-right font-mono ${diff !== 0 ? 'font-black' : ''}`}>
+                              {diff > 0 ? `+${fmt(diff)}` : diff < 0 ? `-${fmt(Math.abs(diff))}` : '0'}
+                            </td>
+                            <td className="border border-slate-400 px-2 py-1.5">{row.notes || '-'}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr className="bg-slate-100 font-bold">
+                        <td colSpan={3} className="border border-slate-400 px-2 py-1.5 text-right">Total</td>
+                        <td className="border border-slate-400 px-2 py-1.5 text-right font-mono">{opnameStats.totalRows} Item</td>
+                        <td colSpan={3} className="border border-slate-400 px-2 py-1.5 text-left">
+                          {opnameStats.itemsDiff} Item Berselisih &bull; Kecocokan {opnameStats.matchPct}%
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+
+                <p className="text-[10px] text-slate-600 leading-relaxed">
+                  Demikian Berita Acara Stock Opname ini dibuat dengan sebenarnya berdasarkan hasil pemeriksaan fisik
+                  bahan baku di gudang penyimpanan SPPG Wonodri 3, untuk dipergunakan sebagaimana mestinya.
+                </p>
 
                 {/* Formal 4-Signatory Block: Responsive grid (2x2 on mobile, 4 cols in print & desktop) */}
                 <div className="pt-6 border-t border-slate-200">
