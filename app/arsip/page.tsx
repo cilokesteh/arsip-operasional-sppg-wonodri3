@@ -393,7 +393,7 @@ export default function ArsipPage() {
           actions={
             <StatRow>
               <Stat label="Total Arsip" value={allUniqueDates.length} unit="Hari" />
-              <Stat label="Menu Tersedia" value={staticMenusData.length} unit="Menu" />
+              <Stat label="Menu Tersedia" value={menuList.length} unit="Menu" />
               <Stat label="Porsi / Hari" value="1.553" />
             </StatRow>
           }
