@@ -1049,9 +1049,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     const end = weekDays[weekDays.length - 1].date;
     ledger
       .filter((e) => e.date >= start && e.date <= end && e.date <= todayDateStr)
-      .forEach((e) => map.set(`${e.volunteerId}:${e.date}`, e.status));
+      .forEach((e) => {
+        const person = rosterMap.get(e.volunteerId);
+        const status = person && !person.isActive ? 'Nonaktif' : e.status;
+        map.set(`${e.volunteerId}:${e.date}`, status);
+      });
     return map;
-  }, [ledger, weekDays, todayDateStr]);
+  }, [ledger, weekDays, todayDateStr, rosterMap]);
 
   const weeklySummary = useMemo(() => {
     const start = weekDays[0].date;

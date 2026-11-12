@@ -528,7 +528,9 @@ export function saveRosterToStorage(roster: VolunteerProfile[]): void {
   }
 }
 
-export function loadLedgerFromStorage(_roster?: VolunteerProfile[]): AttendanceEntry[] {
+export function loadLedgerFromStorage(roster?: VolunteerProfile[]): AttendanceEntry[] {
+  const activeRoster = roster || DEFAULT_ROSTER_40;
+  const nonActiveIds = new Set(activeRoster.filter((p) => !p.isActive).map((p) => p.id));
   const baseLedger = (officialLedgerData as unknown as AttendanceEntry[]) || [];
   if (typeof window === 'undefined') return baseLedger;
   try {
@@ -536,12 +538,33 @@ export function loadLedgerFromStorage(_roster?: VolunteerProfile[]): AttendanceE
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Merge user updates on top of baseLedger
+        // Merge user updates on top of baseLedger, TETAPI bersihkan relawan nonaktif dari cache lama!
         const map = new Map<string, AttendanceEntry>(baseLedger.map((e) => [e.id, e]));
-        parsed.forEach((e) => map.set(e.id, e));
-        return Array.from(map.values()).sort(
+        parsed.forEach((e) => {
+          if (nonActiveIds.has(e.volunteerId)) {
+            map.set(e.id, {
+              ...e,
+              status: 'Nonaktif',
+              checkIn: '',
+              checkOut: '',
+              lateMinutes: 0,
+              overtimeMinutes: 0,
+              earnedAmount: 0,
+              paid: false,
+              notes: 'Personel Nonaktif / Resigned',
+            });
+          } else {
+            map.set(e.id, e);
+          }
+        });
+        const result = Array.from(map.values()).sort(
           (a, b) => a.date.localeCompare(b.date) || a.volunteerId.localeCompare(b.volunteerId)
         );
+        // Simpan balik versi bersih ke localStorage agar cache lokal user otomatis sembuh
+        try {
+          localStorage.setItem(ARSIP_ATTENDANCE_LEDGER_KEY, JSON.stringify(result));
+        } catch {}
+        return result;
       }
     }
   } catch (err) {
