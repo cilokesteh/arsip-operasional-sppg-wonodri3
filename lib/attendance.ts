@@ -207,7 +207,22 @@ export function buildDailyEntries(
 }
 
 export function normalizeAttendanceEntry(entry: AttendanceEntry, person: VolunteerProfile): AttendanceEntry {
-  const isPresent = entry.status === 'Hadir' && person.isActive;
+  if (!person.isActive) {
+    return {
+      ...entry,
+      status: 'Nonaktif',
+      checkIn: '',
+      checkOut: '',
+      lateMinutes: 0,
+      overtimeMinutes: 0,
+      earnedAmount: 0,
+      paid: false,
+      notes: 'Personel Nonaktif / Resigned',
+      recordedAt: new Date().toISOString(),
+    };
+  }
+
+  const isPresent = entry.status === 'Hadir';
   const lateMinutes = isPresent ? calculateMinutesLate(entry.checkIn, entry.scheduledIn) : 0;
   const overtimeMinutes = isPresent ? calculateOvertimeMinutes(entry.checkOut, entry.scheduledOut) : 0;
   const earnedAmount = isPresent ? person.dailyRate : 0;
