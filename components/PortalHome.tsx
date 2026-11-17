@@ -7,7 +7,8 @@ import {
   INITIAL_MENU_HISTORY,
   STANDARD_AKG_REFERENCE,
   DailyMenuRecord,
-  getBeneficiariesForDate,
+  getEffectiveBeneficiariesForDate,
+  loadKuotaOverrides,
 } from '@/lib/data';
 import {
   Calendar as CalendarIcon,
@@ -91,6 +92,14 @@ export default function PortalHome() {
   );
   // Default ke HARI INI supaya laporan terbaru langsung tampil walau fetch cloud lambat/gagal
   const [selectedDate, setSelectedDate] = useState<string>(toIsoDateLocal(new Date()));
+  // Master Kuota yang diedit dari halaman Operator (Alur 4) — dibaca ulang tiap ganti tanggal
+  const [kuotaOverrides, setKuotaOverrides] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const refresh = () => setKuotaOverrides(loadKuotaOverrides());
+    refresh();
+    window.addEventListener('storage', refresh);
+    return () => window.removeEventListener('storage', refresh);
+  }, [selectedDate]);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('overview');
   const [showCalendarModal, setShowCalendarModal] = useState<boolean>(false);
   const [searchBeneficiary, setSearchBeneficiary] = useState<string>('');
@@ -222,7 +231,7 @@ export default function PortalHome() {
 
   const currentMenu = menuHistory.find((m) => m.date === selectedDate);
   const isLoadingReport = isSyncingMenus && !currentMenu;
-  const baselineBeneficiaries = getBeneficiariesForDate(selectedDate);
+  const baselineBeneficiaries = getEffectiveBeneficiariesForDate(selectedDate, kuotaOverrides);
 
   const activeBeneficiaries = baselineBeneficiaries.map((site) => {
     const override = currentMenu?.overrides?.find((o) => o.siteId === site.id);

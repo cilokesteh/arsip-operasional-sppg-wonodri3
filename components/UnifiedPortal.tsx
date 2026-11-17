@@ -6,7 +6,8 @@ import Image from 'next/image';
 import {
   INITIAL_MENU_HISTORY,
   DailyMenuRecord,
-  getBeneficiariesForDate,
+  getEffectiveBeneficiariesForDate,
+  loadKuotaOverrides,
 } from '@/lib/data';
 import {
   Calendar as CalendarIcon,
@@ -91,6 +92,14 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       ? toIsoDateLocal(new Date())
       : (staticMenusData && staticMenusData.length > 0 ? staticMenusData[0].date : '2026-10-21')
   );
+  // Master Kuota yang diedit dari halaman Operator (Alur 4) — dibaca ulang tiap ganti tanggal
+  const [kuotaOverrides, setKuotaOverrides] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const refresh = () => setKuotaOverrides(loadKuotaOverrides());
+    refresh();
+    window.addEventListener('storage', refresh);
+    return () => window.removeEventListener('storage', refresh);
+  }, [selectedDate]);
   const [showCalendarModal, setShowCalendarModal] = useState<boolean>(false);
   const [calendarMonth, setCalendarMonth] = useState<number>(9);
   const [calendarYear, setCalendarYear] = useState<number>(2026);
@@ -176,7 +185,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     return menuHistory.find((m) => m.date === selectedDate);
   }, [menuHistory, selectedDate]);
 
-  const rawBeneficiaries = useMemo(() => getBeneficiariesForDate(selectedDate), [selectedDate]);
+  const rawBeneficiaries = useMemo(() => getEffectiveBeneficiariesForDate(selectedDate, kuotaOverrides), [selectedDate, kuotaOverrides]);
   const activeBeneficiaries = useMemo(() => {
     return rawBeneficiaries.map((site) => {
       const override = currentMenu?.overrides?.find((o) => o.siteId === site.id);
@@ -305,20 +314,6 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     let dayEntries = loadedLedger.filter((entry) => entry.date === activeDate);
     if (dayEntries.length > 0) {
       dayEntries = dayEntries.map((e) => {
-        const person = loadedRoster.find((p) => p.id === e.volunteerId);
-        if (person && !person.isActive) {
-          return {
-            ...e,
-            status: 'Nonaktif' as AttendanceStatus,
-            checkIn: '',
-            checkOut: '',
-            lateMinutes: 0,
-            overtimeMinutes: 0,
-            earnedAmount: 0,
-            paid: false,
-            notes: 'Personel Nonaktif / Resigned',
-          };
-        }
         if (e.volunteerId === 'v-1') {
           return {
             ...e,
@@ -361,20 +356,6 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     let dayEntries = ledger.filter((entry) => entry.date === selectedDate);
     if (dayEntries.length > 0) {
       dayEntries = dayEntries.map((e) => {
-        const person = roster.find((p) => p.id === e.volunteerId);
-        if (person && !person.isActive) {
-          return {
-            ...e,
-            status: 'Nonaktif' as AttendanceStatus,
-            checkIn: '',
-            checkOut: '',
-            lateMinutes: 0,
-            overtimeMinutes: 0,
-            earnedAmount: 0,
-            paid: false,
-            notes: 'Personel Nonaktif / Resigned',
-          };
-        }
         if (e.volunteerId === 'v-1') {
           return {
             ...e,
@@ -447,17 +428,6 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               const cloud = cloudMap.get(entry.volunteerId);
               if (cloud) {
                 const person = rosterMap.get(entry.volunteerId);
-                if (person && !person.isActive) {
-                  return {
-                    ...entry,
-                    status: 'Nonaktif',
-                    checkIn: '',
-                    checkOut: '',
-                    earnedAmount: 0,
-                    paid: false,
-                    notes: 'Personel Nonaktif / Resigned',
-                  };
-                }
                 const cloudStatus = (cloud.status as AttendanceStatus) || 'Hadir';
                 const isPresent = cloudStatus === 'Hadir' && (person ? person.isActive : true);
                 const isAslap = entry.volunteerId === 'v-1';
@@ -493,26 +463,6 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
               const person = rosterMap.get(volunteerId);
               if (!person) return;
               const existing = dayMap.get(volunteerId);
-              if (!person.isActive) {
-                dayMap.set(volunteerId, {
-                  id: `${selectedDate}:${volunteerId}`,
-                  volunteerId,
-                  date: selectedDate,
-                  status: 'Nonaktif',
-                  checkIn: '',
-                  checkOut: '',
-                  scheduledIn: person.defaultCheckIn,
-                  scheduledOut: person.defaultCheckOut,
-                  lateMinutes: 0,
-                  overtimeMinutes: 0,
-                  earnedAmount: 0,
-                  paid: false,
-                  notes: 'Personel Nonaktif / Resigned',
-                  recordedAt: new Date().toISOString(),
-                  recordedBy: 'Cloud Sync',
-                });
-                return;
-              }
               const cloudStatus = (cloud.status as AttendanceStatus) || 'Hadir';
               const isPresent = cloudStatus === 'Hadir' && person.isActive;
               const isAslap = volunteerId === 'v-1';
@@ -612,59 +562,29 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             const person = rosterMap.get(volunteerId);
             if (!person) continue;
 
-            const existing = next.find((e) => e.date === date && e.volunteerId === volunteerId);
-
-            // JANGAN pernah sinkronkan relawan non-aktif sebagai Hadir!
-            if (!person.isActive) {
-              const nonaktifEntry: AttendanceEntry = {
-                id: `${date}:${volunteerId}`,
-                volunteerId,
-                date,
-                status: 'Nonaktif',
-                checkIn: '',
-                checkOut: '',
-                scheduledIn: person.defaultCheckIn,
-                scheduledOut: person.defaultCheckOut,
-                lateMinutes: 0,
-                overtimeMinutes: 0,
-                earnedAmount: 0,
-                paid: false,
-                notes: 'Personel Nonaktif / Resigned',
-                recordedAt: new Date().toISOString(),
-                recordedBy: 'Cloud Sync',
-              };
-              if (!existing || existing.status !== 'Nonaktif') {
-                changed = true;
-                next = existing
-                  ? next.map((e) => (e === existing ? nonaktifEntry : e))
-                  : [...next, nonaktifEntry];
-              }
-              continue;
-            }
-
             const checkInTime = String(rec.checkInTime || rec.time || '');
             const rawPhoto = (rec.checkInPhoto as string) || (rec.photoUrl as string) || undefined;
             const photo = isValidPhoto(rawPhoto) ? rawPhoto : undefined;
             const dist = rec.distanceMeters as number | undefined;
             const within = rec.isWithinRadius as boolean | undefined;
-            const cloudStatus = (rec.status as AttendanceStatus) || 'Hadir';
 
+            const existing = next.find((e) => e.date === date && e.volunteerId === volunteerId);
             const merged: AttendanceEntry =
               existing ||
               ({
                 id: `${date}:${volunteerId}`,
                 volunteerId,
                 date,
-                status: cloudStatus,
+                status: 'Hadir',
                 checkIn: person.defaultCheckIn,
                 checkOut: person.defaultCheckOut,
-                earnedAmount: cloudStatus === 'Hadir' ? person.dailyRate : 0,
+                earnedAmount: person.dailyRate,
                 notes: '',
               } as AttendanceEntry);
 
             const alreadySynced =
               existing &&
-              existing.status === cloudStatus &&
+              existing.status === 'Hadir' &&
               existing.checkIn === checkInTime &&
               existing.photoUrl === photo;
             if (alreadySynced) continue;
@@ -672,9 +592,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             changed = true;
             const updated: AttendanceEntry = {
               ...merged,
-              status: cloudStatus,
+              status: 'Hadir',
               checkIn: checkInTime || merged.checkIn,
-              earnedAmount: cloudStatus === 'Hadir' ? person.dailyRate : 0,
+              earnedAmount: person.dailyRate,
               notes:
                 within === false
                   ? `⚠️ Luar Dapur (${dist ?? 0}m)`
@@ -774,20 +694,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     setCurrentDayDraft((prev) =>
       prev.map((entry) => {
         const person = rosterMap.get(entry.volunteerId);
-        if (!person) return entry;
-        if (!person.isActive) {
-          return {
-            ...entry,
-            status: 'Nonaktif' as AttendanceStatus,
-            checkIn: '',
-            checkOut: '',
-            lateMinutes: 0,
-            overtimeMinutes: 0,
-            earnedAmount: 0,
-            paid: false,
-            notes: 'Personel Nonaktif / Resigned',
-          };
-        }
+        if (!person || !person.isActive) return entry;
         return normalizeAttendanceEntry(
           {
             ...entry,
@@ -1049,13 +956,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     const end = weekDays[weekDays.length - 1].date;
     ledger
       .filter((e) => e.date >= start && e.date <= end && e.date <= todayDateStr)
-      .forEach((e) => {
-        const person = rosterMap.get(e.volunteerId);
-        const status = person && !person.isActive ? 'Nonaktif' : e.status;
-        map.set(`${e.volunteerId}:${e.date}`, status);
-      });
+      .forEach((e) => map.set(`${e.volunteerId}:${e.date}`, e.status));
     return map;
-  }, [ledger, weekDays, todayDateStr, rosterMap]);
+  }, [ledger, weekDays, todayDateStr]);
 
   const weeklySummary = useMemo(() => {
     const start = weekDays[0].date;
@@ -1471,8 +1374,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                           const person = rosterMap.get(entry.volunteerId);
                           if (!person) return null;
 
-                          const isNonAktif = !person.isActive || entry.status === 'Nonaktif';
-                          const isHadir = entry.status === 'Hadir' && person.isActive;
+                          const isHadir = entry.status === 'Hadir';
+                          const isNonAktif = entry.status === 'Nonaktif';
 
                           return (
                             <tr
@@ -1631,14 +1534,13 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   {filteredDailyDraft.map((entry) => {
                     const person = rosterMap.get(entry.volunteerId);
                     if (!person) return null;
-                    const isNonAktif = !person.isActive || entry.status === 'Nonaktif';
-                    const isHadir = entry.status === 'Hadir' && person.isActive;
+                    const isHadir = entry.status === 'Hadir';
 
                     return (
                       <div
                         key={entry.id}
                         className={`bg-white p-3 rounded-xl border space-y-2 ${
-                          isNonAktif ? 'bg-slate-50/50 border-slate-200 opacity-75' : !isHadir ? 'border-amber-200 bg-amber-50/20' : 'border-line'
+                          !isHadir ? 'border-amber-200 bg-amber-50/20' : 'border-line'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2.5">
@@ -1655,7 +1557,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                             )}
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className={`font-bold text-sm block truncate ${isNonAktif ? 'line-through text-slate-400' : 'text-slate-900'}`}>{person.name}</span>
+                                <span className="font-bold text-sm text-slate-900 block truncate">{person.name}</span>
                                 {entry.photoUrl && (
                                   <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 inline-flex items-center gap-0.5">
                                     <span>📍</span>
@@ -1668,39 +1570,33 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                               </span>
                             </div>
                           </div>
-                          <div className="shrink-0">{isNonAktif ? <span className="text-xs text-slate-400 font-mono font-medium">Nonaktif</span> : isHadir ? renderSalary(entry.earnedAmount) : renderSalary(person.dailyRate, true)}</div>
+                          <div className="shrink-0">{isHadir ? renderSalary(entry.earnedAmount) : renderSalary(person.dailyRate, true)}</div>
                         </div>
 
-                        {isNonAktif ? (
-                          <div className="py-2 px-3 rounded-lg bg-slate-50 border border-slate-200 text-center text-xs text-slate-400 font-mono font-medium">
-                            Personel Nonaktif / Resigned (Tidak Presensi)
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-4 gap-1 text-[13px] font-semibold">
-                            {(['Hadir', 'Izin', 'Sakit', 'Alpha'] as AttendanceStatus[]).map((st) => (
-                              <button
-                                key={st}
-                                type="button"
-                                disabled={!person.isActive}
-                                onClick={() => handleSelectStatus(person.id, st)}
-                                className={`py-1.5 rounded-lg text-center transition-all cursor-pointer font-bold ${
-                                  entry.status === st
-                                    ? st === 'Hadir'
-                                      ? 'bg-emerald-600 text-white'
-                                      : st === 'Izin'
-                                      ? 'bg-amber-600 text-white'
-                                      : st === 'Sakit'
-                                      ? 'bg-purple-600 text-white'
-                                      : 'bg-rose-600 text-white'
-                                    : 'bg-slate-50 text-slate-600 border border-line hover:bg-slate-100'
-                                }`}
-                                title={`Klik untuk ${st} (Klik lagi untuk batal)`}
-                              >
-                                {st}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                        <div className="grid grid-cols-4 gap-1 text-[13px] font-semibold">
+                          {(['Hadir', 'Izin', 'Sakit', 'Alpha'] as AttendanceStatus[]).map((st) => (
+                            <button
+                              key={st}
+                              type="button"
+                              disabled={!person.isActive}
+                              onClick={() => handleSelectStatus(person.id, st)}
+                              className={`py-1.5 rounded-lg text-center transition-all cursor-pointer font-bold ${
+                                entry.status === st
+                                  ? st === 'Hadir'
+                                    ? 'bg-emerald-600 text-white'
+                                    : st === 'Izin'
+                                    ? 'bg-amber-600 text-white'
+                                    : st === 'Sakit'
+                                    ? 'bg-purple-600 text-white'
+                                    : 'bg-rose-600 text-white'
+                                  : 'bg-slate-50 text-slate-600 border border-line hover:bg-slate-100'
+                              }`}
+                              title={`Klik untuk ${st} (Klik lagi untuk batal)`}
+                            >
+                              {st}
+                            </button>
+                          ))}
+                        </div>
 
                         {isHadir && (
                           <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-sm font-mono">
@@ -1885,10 +1781,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                             if (d.date > todayDateStr) {
                               return 'FUTURE';
                             }
-                            if (!person.isActive) {
-                              return 'Nonaktif';
-                            }
-                            const st = weeklyLedgerMap.get(`${person.id}:${d.date}`) || 'Belum Absen';
+                            const st = weeklyLedgerMap.get(`${person.id}:${d.date}`) || (person.isActive ? 'Belum Absen' : 'Nonaktif');
                             if (st === 'Hadir') hadirCount += 1;
                             return st;
                           });

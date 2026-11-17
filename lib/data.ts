@@ -121,6 +121,56 @@ export function getBeneficiariesForDate(dateStr?: string): BeneficiarySite[] {
   return BENEFICIARIES_OCT_19_ONWARDS;
 }
 
+// ===== MASTER KUOTA — bisa diedit dari halaman Operator (Alur 4) =====
+// Kuota adalah data master (bukan per tanggal laporan): perubahan berlaku
+// untuk periode baseline yang sedang berjalan (per 19 Okt 2026 ke depan).
+// Periode lama (arsip s/d 18 Okt) TIDAK ikut berubah — baseline-nya terkunci.
+// Disimpan di localStorage browser (sama seperti data app lainnya) supaya
+// bisa diubah tanpa deploy ulang.
+export const KUOTA_OVERRIDE_KEY = 'sppg_master_kuota_overrides_v1';
+export const KUOTA_OVERRIDE_SINCE = '2026-10-19';
+
+export function loadKuotaOverrides(): Record<string, number> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = window.localStorage.getItem(KUOTA_OVERRIDE_KEY);
+    if (!raw) return {};
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return {};
+    const out: Record<string, number> = {};
+    for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
+      const n = Number(v);
+      if (Number.isFinite(n) && Number.isInteger(n) && n >= 0 && n <= 9999) out[k] = n;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+export function saveKuotaOverrides(overrides: Record<string, number>): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(KUOTA_OVERRIDE_KEY, JSON.stringify(overrides));
+  } catch {
+    // storage penuh / mode privat — abaikan, kuota kembali ke baseline
+  }
+}
+
+// Baseline efektif: baseline per tanggal + override kuota (hanya periode berjalan)
+export function getEffectiveBeneficiariesForDate(
+  dateStr?: string,
+  overrides: Record<string, number> = {},
+): BeneficiarySite[] {
+  const base = getBeneficiariesForDate(dateStr);
+  if (dateStr && dateStr < KUOTA_OVERRIDE_SINCE) return base;
+  if (!overrides || Object.keys(overrides).length === 0) return base;
+  return base.map((site) => {
+    const v = overrides[site.id];
+    return v === undefined ? site : { ...site, masterCount: v };
+  });
+}
+
 // Default export untuk backward-compatibility
 export const INITIAL_BENEFICIARIES: BeneficiarySite[] = BENEFICIARIES_OCT_19_ONWARDS;
 

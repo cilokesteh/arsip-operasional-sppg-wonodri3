@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { TopNav, BottomTabs } from '@/components/SiteNav';
 import { PageHeader } from '@/components/Design';
@@ -28,7 +28,7 @@ import {
   X,
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
-import { DailyMenuRecord, getBeneficiariesForDate } from '@/lib/data';
+import { DailyMenuRecord, getBeneficiariesForDate, getEffectiveBeneficiariesForDate, loadKuotaOverrides, saveKuotaOverrides, KUOTA_OVERRIDE_SINCE } from '@/lib/data';
 import { fetchMenusFromCloud, saveSingleMenuToCloud, saveMenusToCloud } from '@/lib/cloudSync';
 import { verifyPin, hasValidSession, clearSession } from '@/lib/auth';
 
@@ -102,6 +102,22 @@ export default function AdminPage() {
 
   // 4. Data Alokasi Penerima Manfaat
   const [beneficiaryOverrides, setBeneficiaryOverrides] = useState<Record<string, { condition: 'aktif' | 'libur'; effectiveCount: number; reason: string }>>({});
+
+  // Master Kuota — bisa diedit dari Alur 4 (berlaku untuk baseline per 19 Okt 2026 ke depan;
+  // periode arsip lama terkunci). Disimpan di localStorage, ikut ke Portal & Berita Acara.
+  const [kuotaOverrides, setKuotaOverrides] = useState<Record<string, number>>({});
+  const [isEditingKuota, setIsEditingKuota] = useState(false);
+  const [kuotaDraft, setKuotaDraft] = useState<Record<string, number>>({});
+  const effectiveSites = useMemo(
+    () => getEffectiveBeneficiariesForDate(menuDate, kuotaOverrides),
+    [menuDate, kuotaOverrides],
+  );
+  const totalMasterKuota = useMemo(
+    () => effectiveSites.reduce((a, s) => a + s.masterCount, 0),
+    [effectiveSites],
+  );
+  const isKuotaEdited = menuDate >= KUOTA_OVERRIDE_SINCE && Object.keys(kuotaOverrides).length > 0;
+  const isKuotaEditablePeriod = menuDate >= KUOTA_OVERRIDE_SINCE;
 
   // 5. Uraian Kegiatan Operasional Dapur
   const [uraianKegiatan, setUraianKegiatan] = useState(
@@ -207,6 +223,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       })
       .catch(() => {});
     loadSavedMenus();
+    setKuotaOverrides(loadKuotaOverrides());
 
     try {
       const savedDraft = localStorage.getItem('sppg_admin_draft_v3');
@@ -1446,11 +1463,39 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                       4. Alokasi Penerima Manfaat (12 Sekolah + 1 Posyandu)
                     </h2>
                     <span className="text-[13px] text-slate-500">
-                      Total Master: {getBeneficiariesForDate(menuDate).reduce((a, s) => a + s.masterCount, 0).toLocaleString('id-ID')} Porsi ({menuDate < '2026-10-12' ? 'Baseline Lama s/d 11 Okt: 1.554' : (menuDate < '2026-10-19' ? 'Periode 12-18 Okt: 1.556' : 'Baseline Baru per 19 Okt: 1.553')}). Atur sekolah libur khusus tanggal ini jika ada.
+                      Total Master: {totalMasterKuota.toLocaleString('id-ID')} Porsi ({menuDate < '2026-10-12' ? 'Baseline Lama s/d 11 Okt: 1.554' : (menuDate < '2026-10-19' ? 'Periode 12-18 Okt: 1.556' : 'Baseline Baru per 19 Okt: 1.553')}{isKuotaEdited ? ' — Kuota Diedit' : ''}). Atur sekolah libur khusus tanggal ini jika ada.
                     </span>
                   </div>
                 </div>
-                <span className="text-xs text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded">Alur 4</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  {isKuotaEditablePeriod && !isEditingKuota && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setKuotaDraft(Object.fromEntries(effectiveSites.map((s) => [s.id, s.masterCount])));
+                        setIsEditingKuota(true);
+                      }}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all cursor-pointer"
+                    >
+                      Edit Kuota
+                    </button>
+                  )}
+                  {isKuotaEdited && !isEditingKuota && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm('Kembalikan semua Master Kuota ke baseline per 19 Okt (total 1.553 Porsi)?')) {
+                          saveKuotaOverrides({});
+                          setKuotaOverrides({});
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 active:scale-95 transition-all cursor-pointer"
+                    >
+                      Reset ke Baseline
+                    </button>
+                  )}
+                  <span className="text-xs text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded">Alur 4</span>
+                </div>
               </div>
 
               <div className="border border-line rounded-xl overflow-hidden">
@@ -1465,13 +1510,34 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {getBeneficiariesForDate(menuDate).map((site) => {
+                      {effectiveSites.map((site) => {
                         const isOverridden = beneficiaryOverrides[site.id]?.condition === 'libur';
                         return (
                           <tr key={site.id} className="hover:bg-slate-50">
                             <td className="py-2 px-3 font-semibold text-slate-900">{site.name}</td>
                             <td className="py-2 px-3 text-slate-500">{site.type}</td>
-                            <td className="py-2 px-3 text-right font-bold text-slate-900">{site.masterCount}</td>
+                            <td className="py-2 px-3 text-right font-bold text-slate-900">
+                              {isEditingKuota ? (
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={9999}
+                                  value={kuotaDraft[site.id] ?? site.masterCount}
+                                  onChange={(e) => {
+                                    const v = parseInt(e.target.value || '0', 10);
+                                    setKuotaDraft({ ...kuotaDraft, [site.id]: Number.isNaN(v) ? 0 : Math.max(0, Math.min(9999, v)) });
+                                  }}
+                                  className="w-20 px-2 py-1 text-right text-sm font-bold border border-indigo-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500"
+                                />
+                              ) : (
+                                <>
+                                  {site.masterCount}
+                                  {kuotaOverrides[site.id] !== undefined && (
+                                    <span className="ml-1 text-[10px] font-bold text-indigo-600 align-middle">• diedit</span>
+                                  )}
+                                </>
+                              )}
+                            </td>
                             <td className="py-2 px-3 text-center">
                               <button
                                 type="button"
@@ -1504,6 +1570,38 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                   </table>
                 </div>
               </div>
+
+              {isEditingKuota && (
+                <div className="flex flex-col sm:flex-row items-center justify-end gap-2 pt-1">
+                  <span className="text-xs text-slate-500 mr-auto">
+                    Total baru: {Object.values(kuotaDraft).reduce((a, b) => a + b, 0).toLocaleString('id-ID')} Porsi — berlaku untuk semua tanggal per 19 Okt 2026 ke depan. Periode arsip lama tidak berubah.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingKuota(false)}
+                    className="px-4 py-2 rounded-xl text-sm font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const baselineSites = getBeneficiariesForDate(menuDate);
+                      const cleaned: Record<string, number> = {};
+                      for (const s of baselineSites) {
+                        const v = kuotaDraft[s.id];
+                        if (v !== undefined && v !== s.masterCount) cleaned[s.id] = v;
+                      }
+                      saveKuotaOverrides(cleaned);
+                      setKuotaOverrides(cleaned);
+                      setIsEditingKuota(false);
+                    }}
+                    className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all shadow-sm cursor-pointer"
+                  >
+                    Simpan Kuota
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* ===================== ALUR 5: URAIAN KEGIATAN ===================== */}
