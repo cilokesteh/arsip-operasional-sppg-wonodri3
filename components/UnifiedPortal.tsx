@@ -991,10 +991,15 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   }, [currentDayDraft, rosterMap, searchName, filterSection]);
 
   const printableEntries = useMemo(() => {
-    if (printDateTarget === selectedDate) return currentDayDraft;
-    const target = ledger.filter((e) => e.date === printDateTarget);
-    if (target.length > 0) return target;
-    return buildDailyEntries(roster, printDateTarget);
+    let entries: AttendanceEntry[];
+    if (printDateTarget === selectedDate) {
+      entries = currentDayDraft;
+    } else {
+      const target = ledger.filter((e) => e.date === printDateTarget);
+      entries = target.length > 0 ? target : buildDailyEntries(roster, printDateTarget);
+    }
+    // Lembar cetak (PDF) hanya menampilkan relawan yang hadir
+    return entries.filter((e) => e.status === 'Hadir');
   }, [printDateTarget, selectedDate, currentDayDraft, ledger, roster]);
 
   const printableSummary = useMemo(() => calculatePeriodSummary(printableEntries), [printableEntries]);
@@ -2333,6 +2338,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                 <div className="text-xs font-mono font-bold text-slate-800 pt-0.5">
                   Tanggal: {formatIndoDate(printDateTarget)}
                 </div>
+                <p className="text-[10px] text-slate-500 italic">
+                  Hanya menampilkan relawan yang hadir pada tanggal tersebut.
+                </p>
               </div>
 
               <div className="overflow-x-auto">

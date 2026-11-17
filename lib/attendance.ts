@@ -372,6 +372,8 @@ export function createAttendanceCsv(
   tenantName: string
 ): string {
   const byId = new Map(roster.map((person) => [person.id, person]));
+  // Output CSV/Excel hanya menampilkan relawan yang hadir
+  const hadirEntries = entries.filter((entry) => entry.status === 'Hadir');
   const rows = [
     ['PORTAL ARSIP OPERASIONAL SPPG', tenantName],
     ['REKAPITULASI RESMI AMPRAH INSENTIF & ABSENSI RELAWAN DAPUR BGN TA 2026'],
@@ -395,7 +397,7 @@ export function createAttendanceCsv(
       'Catatan / Alasan',
       'Petugas Pencatat',
     ],
-    ...entries.map((entry) => {
+    ...hadirEntries.map((entry) => {
       const person = byId.get(entry.volunteerId);
       return [
         entry.date,
@@ -450,15 +452,19 @@ export function createAttendanceMonthlySummaryCsv(
       'Total Libur (Hari)',
       'Total Hak Upah (Rp)',
     ],
-    ...roster.map((person) => {
-      const pEntries = monthEntries.filter((e) => e.volunteerId === person.id);
-      const hadirCount = pEntries.filter((e) => e.status === 'Hadir').length;
-      const izinCount = pEntries.filter((e) => e.status === 'Izin').length;
-      const sakitCount = pEntries.filter((e) => e.status === 'Sakit').length;
-      const liburCount = pEntries.filter((e) => e.status === 'Libur').length;
-      const earned = person.isActive ? hadirCount * person.dailyRate : 0;
-
-      return [
+    ...roster
+      .map((person) => {
+        const pEntries = monthEntries.filter((e) => e.volunteerId === person.id);
+        const hadirCount = pEntries.filter((e) => e.status === 'Hadir').length;
+        const izinCount = pEntries.filter((e) => e.status === 'Izin').length;
+        const sakitCount = pEntries.filter((e) => e.status === 'Sakit').length;
+        const liburCount = pEntries.filter((e) => e.status === 'Libur').length;
+        const earned = person.isActive ? hadirCount * person.dailyRate : 0;
+        return { person, hadirCount, izinCount, sakitCount, liburCount, earned };
+      })
+      // Output bulanan hanya menampilkan relawan yang pernah hadir di bulan itu
+      .filter((row) => row.person.isActive && row.hadirCount > 0)
+      .map(({ person, hadirCount, izinCount, sakitCount, liburCount, earned }) => [
         person.no,
         person.name,
         person.dutySection,
@@ -469,8 +475,7 @@ export function createAttendanceMonthlySummaryCsv(
         person.isActive ? sakitCount : 0,
         person.isActive ? liburCount : 0,
         earned,
-      ];
-    }),
+      ]),
   ];
 
   return `\uFEFF${rows.map((row) => row.map(csvCell).join(',')).join('\r\n')}`;
@@ -505,16 +510,20 @@ export function createAttendanceWeeklyMatrixCsv(
     ['Tanggal Generate', new Date().toLocaleString('id-ID')],
     [],
     headers,
-    ...roster.map((person) => {
-      let hadirCount = 0;
-      const dailyStatuses = weekDays.map((d) => {
-        const st = map.get(`${person.id}:${d.date}`) || (person.isActive ? 'Belum Absen' : 'Nonaktif');
-        if (st === 'Hadir') hadirCount += 1;
-        return st;
-      });
-      const totalEarned = person.isActive ? hadirCount * person.dailyRate : 0;
-
-      return [
+    ...roster
+      .map((person) => {
+        let hadirCount = 0;
+        const dailyStatuses = weekDays.map((d) => {
+          const st = map.get(`${person.id}:${d.date}`) || (person.isActive ? 'Belum Absen' : 'Nonaktif');
+          if (st === 'Hadir') hadirCount += 1;
+          return st;
+        });
+        const totalEarned = person.isActive ? hadirCount * person.dailyRate : 0;
+        return { person, dailyStatuses, hadirCount, totalEarned };
+      })
+      // Output mingguan hanya menampilkan relawan yang pernah hadir di minggu itu
+      .filter((row) => row.person.isActive && row.hadirCount > 0)
+      .map(({ person, dailyStatuses, hadirCount, totalEarned }) => [
         person.no,
         person.name,
         person.dutySection,
@@ -523,8 +532,7 @@ export function createAttendanceWeeklyMatrixCsv(
         person.isActive ? hadirCount : 0,
         person.dailyRate,
         totalEarned,
-      ];
-    }),
+      ]),
   ];
 
   return `\uFEFF${rows.map((row) => row.map(csvCell).join(',')).join('\r\n')}`;
