@@ -856,7 +856,7 @@ export const BATCH_10_ITEMS: StockItem[] = [
 ];
 
 // BATCH 11: 16 Bahan Masuk 15 Nov 2026 -> Keluar Masak 16 Nov 2026
-// Menu: Lele Goreng Tepung, Tempe Goreng, Tumis Kol Sawi Putih Wortel, Buah Kelengkeng
+// Menu (resmi cloud KV): Nasi Putih Lele Popcorn — Nasi Putih, Ikan Lele, Tempe, Kol & Wortel, Kelengkeng
 export const BATCH_11_ITEMS: StockItem[] = [
   { id: 'b11-01', sku: 'BGN-BHK-1101', name: 'TEPUNG TERIGU', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 20, usedStock: 20, minStockAlert: 5, dailyUsageAvg: 20, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-15', lastUsageDate: '2026-11-16', batch: '11-NOV', notes: 'Batch 11: Masuk 20 KG (15 Nov) -> Keluar masak 20 KG (16 Nov) adonan tepung lele & tempe' },
   { id: 'b11-02', sku: 'BGN-BHK-1102', name: 'MINYAK GORENG', category: 'Bahan Kering', uom: 'L', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 54, usedStock: 54, minStockAlert: 15, dailyUsageAvg: 54, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-15', lastUsageDate: '2026-11-16', batch: '11-NOV', notes: 'Batch 11: Masuk 54 L (15 Nov) -> Keluar masak 54 L (16 Nov)' },
@@ -877,7 +877,7 @@ export const BATCH_11_ITEMS: StockItem[] = [
 ];
 
 // BATCH 12: 18 Bahan Masuk 16 Nov 2026 -> Keluar Masak 17 Nov 2026
-// Menu: Nasi Putih, Ayam Goreng Tepung, Tahu Kuning Goreng, Tumis Putren Wortel, Buah Jeruk
+// Menu (resmi cloud KV): Nasi Putih Chicken Crumble — Nasi Putih, Ayam, Tahu, Wortel & Putren, Jeruk Manis
 export const BATCH_12_ITEMS: StockItem[] = [
   { id: 'b12-01', sku: 'BGN-BHK-1201', name: 'BERAS', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 100, usedStock: 100, minStockAlert: 25, dailyUsageAvg: 100, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-16', lastUsageDate: '2026-11-17', batch: '12-NOV', notes: 'Batch 12: Masuk 100 KG (16 Nov) -> Keluar masak 100 KG (17 Nov)' },
   { id: 'b12-02', sku: 'BGN-BHK-1202', name: 'TEPUNG TERIGU', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 6, usedStock: 6, minStockAlert: 2, dailyUsageAvg: 6, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-16', lastUsageDate: '2026-11-17', batch: '12-NOV', notes: 'Batch 12: Masuk 6 KG (16 Nov) -> Keluar masak 6 KG (17 Nov) balutan ayam & tahu' },
@@ -900,7 +900,7 @@ export const BATCH_12_ITEMS: StockItem[] = [
 ];
 
 // BATCH 13: 21 Bahan Masuk 17 Nov 2026 -> Keluar Masak 18 Nov 2026
-// Menu: Ayam Fillet Goreng Tepung (Katsu), Edamame, Tumis Pakcoy Wortel & Tomat, Kentang Goreng, Buah Pisang
+// Menu: Ayam Fillet Katsu, Edamame, Tumis Pakcoy Wortel & Tomat, Kentang Goreng, Buah Pisang (INFERENSI — menu resmi 18 Nov belum terbit di cloud KV per 17 Nov)
 // CATATAN: nota ini TIDAK ada kolom SATUAN -> satuan diinferensi standar dapur SPPG.
 export const BATCH_13_ITEMS: StockItem[] = [
   { id: 'b13-01', sku: 'BGN-BHK-1301', name: 'MINYAK GORENG', category: 'Bahan Kering', uom: 'L', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 72, usedStock: 72, minStockAlert: 20, dailyUsageAvg: 72, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-17', lastUsageDate: '2026-11-18', batch: '13-NOV', notes: 'Batch 13: Masuk 72 L (17 Nov) -> Keluar masak 72 L (18 Nov)' },
@@ -989,7 +989,7 @@ export const DEFAULT_STOCK_MOVEMENTS: StockMovement[] = [
     balanceAfter: 0,
     reference: 'BOM-MSK-20261117',
     loggedBy: 'Seksi Pengolahan Dapur',
-    notes: 'Batch 12: Pemakaian masak 1.553 Porsi MBG tgl 17 Nov 2026 (Nasi Putih, Ayam Goreng Tepung, Tahu Kuning Goreng, Tumis Putren Wortel, Buah Jeruk)',
+    notes: 'Batch 12: Pemakaian masak 1.553 Porsi MBG tgl 17 Nov 2026 (Nasi Putih Chicken Crumble — Nasi Putih, Ayam, Tahu, Wortel & Putren, Jeruk Manis)',
   })),
 
   // --- 18 MASUK BATCH 12 (16 NOV 2026) ---
@@ -1021,7 +1021,7 @@ export const DEFAULT_STOCK_MOVEMENTS: StockMovement[] = [
     balanceAfter: 0,
     reference: 'BOM-MSK-20261116',
     loggedBy: 'Seksi Pengolahan Dapur',
-    notes: 'Batch 11: Pemakaian masak 1.553 Porsi MBG tgl 16 Nov 2026 (Lele Goreng Tepung, Tempe Goreng, Tumis Kol Sawi Putih Wortel, Buah Kelengkeng)',
+    notes: 'Batch 11: Pemakaian masak 1.553 Porsi MBG tgl 16 Nov 2026 (Nasi Putih Lele Popcorn — Nasi Putih, Ikan Lele, Tempe, Kol & Wortel, Kelengkeng)',
   })),
 
   // --- 16 MASUK BATCH 11 (15 NOV 2026) ---
