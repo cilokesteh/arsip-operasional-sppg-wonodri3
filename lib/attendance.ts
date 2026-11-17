@@ -207,22 +207,7 @@ export function buildDailyEntries(
 }
 
 export function normalizeAttendanceEntry(entry: AttendanceEntry, person: VolunteerProfile): AttendanceEntry {
-  if (!person.isActive) {
-    return {
-      ...entry,
-      status: 'Nonaktif',
-      checkIn: '',
-      checkOut: '',
-      lateMinutes: 0,
-      overtimeMinutes: 0,
-      earnedAmount: 0,
-      paid: false,
-      notes: 'Personel Nonaktif / Resigned',
-      recordedAt: new Date().toISOString(),
-    };
-  }
-
-  const isPresent = entry.status === 'Hadir';
+  const isPresent = entry.status === 'Hadir' && person.isActive;
   const lateMinutes = isPresent ? calculateMinutesLate(entry.checkIn, entry.scheduledIn) : 0;
   const overtimeMinutes = isPresent ? calculateOvertimeMinutes(entry.checkOut, entry.scheduledOut) : 0;
   const earnedAmount = isPresent ? person.dailyRate : 0;
@@ -249,6 +234,106 @@ export function mergeAttendanceDay(
   return [...otherDays, ...Array.from(dayMap.values())].sort(
     (a, b) => a.date.localeCompare(b.date) || a.volunteerId.localeCompare(b.volunteerId)
   );
+}
+
+export interface CloudAttendanceDay {
+  date: string;
+  records: Record<string, unknown>[];
+}
+
+// Foto cloud valid: data URL gambar dengan panjang wajar (foto asli 10-25 KB).
+function isValidCloudPhoto(photo: unknown): photo is string {
+  if (!photo || typeof photo !== 'string') return false;
+  if (!photo.startsWith('data:image/')) return false;
+  return photo.length >= 2048;
+}
+
+// Gabungkan record presensi dari Cloudflare KV ke ledger (dipakai sinkron
+// mingguan & bulanan). PENTING: status mengikuti record cloud
+// (Hadir/Izin/Sakit/Alpha/dll) — JANGAN pernah memaksa 'Hadir'.
+// Sinkron mingguan lama memaksa status 'Hadir' + upah penuh untuk semua
+// record, sehingga rekap mingguan/bulanan menampilkan Hadir + upah penuh
+// untuk orang yang sebenarnya Izin/Sakit/Alpha — tidak sinkron dengan
+// tabel harian (yang memakai sinkron harian dan status asli dari cloud).
+export function mergeCloudRecordsIntoLedger(
+  prevLedger: AttendanceEntry[],
+  days: CloudAttendanceDay[],
+  rosterMap: Map<string, VolunteerProfile>,
+): AttendanceEntry[] {
+  let next = prevLedger;
+  let changed = false;
+
+  for (const { date, records } of days) {
+    for (const rec of records) {
+      const volunteerId = String(rec.volunteerId || '');
+      const person = rosterMap.get(volunteerId);
+      if (!person) continue;
+
+      const cloudStatus = (rec.status as AttendanceStatus) || 'Hadir';
+      const isPresent = cloudStatus === 'Hadir' && person.isActive;
+      const isAslap = volunteerId === 'v-1';
+      const checkInTime = String(rec.checkInTime || rec.time || '');
+      const checkOutTime = String(rec.checkOutTime || '');
+      const rawPhoto = (rec.checkInPhoto as string) || (rec.photoUrl as string) || undefined;
+      const photo = isValidCloudPhoto(rawPhoto) ? rawPhoto : undefined;
+      const dist = rec.distanceMeters as number | undefined;
+      const within = rec.isWithinRadius as boolean | undefined;
+
+      const existing = next.find((e) => e.date === date && e.volunteerId === volunteerId);
+      const merged: AttendanceEntry =
+        existing ||
+        ({
+          id: `${date}:${volunteerId}`,
+          volunteerId,
+          date,
+          status: cloudStatus,
+          checkIn: isAslap ? '00:00' : person.defaultCheckIn,
+          checkOut: isAslap ? '23:59' : person.defaultCheckOut,
+          scheduledIn: person.defaultCheckIn,
+          scheduledOut: person.defaultCheckOut,
+          lateMinutes: 0,
+          overtimeMinutes: 0,
+          earnedAmount: isPresent ? person.dailyRate : 0,
+          notes: '',
+          paid: false,
+          recordedAt: new Date().toISOString(),
+          recordedBy: 'Cloud Sync',
+        } as AttendanceEntry);
+
+      const expectedCheckIn = checkInTime || (isAslap ? '00:00' : merged.checkIn);
+      const alreadySynced =
+        existing &&
+        existing.status === cloudStatus &&
+        existing.checkIn === expectedCheckIn &&
+        existing.photoUrl === photo;
+      if (alreadySynced) continue;
+
+      changed = true;
+      const finalCheckOut =
+        checkOutTime ||
+        (isAslap ? '23:59' : merged.checkOut === '13:00' ? person.defaultCheckOut : merged.checkOut) ||
+        person.defaultCheckOut;
+      const updated: AttendanceEntry = {
+        ...merged,
+        status: cloudStatus,
+        checkIn: expectedCheckIn,
+        checkOut: finalCheckOut,
+        earnedAmount: isPresent ? person.dailyRate : 0,
+        notes:
+          (rec.notes as string) ||
+          (within === false
+            ? `⚠️ Luar Dapur (${dist ?? 0}m)`
+            : `📍 Realtime Selfie (${dist ?? 0}m)`),
+        photoUrl: photo,
+        distanceMeters: dist,
+        isWithinRadius: within,
+        paid: (rec.paid as boolean | undefined) ?? merged.paid,
+      };
+      next = existing ? next.map((e) => (e === existing ? updated : e)) : [...next, updated];
+    }
+  }
+
+  return changed ? next : prevLedger;
 }
 
 export function calculatePeriodSummary(entries: AttendanceEntry[]) {
@@ -528,9 +613,7 @@ export function saveRosterToStorage(roster: VolunteerProfile[]): void {
   }
 }
 
-export function loadLedgerFromStorage(roster?: VolunteerProfile[]): AttendanceEntry[] {
-  const activeRoster = roster || DEFAULT_ROSTER_40;
-  const nonActiveIds = new Set(activeRoster.filter((p) => !p.isActive).map((p) => p.id));
+export function loadLedgerFromStorage(_roster?: VolunteerProfile[]): AttendanceEntry[] {
   const baseLedger = (officialLedgerData as unknown as AttendanceEntry[]) || [];
   if (typeof window === 'undefined') return baseLedger;
   try {
@@ -538,33 +621,12 @@ export function loadLedgerFromStorage(roster?: VolunteerProfile[]): AttendanceEn
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Merge user updates on top of baseLedger, TETAPI bersihkan relawan nonaktif dari cache lama!
+        // Merge user updates on top of baseLedger
         const map = new Map<string, AttendanceEntry>(baseLedger.map((e) => [e.id, e]));
-        parsed.forEach((e) => {
-          if (nonActiveIds.has(e.volunteerId)) {
-            map.set(e.id, {
-              ...e,
-              status: 'Nonaktif',
-              checkIn: '',
-              checkOut: '',
-              lateMinutes: 0,
-              overtimeMinutes: 0,
-              earnedAmount: 0,
-              paid: false,
-              notes: 'Personel Nonaktif / Resigned',
-            });
-          } else {
-            map.set(e.id, e);
-          }
-        });
-        const result = Array.from(map.values()).sort(
+        parsed.forEach((e) => map.set(e.id, e));
+        return Array.from(map.values()).sort(
           (a, b) => a.date.localeCompare(b.date) || a.volunteerId.localeCompare(b.volunteerId)
         );
-        // Simpan balik versi bersih ke localStorage agar cache lokal user otomatis sembuh
-        try {
-          localStorage.setItem(ARSIP_ATTENDANCE_LEDGER_KEY, JSON.stringify(result));
-        } catch {}
-        return result;
       }
     }
   } catch (err) {

@@ -49,6 +49,7 @@ import {
   buildDailyEntries,
   normalizeAttendanceEntry,
   mergeAttendanceDay,
+  mergeCloudRecordsIntoLedger,
   calculatePeriodSummary,
   createAttendanceCsv,
   createAttendanceMonthlySummaryCsv,
@@ -552,65 +553,9 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       const valid = results.filter(Boolean) as { date: string; records: Record<string, unknown>[] }[];
       if (valid.length === 0) return;
 
-      setLedger((prevLedger) => {
-        let next = prevLedger;
-        let changed = false;
-
-        for (const { date, records } of valid) {
-          for (const rec of records) {
-            const volunteerId = String(rec.volunteerId || '');
-            const person = rosterMap.get(volunteerId);
-            if (!person) continue;
-
-            const checkInTime = String(rec.checkInTime || rec.time || '');
-            const rawPhoto = (rec.checkInPhoto as string) || (rec.photoUrl as string) || undefined;
-            const photo = isValidPhoto(rawPhoto) ? rawPhoto : undefined;
-            const dist = rec.distanceMeters as number | undefined;
-            const within = rec.isWithinRadius as boolean | undefined;
-
-            const existing = next.find((e) => e.date === date && e.volunteerId === volunteerId);
-            const merged: AttendanceEntry =
-              existing ||
-              ({
-                id: `${date}:${volunteerId}`,
-                volunteerId,
-                date,
-                status: 'Hadir',
-                checkIn: person.defaultCheckIn,
-                checkOut: person.defaultCheckOut,
-                earnedAmount: person.dailyRate,
-                notes: '',
-              } as AttendanceEntry);
-
-            const alreadySynced =
-              existing &&
-              existing.status === 'Hadir' &&
-              existing.checkIn === checkInTime &&
-              existing.photoUrl === photo;
-            if (alreadySynced) continue;
-
-            changed = true;
-            const updated: AttendanceEntry = {
-              ...merged,
-              status: 'Hadir',
-              checkIn: checkInTime || merged.checkIn,
-              earnedAmount: person.dailyRate,
-              notes:
-                within === false
-                  ? `⚠️ Luar Dapur (${dist ?? 0}m)`
-                  : `📍 Realtime Selfie (${dist ?? 0}m)`,
-              photoUrl: photo,
-              distanceMeters: dist,
-              isWithinRadius: within,
-            };
-            next = existing
-              ? next.map((e) => (e === existing ? updated : e))
-              : [...next, updated];
-          }
-        }
-
-        return changed ? next : prevLedger;
-      });
+      // Satu-satunya merge cloud → ledger (lib/attendance.ts): status ikut
+      // record cloud, tidak pernah dipaksa 'Hadir'.
+      setLedger((prevLedger) => mergeCloudRecordsIntoLedger(prevLedger, valid, rosterMap));
     };
 
     fetchWeekCloud();
@@ -620,6 +565,51 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       clearInterval(interval);
     };
   }, [weekDays, rosterMap, todayDateStr]);
+
+  // Sinkronisasi BULANAN — rekap bulanan butuh semua tanggal dalam bulan aktif,
+  // bukan cuma minggu berjalan. Ledger lokal saja tidak cukup kalau ada tanggal
+  // yang belum pernah dibuka/disimpan di perangkat ini: tanggal-tanggal itu
+  // hanya ada di Cloudflare KV. Sekali tarik tiap ganti bulan / buka tab bulanan.
+  useEffect(() => {
+    if (absensiSubTab !== 'rekap' || rekapPeriod !== 'bulanan') return;
+    let isCancelled = false;
+
+    const fetchMonthCloud = async () => {
+      const [y, m] = selectedMonth.split('-').map(Number);
+      if (!y || !m) return;
+      const daysInMonth = new Date(y, m, 0).getDate();
+      const dates: string[] = [];
+      for (let d = 1; d <= daysInMonth; d++) {
+        const iso = `${selectedMonth}-${String(d).padStart(2, '0')}`;
+        if (iso <= todayDateStr) dates.push(iso);
+      }
+      if (dates.length === 0) return;
+
+      const results = await Promise.all(
+        dates.map(async (d) => {
+          try {
+            const r = await fetch(`https://sppg-sync-worker.cilokesteh.workers.dev/api/attendance?date=${d}`);
+            if (!r.ok) return null;
+            const j = await r.json();
+            if (j?.success && Array.isArray(j.records)) return { date: d, records: j.records };
+          } catch {
+            /* abaikan tanggal yang gagal */
+          }
+          return null;
+        })
+      );
+
+      if (isCancelled) return;
+      const valid = results.filter(Boolean) as { date: string; records: Record<string, unknown>[] }[];
+      if (valid.length === 0) return;
+      setLedger((prevLedger) => mergeCloudRecordsIntoLedger(prevLedger, valid, rosterMap));
+    };
+
+    fetchMonthCloud();
+    return () => {
+      isCancelled = true;
+    };
+  }, [absensiSubTab, rekapPeriod, selectedMonth, rosterMap, todayDateStr]);
 
   const absentPersonnel = useMemo(() => {
     return currentDayDraft
