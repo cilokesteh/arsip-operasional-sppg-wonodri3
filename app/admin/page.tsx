@@ -28,7 +28,7 @@ import {
   X,
 } from 'lucide-react';
 import { uploadToGoogleDrive } from '@/lib/driveUpload';
-import { DailyMenuRecord, getBeneficiariesForDate, getEffectiveBeneficiariesForDate, loadKuotaOverrides, saveKuotaOverrides, KUOTA_OVERRIDE_SINCE } from '@/lib/data';
+import { DailyMenuRecord, getBeneficiariesForDate, getEffectiveBeneficiariesForDate, loadKuotaOverrides, saveKuotaOverrides, loadEffectiveKuotaOverrides, saveKuotaOverridesToCloud, KUOTA_OVERRIDE_SINCE } from '@/lib/data';
 import { fetchMenusFromCloud, saveSingleMenuToCloud, saveMenusToCloud } from '@/lib/cloudSync';
 import { verifyPin, hasValidSession, clearSession } from '@/lib/auth';
 
@@ -224,6 +224,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
       .catch(() => {});
     loadSavedMenus();
     setKuotaOverrides(loadKuotaOverrides());
+    loadEffectiveKuotaOverrides().then(setKuotaOverrides).catch(() => {});
 
     try {
       const savedDraft = localStorage.getItem('sppg_admin_draft_v3');
@@ -1487,6 +1488,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                         if (window.confirm('Kembalikan semua Master Kuota ke baseline per 19 Okt (total 1.553 Porsi)?')) {
                           saveKuotaOverrides({});
                           setKuotaOverrides({});
+                          void saveKuotaOverridesToCloud({});
                         }
                       }}
                       className="px-3 py-1.5 rounded-lg text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 active:scale-95 transition-all cursor-pointer"
@@ -1594,6 +1596,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                       }
                       saveKuotaOverrides(cleaned);
                       setKuotaOverrides(cleaned);
+                      void saveKuotaOverridesToCloud(cleaned);
                       setIsEditingKuota(false);
                     }}
                     className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all shadow-sm cursor-pointer"

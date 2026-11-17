@@ -21,7 +21,7 @@ import { TopNav, BottomTabs, SiteFooter } from '@/components/SiteNav';
 import { PageHeader, Stat, StatRow } from '@/components/Design';
 import staticMenusData from '@/lib/staticMenus.json';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
-import { DailyMenuRecord, getEffectiveBeneficiariesForDate, loadKuotaOverrides } from '@/lib/data';
+import { DailyMenuRecord, getEffectiveBeneficiariesForDate, loadKuotaOverrides, loadEffectiveKuotaOverrides } from '@/lib/data';
 import {
   DEFAULT_ROSTER_40,
   loadRosterFromStorage,
@@ -139,6 +139,7 @@ export default function ArsipPage() {
   useEffect(() => {
     const refresh = () => setKuotaOverrides(loadKuotaOverrides());
     refresh();
+    loadEffectiveKuotaOverrides().then(setKuotaOverrides).catch(() => {});
     window.addEventListener('storage', refresh);
     return () => window.removeEventListener('storage', refresh);
   }, []);

@@ -8,6 +8,7 @@ import {
   DailyMenuRecord,
   getEffectiveBeneficiariesForDate,
   loadKuotaOverrides,
+  loadEffectiveKuotaOverrides,
 } from '@/lib/data';
 import {
   Calendar as CalendarIcon,
@@ -98,6 +99,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   useEffect(() => {
     const refresh = () => setKuotaOverrides(loadKuotaOverrides());
     refresh();
+    loadEffectiveKuotaOverrides().then(setKuotaOverrides).catch(() => {});
     window.addEventListener('storage', refresh);
     return () => window.removeEventListener('storage', refresh);
   }, [selectedDate]);

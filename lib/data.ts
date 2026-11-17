@@ -157,6 +157,61 @@ export function saveKuotaOverrides(overrides: Record<string, number>): void {
   }
 }
 
+const KUOTA_CLOUD_URL = 'https://sppg-sync-worker.cilokesteh.workers.dev/api/kuota';
+
+// Ambil Master Kuota dari Cloudflare KV (sumber kebenaran lintas perangkat).
+// Return null kalau gagal (jaringan / server) supaya pemanggil bisa fallback ke lokal.
+export async function fetchKuotaOverridesFromCloud(): Promise<Record<string, number> | null> {
+  try {
+    const res = await fetch(KUOTA_CLOUD_URL, { method: 'GET', cache: 'no-store' });
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    const overrides = (data as { overrides?: unknown })?.overrides;
+    if (!overrides || typeof overrides !== 'object') return {};
+    const out: Record<string, number> = {};
+    for (const [k, v] of Object.entries(overrides as Record<string, unknown>)) {
+      const n = Number(v);
+      if (Number.isFinite(n) && Number.isInteger(n) && n >= 0 && n <= 9999) out[k] = n;
+    }
+    return out;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveKuotaOverridesToCloud(overrides: Record<string, number>): Promise<boolean> {
+  try {
+    const res = await fetch(KUOTA_CLOUD_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ overrides }),
+    });
+    if (!res.ok) return false;
+    const data: unknown = await res.json();
+    return (data as { success?: boolean })?.success === true;
+  } catch {
+    return false;
+  }
+}
+
+// Muat kuota efektif: lokal dulu (cepat), lalu cloud (benar lintas perangkat).
+// - Cloud ada isi -> pakai cloud, simpan juga ke lokal sebagai cache.
+// - Cloud kosong + lokal ada isi -> dorong lokal ke cloud (migrasi sekali jalan).
+// - Cloud gagal -> pakai lokal.
+export async function loadEffectiveKuotaOverrides(): Promise<Record<string, number>> {
+  const local = loadKuotaOverrides();
+  const cloud = await fetchKuotaOverridesFromCloud();
+  if (cloud === null) return local;
+  if (Object.keys(cloud).length > 0) {
+    if (JSON.stringify(cloud) !== JSON.stringify(local)) saveKuotaOverrides(cloud);
+    return cloud;
+  }
+  if (Object.keys(local).length > 0) {
+    void saveKuotaOverridesToCloud(local);
+  }
+  return local;
+}
+
 // Baseline efektif: baseline per tanggal + override kuota (hanya periode berjalan)
 export function getEffectiveBeneficiariesForDate(
   dateStr?: string,
