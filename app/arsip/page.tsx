@@ -21,7 +21,7 @@ import { TopNav, BottomTabs, SiteFooter } from '@/components/SiteNav';
 import { PageHeader, Stat, StatRow } from '@/components/Design';
 import staticMenusData from '@/lib/staticMenus.json';
 import { fetchMenusFromCloud } from '@/lib/cloudSync';
-import { DailyMenuRecord } from '@/lib/data';
+import { DailyMenuRecord, getEffectiveBeneficiariesForDate, loadKuotaOverrides } from '@/lib/data';
 import {
   DEFAULT_ROSTER_40,
   loadRosterFromStorage,
@@ -132,6 +132,20 @@ function mergeCloudAttendanceDay(
 export default function ArsipPage() {
   const [roster, setRoster] = useState<VolunteerProfile[]>(DEFAULT_ROSTER_40);
   const [ledger, setLedger] = useState<AttendanceEntry[]>([]);
+
+  // Master Kuota yang diedit dari halaman Operator (Alur 4) — dipakai angka "Porsi / Hari".
+  // Dulu hardcoded "1.553" sehingga edit kuota tidak pernah kelihatan di halaman Arsip.
+  const [kuotaOverrides, setKuotaOverrides] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const refresh = () => setKuotaOverrides(loadKuotaOverrides());
+    refresh();
+    window.addEventListener('storage', refresh);
+    return () => window.removeEventListener('storage', refresh);
+  }, []);
+  const totalMasterKuota = useMemo(
+    () => getEffectiveBeneficiariesForDate(undefined, kuotaOverrides).reduce((a, s) => a + s.masterCount, 0),
+    [kuotaOverrides],
+  );
   const [menuList, setMenuList] = useState<DailyMenuRecord[]>(
     (staticMenusData as unknown as DailyMenuRecord[]) || []
   );
@@ -393,8 +407,8 @@ export default function ArsipPage() {
           actions={
             <StatRow>
               <Stat label="Total Arsip" value={allUniqueDates.length} unit="Hari" />
-              <Stat label="Menu Tersedia" value={menuList.length} unit="Menu" />
-              <Stat label="Porsi / Hari" value="1.553" />
+              <Stat label="Menu Tersedia" value={staticMenusData.length} unit="Menu" />
+              <Stat label="Porsi / Hari" value={totalMasterKuota.toLocaleString('id-ID')} />
             </StatRow>
           }
         />
