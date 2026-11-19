@@ -60,7 +60,8 @@ export interface StockSummary {
 }
 
 export const ARSIP_STOCK_INVENTORY_KEY = 'sppg_stock_inventory_v18';
-export const ARSIP_STOCK_MOVEMENTS_KEY = 'sppg_stock_movements_v18';
+export const ARSIP_STOCK_MOVEMENTS_KEY = 'sppg_stock_movements_v19';
+export const LEGACY_ARSIP_STOCK_MOVEMENTS_KEY = 'sppg_stock_movements_v18';
 export const ARSIP_STOCK_OPNAME_DRAFT_KEY = 'sppg_stock_opname_draft_v18';
 
 export const SUPPLIER_YAYASAN = 'Yayasan Berkat Makmur Sentosa';
@@ -1010,7 +1011,7 @@ export const DEFAULT_STOCK_MOVEMENTS: StockMovement[] = [
     balanceAfter: 0,
     reference: 'BOM-MSK-20261120',
     loggedBy: 'Seksi Pengolahan Dapur',
-    notes: 'Batch 15: Pemakaian masak 1.553 Porsi MBG tgl 20 Nov 2026 (INFERENSI: Nasi Putih, Ayam Goreng Tepung, Tempe Goreng, Tumis Kol & Brokoli, Kurma — menu resmi 20 Nov belum terbit)',
+    notes: 'Batch 15: Pemakaian masak 1.541 Porsi MBG tgl 20 Nov 2026 (INFERENSI: Nasi Putih, Ayam Goreng Tepung, Tempe Goreng, Tumis Kol & Brokoli, Kurma — menu resmi 20 Nov belum terbit)',
   })),
 
   // --- 18 MASUK BATCH 15 (19 NOV 2026) ---
@@ -1042,7 +1043,7 @@ export const DEFAULT_STOCK_MOVEMENTS: StockMovement[] = [
     balanceAfter: 0,
     reference: 'BOM-MSK-20261119',
     loggedBy: 'Seksi Pengolahan Dapur',
-    notes: 'Batch 14: Pemakaian masak 1.553 Porsi MBG tgl 19 Nov 2026 (Telur Bumbu Kecap Manis, Tahu Goreng, Tumis Buncis Wortel & Tomat, Buah Anggur)',
+    notes: 'Batch 14: Pemakaian masak 1.541 Porsi MBG tgl 19 Nov 2026 (Telur Bumbu Kecap Manis, Tahu Goreng, Tumis Buncis Wortel & Tomat, Buah Anggur)',
   })),
 
   // --- 18 MASUK BATCH 14 (18 NOV 2026) ---
@@ -1074,7 +1075,7 @@ export const DEFAULT_STOCK_MOVEMENTS: StockMovement[] = [
     balanceAfter: 0,
     reference: 'BOM-MSK-20261118',
     loggedBy: 'Seksi Pengolahan Dapur',
-    notes: 'Batch 13: Pemakaian masak 1.553 Porsi MBG tgl 18 Nov 2026 (Ayam Fillet Goreng Tepung, Edamame, Tumis Pakcoy Wortel & Tomat, Kentang Goreng, Buah Pisang)',
+    notes: 'Batch 13: Pemakaian masak 1.541 Porsi MBG tgl 18 Nov 2026 (Ayam Fillet Goreng Tepung, Edamame, Tumis Pakcoy Wortel & Tomat, Kentang Goreng, Buah Pisang)',
   })),
 
   // --- 21 MASUK BATCH 13 (17 NOV 2026) ---
@@ -1106,7 +1107,7 @@ export const DEFAULT_STOCK_MOVEMENTS: StockMovement[] = [
     balanceAfter: 0,
     reference: 'BOM-MSK-20261117',
     loggedBy: 'Seksi Pengolahan Dapur',
-    notes: 'Batch 12: Pemakaian masak 1.553 Porsi MBG tgl 17 Nov 2026 (Nasi Putih Chicken Crumble — Nasi Putih, Ayam, Tahu, Wortel & Putren, Jeruk Manis)',
+    notes: 'Batch 12: Pemakaian masak 1.541 Porsi MBG tgl 17 Nov 2026 (Nasi Putih Chicken Crumble — Nasi Putih, Ayam, Tahu, Wortel & Putren, Jeruk Manis)',
   })),
 
   // --- 18 MASUK BATCH 12 (16 NOV 2026) ---
@@ -1543,22 +1544,29 @@ export function saveStockToStorage(items: StockItem[]): void {
 export function loadMovementsFromStorage(): StockMovement[] {
   if (typeof window === 'undefined') return DEFAULT_STOCK_MOVEMENTS;
   try {
-    const raw = localStorage.getItem(ARSIP_STOCK_MOVEMENTS_KEY);
+    const raw = localStorage.getItem(ARSIP_STOCK_MOVEMENTS_KEY) ?? localStorage.getItem(LEGACY_ARSIP_STOCK_MOVEMENTS_KEY);
     if (!raw) {
       saveMovementsToStorage(DEFAULT_STOCK_MOVEMENTS);
       return DEFAULT_STOCK_MOVEMENTS;
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
+      const originalBatchNotes = parsed.map((movement: StockMovement) => movement.notes);
+      const corrected = parsed.map((movement: StockMovement) => {
+        if (movement.type !== 'OUT' || movement.date < '2026-11-17' || !movement.reference?.startsWith('BOM-MSK-') || !movement.notes?.includes('1.553 Porsi MBG')) return movement;
+        return { ...movement, notes: movement.notes.replace(/1\.553(?= Porsi MBG)/g, '1.541') };
+      });
       // Auto-merge riwayat mutasi batch baru bila belum tersimpan di klien
-      const existingIds = new Set(parsed.map((m: StockMovement) => m.id));
+      const existingIds = new Set(corrected.map((m: StockMovement) => m.id));
       const missing = DEFAULT_STOCK_MOVEMENTS.filter((m) => !existingIds.has(m.id));
-      if (missing.length > 0) {
-        const merged = [...missing, ...parsed];
+      const wasLegacyKey = localStorage.getItem(ARSIP_STOCK_MOVEMENTS_KEY) === null;
+      const hasCorrectedNotes = corrected.some((m: StockMovement, index: number) => m.notes !== originalBatchNotes[index]);
+      if (missing.length > 0 || wasLegacyKey || hasCorrectedNotes) {
+        const merged = [...missing, ...corrected];
         saveMovementsToStorage(merged);
         return merged;
       }
-      return parsed;
+      return corrected;
     }
   } catch (err) {
     console.error('Failed to load movements from localStorage:', err);

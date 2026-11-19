@@ -1,4 +1,5 @@
 import type { StockItem, StockMovement } from './stock';
+import { PRODUCTION_PORTION_ADJUSTMENT_FROM, getProductionPortionCount } from './data';
 
 export type StockPeriodType = 'WEEK_OUT' | 'MONTH_OUT';
 export interface StockPeriodRange { start: string; end: string }
@@ -13,6 +14,7 @@ export interface DailyStockRow {
 export interface DailyStockTotal { uom: string; qty: number }
 export interface DailyStockReport {
   date: string;
+  portions: number;
   number: string;
   rows: DailyStockRow[];
   totals: DailyStockTotal[];
@@ -47,6 +49,12 @@ export function getStockPeriodRange(type: StockPeriodType, selectedDate: string)
   };
 }
 
+function portionAwareNote(note: string, date: string): string {
+  return date >= PRODUCTION_PORTION_ADJUSTMENT_FROM
+    ? note.replace(/1\.553\s+Porsi/g, '1.541 Porsi')
+    : note;
+}
+
 export function buildDailyStockReports(
   items: readonly StockItem[],
   movements: readonly StockMovement[],
@@ -70,7 +78,7 @@ export function buildDailyStockReports(
       location: stockItem.storageLocation,
       batch: stockItem.batch,
     });
-    if (movement.notes?.trim()) day.context.add(movement.notes.trim());
+    if (movement.notes?.trim()) day.context.add(portionAwareNote(movement.notes.trim(), movement.date));
     if (movement.reference?.trim()) day.context.add(`Referensi: ${movement.reference.trim()}`);
     byDate.set(movement.date, day);
   }
@@ -85,7 +93,7 @@ export function buildDailyStockReports(
       location: item.storageLocation,
       batch: item.batch,
     });
-    if (item.notes?.trim()) day.context.add(item.notes.trim());
+    if (item.notes?.trim()) day.context.add(portionAwareNote(item.notes.trim(), item.lastUsageDate));
     byDate.set(item.lastUsageDate, day);
   }
   return [...byDate.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([date, day]) => {
@@ -94,6 +102,7 @@ export function buildDailyStockReports(
     for (const row of rows) totalsByUnit.set(row.uom, Number(((totalsByUnit.get(row.uom) ?? 0) + row.qty).toFixed(2)));
     return {
       date,
+      portions: getProductionPortionCount(date),
       number: `BA-BOM/SPPG-SMG3/BGN/${date.slice(0, 4)}/${date.replaceAll('-', '')}`,
       rows,
       totals: [...totalsByUnit.entries()].sort(([left], [right]) => left.localeCompare(right, 'id')).map(([uom, qty]) => ({ uom, qty })),

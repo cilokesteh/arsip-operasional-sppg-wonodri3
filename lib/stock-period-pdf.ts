@@ -26,7 +26,7 @@ export async function createDailyStockPdf(report: DailyStockReport, logo: Uint8A
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.text('Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang, Jawa Tengah', pageWidth / 2 + 18, 69, { align: 'center' });
-  doc.text('Pagu Layanan: 1.553 Porsi / Hari | Kode Satpel: SPPG-SMG-003', pageWidth / 2 + 18, 81, { align: 'center' });
+  doc.text(`Realisasi Produksi: ${fmtQty(report.portions)} Porsi | Kode Satpel: SPPG-SMG-003`, pageWidth / 2 + 18, 81, { align: 'center' });
   doc.setLineWidth(1.6);
   doc.line(margin, 92, pageWidth - margin, 92);
 
@@ -37,7 +37,7 @@ export async function createDailyStockPdf(report: DailyStockReport, logo: Uint8A
   doc.text(`Nomor: ${report.number}`, pageWidth / 2, 127, { align: 'center' });
   doc.text(`Tanggal Pengolahan Masak: ${safe(formatTanggalIndo(report.date))}`, pageWidth / 2, 141, { align: 'center' });
   doc.setFont('helvetica', 'normal');
-  const introduction = `Pada tanggal ${safe(formatTanggalIndo(report.date))}, telah dikeluarkan dan digunakan bahan baku dari gudang penyimpanan untuk pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 porsi dengan pasokan dari Yayasan Berkat Makmur Sentosa. Rincian kuantitas fisik sebagai berikut:`;
+  const introduction = `Pada tanggal ${safe(formatTanggalIndo(report.date))}, telah dikeluarkan dan digunakan bahan baku dari gudang penyimpanan untuk pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak ${fmtQty(report.portions)} porsi dengan pasokan dari Yayasan Berkat Makmur Sentosa. Rincian kuantitas fisik sebagai berikut:`;
   const lines = doc.splitTextToSize(introduction, pageWidth - margin * 2);
   doc.text(lines, margin, 156);
   const tableTop = 165 + (lines.length - 1) * 9;

@@ -20,10 +20,12 @@ const report = () => require('../lib/stock-period-report.ts');
   const range = getStockPeriodRange('WEEK_OUT', '2026-11-16');
   assert.deepEqual(range, { start: '2026-11-16', end: '2026-11-22' });
   const days = buildDailyStockReports(items, movements, range);
-  assert.deepEqual(days.map(({ date, rows }) => [date, rows.length]), [
-    ['2026-11-16', 16], ['2026-11-17', 18], ['2026-11-18', 21],
-    ['2026-11-19', 18], ['2026-11-20', 18],
+  assert.deepEqual(days.map(({ date, rows, portions }) => [date, rows.length, portions]), [
+    ['2026-11-16', 16, 1553], ['2026-11-17', 18, 1541], ['2026-11-18', 21, 1541],
+    ['2026-11-19', 18, 1541], ['2026-11-20', 18, 1541],
   ]);
+  assert.ok(days[1].context.some(note => note.includes('1.541 Porsi MBG')));
+  assert.ok(days[1].context.every(note => !note.includes('1.553 Porsi MBG')));
   const last = days.at(-1);
   assert.match(last.number, /\/2026\/20261120$/);
   assert.ok(last.rows.some(row => /Maizena/i.test(row.name) && row.qty === 5 && row.uom === 'KG'));
@@ -39,6 +41,10 @@ const report = () => require('../lib/stock-period-report.ts');
   const days = buildDailyStockReports(items, movements, range);
   assert.equal(days.length, 15);
   assert.equal(days.reduce((count, day) => count + day.rows.length, 0), 272);
+  const { getProductionPortionCount } = require('../lib/data.ts');
+  assert.equal(getProductionPortionCount('2026-11-16'), 1553);
+  assert.equal(getProductionPortionCount('2026-11-17'), 1541);
+  assert.equal(getProductionPortionCount('2026-11-20'), 1541);
   assert.equal(days[0].date, '2026-11-02');
   assert.equal(days.at(-1).date, '2026-11-20');
   assert.deepEqual(buildDailyStockReports(items, movements, getStockPeriodRange('MONTH_OUT', '2028-02-18')), []);
@@ -65,7 +71,30 @@ const report = () => require('../lib/stock-period-report.ts');
   ]);
 });
 
- test('the ZIP contains distinct one-page A4 PDFs with daily detail and all signers', async () => {
+ test('legacy OUT movement notes from Nov 17 onward migrate to the 1,541 actual production count', () => {
+  const { DEFAULT_STOCK_MOVEMENTS, loadMovementsFromStorage, ARSIP_STOCK_MOVEMENTS_KEY, LEGACY_ARSIP_STOCK_MOVEMENTS_KEY } = require('../lib/stock.ts');
+  const legacy = { ...DEFAULT_STOCK_MOVEMENTS.find(m => m.reference === 'BOM-MSK-20261117'), notes: 'Batch 12: Pemakaian masak 1.553 Porsi MBG tgl 17 Nov 2026' };
+  const before = global.localStorage;
+  const beforeWindow = global.window;
+  let saved = '';
+  global.window = {};
+  global.localStorage = {
+    getItem: key => key === LEGACY_ARSIP_STOCK_MOVEMENTS_KEY ? JSON.stringify([legacy]) : null,
+    setItem: (key, value) => { if (key === ARSIP_STOCK_MOVEMENTS_KEY) saved = value; },
+  };
+  try {
+    const movements = loadMovementsFromStorage();
+    assert.ok(movements.find(m => m.id === legacy.id).notes.startsWith('Batch 12: Pemakaian masak 1.541 Porsi MBG tgl 17 Nov 2026'));
+    assert.ok(JSON.parse(saved).some(m => m.id === legacy.id && m.notes.includes('1.541 Porsi')));
+  } finally {
+    if (before === undefined) delete global.localStorage;
+    else global.localStorage = before;
+    if (beforeWindow === undefined) delete global.window;
+    else global.window = beforeWindow;
+  }
+});
+
+test('the ZIP contains distinct one-page A4 PDFs with daily detail and all signers', async () => {
   const { getStockPeriodRange, buildDailyStockReports } = report();
   const { createStockPeriodZip } = require('../lib/stock-period-pdf.ts');
   const { unzipSync } = require('fflate');
@@ -91,6 +120,8 @@ const report = () => require('../lib/stock-period-report.ts');
       const extracted = execFileSync('pdftotext', [file, '-'], { encoding: 'utf8' });
       assert.ok(extracted.includes(day.number));
       for (const signer of ['Security Andrie', 'Petugas Timbangan / Security', 'Security SPPG', 'Sintia Mariam, A.Md.Gz', 'Salsabiila Zainima, S.Ak', 'Dicky Yusuf Mulyadi, S.M.']) assert.ok(extracted.includes(signer));
+      if (day.date === '2026-11-16') assert.match(extracted, /1[.,]553 porsi/i);
+      if (day.date >= '2026-11-17') assert.match(extracted, /1[.,]541 porsi/i);
       if (day.date === '2026-11-20') { assert.match(extracted, /Maizena/i); assert.match(extracted, /INFERENSI/); }
     } finally { rmSync(temp, { recursive: true, force: true }); }
   }

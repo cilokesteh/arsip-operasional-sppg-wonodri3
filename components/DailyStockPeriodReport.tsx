@@ -83,7 +83,7 @@ export default function DailyStockPeriodReport({ reports, title, onPrint }: Prop
               <p className="text-[11px] font-bold tracking-widest">BADAN GIZI NASIONAL</p>
               <h2 className="text-sm font-black">SATUAN PELAYANAN PROGRAM GIZI (SPPG) WONODRI 3</h2>
               <p className="text-[10px] text-slate-700">Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang, Jawa Tengah</p>
-              <p className="font-mono text-[9px] text-slate-600">Pagu Layanan: 1.553 Porsi / Hari · Kode Satpel: SPPG-SMG-003</p>
+              <p className="font-mono text-[9px] text-slate-600">Realisasi Produksi: {formatQuantity(report.portions)} Porsi · Kode Satpel: SPPG-SMG-003</p>
             </div>
           </header>
           <header className="space-y-1 py-3 text-center">
@@ -91,7 +91,7 @@ export default function DailyStockPeriodReport({ reports, title, onPrint }: Prop
             <p className="font-mono text-[10px]">Nomor: {report.number}</p>
             <p className="font-bold">Tanggal Pengolahan Masak: {formatTanggalIndo(report.date)}</p>
           </header>
-          <p className="mb-3 leading-relaxed">Pada tanggal {formatTanggalIndo(report.date)}, telah dikeluarkan dan digunakan bahan baku dari gudang penyimpanan untuk pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 porsi dengan pasokan dari Yayasan Berkat Makmur Sentosa. Rincian kuantitas fisik sebagai berikut:</p>
+          <p className="mb-3 leading-relaxed">Pada tanggal {formatTanggalIndo(report.date)}, telah dikeluarkan dan digunakan bahan baku dari gudang penyimpanan untuk pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak {formatQuantity(report.portions)} porsi dengan pasokan dari Yayasan Berkat Makmur Sentosa. Rincian kuantitas fisik sebagai berikut:</p>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-[9px]">
               <thead><tr className="bg-slate-100">

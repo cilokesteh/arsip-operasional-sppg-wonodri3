@@ -59,7 +59,7 @@ import {
   generateOpnameCSV,
 } from '@/lib/stock';
 import { verifyPin, hasValidSession, clearSession } from '@/lib/auth';
-import { getEffectiveBeneficiariesForDate, loadKuotaOverrides, loadEffectiveKuotaOverrides } from '@/lib/data';
+import { getEffectiveBeneficiariesForDate, getProductionPortionCount, loadKuotaOverrides, loadEffectiveKuotaOverrides } from '@/lib/data';
 import { formatTanggalIndo } from '@/lib/dateUtils';
 import { buildDailyStockReports, getStockPeriodRange } from '@/lib/stock-period-report';
 import DailyStockPeriodReport from '@/components/DailyStockPeriodReport';
@@ -95,6 +95,7 @@ export default function StockMonitoringPage() {
     () => getEffectiveBeneficiariesForDate(undefined, kuotaOverrides).reduce((a, s) => a + s.masterCount, 0),
     [kuotaOverrides]
   );
+  const currentProductionPortions = getProductionPortionCount(isoLocal(new Date()), kuotaOverrides);
 
   // Active Main Workflow Tab
   const [activeMainTab, setActiveMainTab] = useState<'inventory' | 'opname' | 'movements' | 'bom'>('inventory');
@@ -283,6 +284,12 @@ export default function StockMonitoringPage() {
   }, [stockItems, printReportType]);
 
   const reportSummary = useMemo(() => calculateStockSummary(reportItems), [reportItems]);
+  const reportPortions = getProductionPortionCount(reportItems[0]?.lastUsageDate);
+  const reportPortionHeader = printReportType === 'MUTASI'
+    ? 'Porsi produksi periode: 1.553 s.d. 16 Nov; 1.541 mulai 17 Nov'
+    : printReportType.endsWith('_IN')
+      ? `Master layanan: ${totalMasterKuota.toLocaleString('id-ID')} Porsi / Hari`
+      : `Porsi: ${reportPortions.toLocaleString('id-ID')} / hari`;
 
   // ===== DOKUMEN HARIAN PENGELUARAN DALAM RENTANG MINGGUAN / BULANAN =====
   const periodRange = useMemo(() => {
@@ -336,7 +343,7 @@ export default function StockMonitoringPage() {
   // Form States for Usage
   const [formUsageItemId, setFormUsageItemId] = useState<string>('bhk-01');
   const [formUsageQty, setFormUsageQty] = useState<number>(10);
-  const [formUsageMenu, setFormUsageMenu] = useState<string>('Produksi Dapur MBG 1.553 Porsi (20 Nov 2026)');
+  const [formUsageMenu, setFormUsageMenu] = useState<string>('Produksi Dapur MBG 1.541 Porsi (20 Nov 2026)');
   const [formUsageNotes, setFormUsageNotes] = useState<string>('Dikeluarkan penuh untuk pengolahan masak dapur');
 
   // Feedback Notification Toast
@@ -1192,7 +1199,7 @@ export default function StockMonitoringPage() {
             <h1 className="page-title">Monitoring Stok &amp; Kuantitas Bahan Masak</h1>
             <div className="gold-rule" aria-hidden="true" />
             <p className="text-sm sm:text-sm text-slate-600 leading-relaxed">
-              Tercatat 15 siklus mutasi: <strong>Batch 1–15</strong> (Masuk 01–19 Nov &bull; Masak 02–20 Nov) dari mitra <strong>Yayasan Berkat Makmur Sentosa</strong> untuk <strong>1.553 Porsi MBG</strong>.
+              Tercatat 15 siklus mutasi: <strong>Batch 1–15</strong> (Masuk 01–19 Nov &bull; Masak 02–20 Nov) dari mitra <strong>Yayasan Berkat Makmur Sentosa</strong> (Porsi masak historis: 1.553 s.d. 16 Nov; 1.541 mulai 17 Nov).
             </p>
           </div>
 
@@ -1292,7 +1299,7 @@ export default function StockMonitoringPage() {
               <div className="text-xl sm:text-2xl font-bold text-indigo-700">
                 {summary.totalKgKeluar} KG
               </div>
-              <span className="text-xs text-indigo-600 font-medium">1.553 Porsi MBG &bull; Buka Mutasi &rarr;</span>
+              <span className="text-xs text-indigo-600 font-medium">{currentProductionPortions.toLocaleString('id-ID')} Porsi produksi hari ini • Master layanan {totalMasterKuota.toLocaleString('id-ID')} • Buka Mutasi →</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center shrink-0">
               <ChefHat className="w-5 h-5 text-indigo-600" />
@@ -1876,7 +1883,7 @@ export default function StockMonitoringPage() {
                   Menampilkan <strong>{filteredItems.length}</strong> bahan baku terdaftar
                 </div>
                 <div className="font-mono text-[13px] text-slate-500">
-                  Total Masuk (01-19 Nov): <strong>{summary.totalKgMasuk} KG</strong> &bull; Total Masak (02-20 Nov): <strong>{summary.totalKgKeluar} KG</strong> (1.553 Porsi MBG)
+                  Total Masuk (01-19 Nov): <strong>{summary.totalKgMasuk} KG</strong> &bull; Total Masak (02-20 Nov): <strong>{summary.totalKgKeluar} KG</strong> (porsi masak: 1.553 s.d. 16 Nov; 1.541 mulai 17 Nov)
                 </div>
               </div>
             </div>
@@ -2537,18 +2544,18 @@ export default function StockMonitoringPage() {
           </div>
         )}
 
-        {/* ============ TAB 4: KALKULATOR RESEP & BOM MASAK (1.553 PORSI) ============ */}
+        {/* ============ TAB 4: KALKULATOR RESEP & BOM MASAK (1.541 PORSI) ============ */}
         {activeMainTab === 'bom' && (
           <div className="space-y-4">
             <div className="bg-white rounded-xl border border-line p-5 space-y-2">
               <div className="flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-blue-600" />
                 <h3 className="text-base font-bold text-slate-900">
-                  Kalkulator Kebutuhan Bahan Masak Dapur (BOM 1.553 Porsi)
+                  Kalkulator Kebutuhan Bahan Masak Dapur (BOM 1.541 Porsi)
                 </h3>
               </div>
               <p className="text-sm text-slate-600 leading-relaxed">
-                Kebutuhan bahan pangan untuk pengolahan menu sajian 1.553 Porsi MBG tanggal <strong>Jumat, 20 November 2026</strong> telah terpenuhi 100% dari penerimaan logistik tgl 19 November 2026. (Menu INFERENSI — menu resmi 20 Nov belum terbit.)
+                Kebutuhan bahan pangan untuk pengolahan menu sajian 1.541 Porsi MBG tanggal <strong>Jumat, 20 November 2026</strong> telah terpenuhi 100% dari penerimaan logistik tgl 19 November 2026. (Menu INFERENSI — menu resmi 20 Nov belum terbit.)
               </p>
             </div>
 
@@ -2620,7 +2627,7 @@ export default function StockMonitoringPage() {
                   </div>
                   <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
                     <span>Target MBG Terpenuhi:</span>
-                    <span className="font-mono text-indigo-700">1.553 Porsi</span>
+                    <span className="font-mono text-indigo-700">1.541 Porsi</span>
                   </div>
                   <div className="flex justify-between font-bold">
                     <span>Status Pengolahan:</span>
@@ -2684,7 +2691,7 @@ export default function StockMonitoringPage() {
                   </div>
                   <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
                     <span>Kapasitas Porsi:</span>
-                    <span className="font-mono text-indigo-700">1.553 Siswa</span>
+                    <span className="font-mono text-indigo-700">{currentProductionPortions.toLocaleString('id-ID')} Porsi</span>
                   </div>
                   <div className="flex justify-between font-bold">
                     <span>Status Distribusi:</span>
@@ -2758,7 +2765,7 @@ export default function StockMonitoringPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Realisasi Porsi:</span>
-                    <strong className="font-mono text-ink">1.553 Porsi / Hari</strong>
+                    <strong className="font-mono text-ink">{currentProductionPortions.toLocaleString('id-ID')} Porsi / Hari</strong>
                   </div>
                   <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
                     <span>Status SPJ Dokumen:</span>
@@ -3191,7 +3198,7 @@ export default function StockMonitoringPage() {
                   {selectedItem.currentStock} {selectedItem.uom}
                 </strong>
                 <span className="text-xs text-emerald-600 font-bold block mt-0.5">
-                  ✓ Selesai dimasak untuk 1.553 Porsi MBG tgl {selectedItem.lastUsageDate.slice(8, 10)} Nov 2026
+                  ✓ Selesai dimasak untuk {getProductionPortionCount(selectedItem.lastUsageDate).toLocaleString('id-ID')} Porsi MBG tgl {selectedItem.lastUsageDate.slice(8, 10)} Nov 2026
                 </span>
               </div>
             </div>
@@ -3386,7 +3393,7 @@ export default function StockMonitoringPage() {
                         Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang, Jawa Tengah
                       </p>
                       <p className="text-[10px] font-mono text-slate-500">
-                        Pagu Layanan: 1.553 Porsi / Hari &bull; 12 Sekolah &amp; 1 Posyandu &bull; Kode Satpel: SPPG-SMG-003
+                        Realisasi Produksi: {reportPortionHeader} &bull; 12 Sekolah &amp; 1 Posyandu &bull; Kode Satpel: SPPG-SMG-003
                       </p>
                     </div>
                   </div>
@@ -3499,19 +3506,19 @@ export default function StockMonitoringPage() {
                 {/* Narasi Resmi Sesuai Pilihan */}
                 <p className="text-[11px] leading-relaxed print:leading-snug text-justify text-slate-800">
                   {printReportType === 'B15_OUT' &&
-                    'Pada hari ini, Jumat tanggal 20 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 15 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu INFERENSI: Nasi Putih, Ayam Goreng Tepung, Tempe Goreng, Tumis Kol & Brokoli, Kurma — menu resmi 20 Nov belum terbit) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                    'Pada hari ini, Jumat tanggal 20 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 15 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi (Menu INFERENSI: Nasi Putih, Ayam Goreng Tepung, Tempe Goreng, Tumis Kol & Brokoli, Kurma — menu resmi 20 Nov belum terbit) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B15_IN' &&
                     'Pada hari ini, Kamis tanggal 19 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 15 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B14_OUT' &&
-                    'Pada hari ini, Kamis tanggal 19 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 14 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Telur Bumbu Kecap Manis, Tahu Goreng, Tumis Buncis Wortel & Tomat, Buah Anggur) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                    'Pada hari ini, Kamis tanggal 19 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 14 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi (Menu: Telur Bumbu Kecap Manis, Tahu Goreng, Tumis Buncis Wortel & Tomat, Buah Anggur) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B14_IN' &&
                     'Pada hari ini, Rabu tanggal 18 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 14 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B13_OUT' &&
-                    'Pada hari ini, Rabu tanggal 18 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 13 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Ayam Fillet Katsu, Edamame, Tumis Pakcoy Wortel & Tomat, Kentang Goreng, Buah Pisang) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                    'Pada hari ini, Rabu tanggal 18 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 13 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi (Menu: Ayam Fillet Katsu, Edamame, Tumis Pakcoy Wortel & Tomat, Kentang Goreng, Buah Pisang) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B13_IN' &&
                     'Pada hari ini, Selasa tanggal 17 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 13 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B12_OUT' &&
-                    'Pada hari ini, Selasa tanggal 17 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 12 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu: Nasi Putih Chicken Crumble — Nasi Putih, Ayam, Tahu, Wortel & Putren, Jeruk Manis) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                    'Pada hari ini, Selasa tanggal 17 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 12 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi (Menu: Nasi Putih Chicken Crumble — Nasi Putih, Ayam, Tahu, Wortel & Putren, Jeruk Manis) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B12_IN' &&
                     'Pada hari ini, Senin tanggal 16 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 12 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B11_OUT' &&
@@ -3619,7 +3626,7 @@ export default function StockMonitoringPage() {
                               ? 'Diterima Baik'
                               : printReportType === 'MUTASI'
                               ? 'Selesai Dimasak'
-                              : '1.553 Porsi MBG'}
+                              : `${reportPortions.toLocaleString('id-ID')} Porsi MBG`}
                           </td>
                         </tr>
                       ))}
@@ -3780,7 +3787,7 @@ export default function StockMonitoringPage() {
                         Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang, Jawa Tengah
                       </p>
                       <p className="text-[10px] font-mono text-slate-500">
-                        Pagu Layanan: 1.553 Porsi / Hari &bull; 12 Sekolah &amp; 1 Posyandu &bull; Kode Satpel: SPPG-SMG-003
+                        Realisasi Produksi: {reportPortionHeader} &bull; 12 Sekolah &amp; 1 Posyandu &bull; Kode Satpel: SPPG-SMG-003
                       </p>
                     </div>
                   </div>

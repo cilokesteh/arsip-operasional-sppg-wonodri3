@@ -121,6 +121,13 @@ export function getBeneficiariesForDate(dateStr?: string): BeneficiarySite[] {
   return BENEFICIARIES_OCT_19_ONWARDS;
 }
 
+// Jumlah porsi produksi aktual. Master roster tetap utuh; ada penyesuaian produksi
+// 12 porsi mulai 17 Nov 2026, sehingga BA historis memakai 1.541, bukan 1.553.
+export function getProductionPortionCount(dateStr?: string, overrides: Record<string, number> = {}): number {
+  const masterTotal = getEffectiveBeneficiariesForDate(dateStr, overrides).reduce((sum, site) => sum + site.masterCount, 0);
+  return masterTotal + (dateStr && dateStr >= PRODUCTION_PORTION_ADJUSTMENT_FROM ? PRODUCTION_PORTION_ADJUSTMENT : 0);
+}
+
 // ===== MASTER KUOTA — bisa diedit dari halaman Operator (Alur 4) =====
 // Kuota adalah data master (bukan per tanggal laporan): perubahan berlaku
 // untuk periode baseline yang sedang berjalan (per 19 Okt 2026 ke depan).
@@ -129,6 +136,11 @@ export function getBeneficiariesForDate(dateStr?: string): BeneficiarySite[] {
 // bisa diubah tanpa deploy ulang.
 export const KUOTA_OVERRIDE_KEY = 'sppg_master_kuota_overrides_v1';
 export const KUOTA_OVERRIDE_SINCE = '2026-10-19';
+
+// Realisasi produksi makan berubah mulai 17 Nov 2026; Master Kuota tetap 1.553.
+// Ini adalah jumlah porsi yang benar-benar diproduksi, bukan perubahan roster penerima.
+export const PRODUCTION_PORTION_ADJUSTMENT_FROM = '2026-11-17';
+export const PRODUCTION_PORTION_ADJUSTMENT = -12;
 
 export function loadKuotaOverrides(): Record<string, number> {
   if (typeof window === 'undefined') return {};
