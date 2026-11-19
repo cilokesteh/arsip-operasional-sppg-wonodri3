@@ -243,6 +243,18 @@
     width: 100% !important;
   }
 
+  .daily-outgoing-sheet {
+    break-after: page;
+    page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .daily-outgoing-sheet:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
   .panel, .app-card, .surface {
     box-shadow: none !important;
   }

@@ -61,6 +61,8 @@ import {
 import { verifyPin, hasValidSession, clearSession } from '@/lib/auth';
 import { getEffectiveBeneficiariesForDate, loadKuotaOverrides, loadEffectiveKuotaOverrides } from '@/lib/data';
 import { formatTanggalIndo } from '@/lib/dateUtils';
+import { buildDailyStockReports, getStockPeriodRange } from '@/lib/stock-period-report';
+import DailyStockPeriodReport from '@/components/DailyStockPeriodReport';
 
 // Tanggal lokal (WIB) tanpa geser timezone — pemilih periode rekap.
 function isoLocal(d: Date): string {
@@ -136,18 +138,9 @@ export default function StockMonitoringPage() {
     return isoLocal(new Date(now.getFullYear(), now.getMonth(), 1));
   })();
 
-  // Hitung batch masuk pada periode (dipakai badge dropdown).
   const countBatchesInPeriod = (isWeek: boolean, start: string): number => {
-    const [y, m, d] = start.split('-').map(Number);
-    const end = isoLocal(isWeek ? new Date(y, m - 1, d + 6) : new Date(y, m, 0));
-    const seen = new Set<string>();
-    for (const it of stockItems) {
-      const inD = it.lastRestockDate || '';
-      if (!inD) continue;
-      const ok = isWeek ? inD >= start && inD <= end : inD.slice(0, 7) === start.slice(0, 7);
-      if (ok) seen.add(it.batch);
-    }
-    return seen.size;
+    const range = getStockPeriodRange(isWeek ? 'WEEK_OUT' : 'MONTH_OUT', start);
+    return range ? buildDailyStockReports(stockItems, movements, range).length : 0;
   };
 
   const PRINT_REPORT_GROUPS: {
@@ -155,8 +148,8 @@ export default function StockMonitoringPage() {
     options: { value: typeof printReportType; icon: string; title: string; count: number }[];
   }[] = [
     { label: 'Rekap Periode', options: [
-      { value: 'WEEK_OUT', icon: '📅', title: 'Rekap Mingguan', count: countBatchesInPeriod(true, weekStartDefault) },
-      { value: 'MONTH_OUT', icon: '🗓', title: 'Rekap Bulanan', count: countBatchesInPeriod(false, monthStartDefault) },
+      { value: 'WEEK_OUT', icon: '📅', title: 'Keluar Masak Harian Mingguan', count: countBatchesInPeriod(true, weekStartDefault) },
+      { value: 'MONTH_OUT', icon: '🗓', title: 'Keluar Masak Harian Bulanan', count: countBatchesInPeriod(false, monthStartDefault) },
     ] },
     { label: 'Batch 15 — Masuk 19 Nov / Masak 20 Nov', options: [
       { value: 'B15_OUT', icon: '📤', title: 'Keluar Masak 20 Nov', count: 18 },
@@ -291,82 +284,15 @@ export default function StockMonitoringPage() {
 
   const reportSummary = useMemo(() => calculateStockSummary(reportItems), [reportItems]);
 
-  // ===== REKAP MINGGUAN / BULANAN =====
-  // Periode: minggu = start s/d +6 hari; bulanan = start s/d akhir bulan.
+  // ===== DOKUMEN HARIAN PENGELUARAN DALAM RENTANG MINGGUAN / BULANAN =====
   const periodRange = useMemo(() => {
-    if (!isPeriodReport) return null;
-    const base = periodStart || isoLocal(new Date());
-    const [y, m, d] = base.split('-').map(Number);
-    const end = printReportType === 'WEEK_OUT'
-      ? isoLocal(new Date(y, m - 1, d + 6))
-      : isoLocal(new Date(y, m, 0));
-    return { start: base, end, isWeek: printReportType === 'WEEK_OUT' };
+    if (!isPeriodReport || !periodStart) return null;
+    return getStockPeriodRange(printReportType as 'WEEK_OUT' | 'MONTH_OUT', periodStart);
   }, [isPeriodReport, periodStart, printReportType]);
-
-  // Agregasi per batch di dalam periode (berdasar tanggal penerimaan).
-  const periodBatches = useMemo(() => {
-    if (!periodRange) return [];
-    const byBatch = new Map<string, StockItem[]>();
-    for (const it of stockItems) {
-      const arr = byBatch.get(it.batch) || [];
-      arr.push(it);
-      byBatch.set(it.batch, arr);
-    }
-    const rows: {
-      batch: string; inDate: string; outDate: string;
-      count: number; kg: number; nonKg: number;
-    }[] = [];
-    const sorted = [...byBatch.keys()].sort(
-      (a, b) => Number(a.replace(/\D/g, '')) - Number(b.replace(/\D/g, '')),
-    );
-    for (const batch of sorted) {
-      const items = byBatch.get(batch) || [];
-      const inDates = items.map((i) => i.lastRestockDate || '').filter(Boolean).sort();
-      const outDates = items.map((i) => i.lastUsageDate || '').filter(Boolean).sort();
-      const inDate = inDates[0] || '';
-      if (!inDate) continue;
-      const inRange = periodRange.isWeek
-        ? inDate >= periodRange.start && inDate <= periodRange.end
-        : inDate.slice(0, 7) === periodRange.start.slice(0, 7);
-      if (!inRange) continue;
-      let kg = 0;
-      let nonKg = 0;
-      for (const i of items) {
-        const q = Number(i.initialStock) || 0;
-        if (i.uom === 'KG') kg += q;
-        else nonKg += q;
-      }
-      rows.push({
-        batch,
-        inDate,
-        outDate: outDates[0] || '',
-        count: items.length,
-        kg,
-        nonKg,
-      });
-    }
-    return rows;
-  }, [periodRange, stockItems]);
-
-  const periodTotals = useMemo(() => {
-    return periodBatches.reduce(
-      (acc, r) => ({
-        batches: acc.batches + 1,
-        items: acc.items + r.count,
-        kg: acc.kg + r.kg,
-        nonKg: acc.nonKg + r.nonKg,
-      }),
-      { batches: 0, items: 0, kg: 0, nonKg: 0 },
-    );
-  }, [periodBatches]);
-
-  const periodLabel = periodRange
-    ? `${formatTanggalIndo(periodRange.start)} s/d ${formatTanggalIndo(periodRange.end)}`
-    : '—';
-
-  // Kuantitas fisik murni — bulatkan 2 desimal, buang nol di belakang (241.39999… -> 241.4).
-  const fmtQty = (n: number): string => String(Number((Math.round((Number(n) || 0) * 100) / 100).toFixed(2)));
-
+  const dailyPeriodReports = useMemo(
+    () => periodRange ? buildDailyStockReports(stockItems, movements, periodRange) : [],
+    [periodRange, stockItems, movements],
+  );
   // Isi otomatis "Minggu mulai" saat mode rekap dipilih: Senin berjalan untuk
   // mingguan, tanggal 1 berjalan untuk bulanan.
   useEffect(() => {
@@ -3389,7 +3315,7 @@ export default function StockMonitoringPage() {
               {isPeriodReport && (
                 <div className="flex flex-wrap items-center gap-2 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    {printReportType === 'WEEK_OUT' ? 'Periode minggu' : 'Periode bulan'}
+                    {printReportType === 'WEEK_OUT' ? 'Minggu mulai' : 'Pilih bulan'}
                   </span>
                   <input
                     type="date"
@@ -3401,7 +3327,7 @@ export default function StockMonitoringPage() {
                     s/d {periodRange ? formatTanggalIndo(periodRange.end) : '—'}
                   </span>
                   <span className="text-[11px] text-slate-500">
-                    {periodBatches.length} batch · {periodTotals.items} jenis bahan
+                    {dailyPeriodReports.length} PDF · {dailyPeriodReports.length} tanggal masak
                   </span>
                 </div>
               )}
@@ -3410,7 +3336,7 @@ export default function StockMonitoringPage() {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer transition-colors"
+                  className={`px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer transition-colors ${isPeriodReport ? 'hidden' : ''}`}
                   title="Download atau Simpan sebagai PDF (A4)"
                 >
                   <FileDown className="w-4 h-4 shrink-0" />
@@ -3429,7 +3355,13 @@ export default function StockMonitoringPage() {
 
             {/* Document Body Wrapper with Scroll */}
             <div className="p-2 sm:p-8 bg-slate-100 overflow-y-auto flex-1 print:p-0 print:bg-white print:overflow-visible">
-              {/* Genuine A4 Document Sheet */}
+              {isPeriodReport ? (
+                <DailyStockPeriodReport
+                  reports={dailyPeriodReports}
+                  title={printReportType === 'WEEK_OUT' ? 'keluar-masak-mingguan' : 'keluar-masak-bulanan'}
+                  onPrint={() => window.print()}
+                />
+              ) : (
               <div className="report-sheet bg-white text-slate-950 p-4 sm:p-10 border border-slate-300 rounded-xl shadow-md max-w-3xl mx-auto space-y-6 print:space-y-3 font-serif text-xs print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full">
                 {/* Official KOP BGN SPPG */}
                 <div className="border-b-2 border-slate-950 pb-4 print:pb-2 text-center relative">
@@ -3463,8 +3395,6 @@ export default function StockMonitoringPage() {
                 {/* Judul Dokumen Sesuai Pilihan */}
                 <div className="text-center space-y-1">
                   <h3 className="text-sm sm:text-base font-black uppercase underline tracking-wider text-slate-950">
-                    {printReportType === 'WEEK_OUT' && `BERITA ACARA REKAPITULASI BAHAN BAKU MINGGUAN (${periodLabel.toUpperCase()})`}
-                    {printReportType === 'MONTH_OUT' && `BERITA ACARA REKAPITULASI BAHAN BAKU BULANAN (${periodLabel.toUpperCase()})`}
                     {printReportType === 'B15_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (20 NOV 2026)'}
                     {printReportType === 'B15_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (19 NOV 2026)'}
                     {printReportType === 'B14_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (19 NOV 2026)'}
@@ -3498,8 +3428,6 @@ export default function StockMonitoringPage() {
                     {printReportType === 'MUTASI' && 'BUKU REGISTER REKAPITULASI MUTASI BAHAN BAKU (01 - 20 NOV 2026)'}
                   </h3>
                   <p className="text-[10px] font-mono text-slate-600">
-                    {printReportType === 'WEEK_OUT' && 'Nomor: BA-REKAP-MGG/SPPG-SMG3/BGN/2026/11'}
-                    {printReportType === 'MONTH_OUT' && 'Nomor: BA-REKAP-BLN/SPPG-SMG3/BGN/2026/11'}
                     {printReportType === 'B15_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1120'}
                     {printReportType === 'B15_IN' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1119'}
                     {printReportType === 'B14_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1119'}
@@ -3533,8 +3461,6 @@ export default function StockMonitoringPage() {
                     {printReportType === 'MUTASI' && 'Nomor: REG-MUTASI/SPPG-SMG3/BGN/2026/11'}
                   </p>
                   <p className="text-[11px] text-slate-700 font-bold">
-                    {printReportType === 'WEEK_OUT' && `Periode Rekapitulasi: ${periodLabel}`}
-                    {printReportType === 'MONTH_OUT' && `Periode Rekapitulasi: ${periodLabel}`}
                     {printReportType === 'B15_OUT' && 'Tanggal Pengolahan Masak: Jumat, 20 November 2026'}
                     {printReportType === 'B15_IN' && 'Tanggal Penerimaan: Kamis, 19 November 2026'}
                     {printReportType === 'B14_OUT' && 'Tanggal Pengolahan Masak: Kamis, 19 November 2026'}
@@ -3571,10 +3497,6 @@ export default function StockMonitoringPage() {
 
                 {/* Narasi Resmi Sesuai Pilihan */}
                 <p className="text-[11px] leading-relaxed print:leading-snug text-justify text-slate-800">
-                  {printReportType === 'WEEK_OUT' &&
-                    `Pada periode ${periodLabel}, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa sebanyak ${periodTotals.batches} batch dengan rincian ${periodTotals.items} jenis bahan (total ${periodTotals.kg} KG dan ${periodTotals.nonKg} unit satuan lain) dengan rincian per batch sebagai berikut:`}
-                  {printReportType === 'MONTH_OUT' &&
-                    `Pada periode ${periodLabel}, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa sebanyak ${periodTotals.batches} batch dengan rincian ${periodTotals.items} jenis bahan (total ${periodTotals.kg} KG dan ${periodTotals.nonKg} unit satuan lain) dengan rincian per batch sebagai berikut:`}
                   {printReportType === 'B15_OUT' &&
                     'Pada hari ini, Jumat tanggal 20 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 15 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.553 Porsi (Menu INFERENSI: Nasi Putih, Ayam Goreng Tepung, Tempe Goreng, Tumis Kol & Brokoli, Kurma — menu resmi 20 Nov belum terbit) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B15_IN' &&
@@ -3735,61 +3657,6 @@ export default function StockMonitoringPage() {
                 </div>
                 )}
 
-                {/* Tabel Rekap Periode (mingguan / bulanan) */}
-                {isPeriodReport && (
-                  <div className="overflow-x-auto rounded border border-slate-400">
-                    <table className="w-full text-left text-[10px] border-collapse min-w-[520px]">
-                      <thead className="bg-slate-100 font-bold">
-                        <tr className="border-b border-slate-400">
-                          <th className="p-1.5 print:p-1 border-r border-slate-400 text-center w-8">NO</th>
-                          <th className="p-1.5 print:p-1 border-r border-slate-400">BATCH</th>
-                          <th className="p-1.5 print:p-1 border-r border-slate-400">TANGGAL MASUK</th>
-                          <th className="p-1.5 print:p-1 border-r border-slate-400">TANGGAL MASAK</th>
-                          <th className="p-1.5 print:p-1 border-r border-slate-400 text-center">JENIS BAHAN</th>
-                          <th className="p-1.5 print:p-1 border-r border-slate-400 text-right">TOTAL KG</th>
-                          <th className="p-1.5 print:p-1 text-right">NON-KG</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-300">
-                        {periodBatches.map((row, idx) => (
-                          <tr key={row.batch} className="hover:bg-slate-50">
-                            <td className="p-1.5 print:p-1 border-r border-slate-300 text-center font-mono">{idx + 1}</td>
-                            <td className="p-1.5 print:p-1 border-r border-slate-300 font-black">{row.batch}</td>
-                            <td className="p-1.5 print:p-1 border-r border-slate-300 font-mono whitespace-nowrap">
-                              {row.inDate ? formatTanggalIndo(row.inDate) : '—'}
-                            </td>
-                            <td className="p-1.5 print:p-1 border-r border-slate-300 font-mono whitespace-nowrap">
-                              {row.outDate ? formatTanggalIndo(row.outDate) : '—'}
-                            </td>
-                            <td className="p-1.5 print:p-1 border-r border-slate-300 text-center font-mono">{row.count}</td>
-                            <td className="p-1.5 print:p-1 border-r border-slate-300 text-right font-mono font-bold text-blue-900">
-                              {fmtQty(row.kg)} KG
-                            </td>
-                            <td className="p-1.5 print:p-1 text-right font-mono">{fmtQty(row.nonKg)} Unit</td>
-                          </tr>
-                        ))}
-                        {periodBatches.length === 0 && (
-                          <tr>
-                            <td colSpan={7} className="p-3 text-center text-slate-500 font-semibold">
-                              Tidak ada batch masuk pada periode ini.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                      <tfoot className="bg-slate-100 border-t-2 border-slate-400 font-black text-slate-900">
-                        <tr>
-                          <td colSpan={4} className="p-2 print:p-1 text-right uppercase">
-                            Total Periode
-                          </td>
-                          <td className="p-2 print:p-1 text-center text-sm">{periodTotals.items} Jenis</td>
-                          <td className="p-2 print:p-1 text-right text-sm text-blue-900">{fmtQty(periodTotals.kg)} KG</td>
-                          <td className="p-2 print:p-1 text-right">{fmtQty(periodTotals.nonKg)} Unit</td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-                )}
-
                 {/* Formal 4-Signatory Block: Responsive grid (2x2 on mobile, 4 cols in print & desktop) */}
                 <div className="pt-6 print:pt-3 border-t border-slate-200">
                   <div className="grid grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 sm:gap-3 print:gap-2 text-center text-xs">
@@ -3843,6 +3710,7 @@ export default function StockMonitoringPage() {
                   </div>
                 </div>
               </div>
+              )}
             </div>
           </div>
         </div>
