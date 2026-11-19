@@ -3321,7 +3321,8 @@ export default function StockMonitoringPage() {
                     type="date"
                     value={periodStart}
                     onChange={(e) => setPeriodStart(e.target.value)}
-                    className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-bold text-slate-800 bg-white cursor-pointer"
+                    aria-label={printReportType === 'WEEK_OUT' ? 'Minggu mulai' : 'Tanggal dalam bulan laporan'}
+                    className="min-w-[165px] shrink-0 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-bold text-slate-800 bg-white cursor-pointer"
                   />
                   <span className="text-[11px] text-slate-600 font-semibold">
                     s/d {periodRange ? formatTanggalIndo(periodRange.end) : '—'}
