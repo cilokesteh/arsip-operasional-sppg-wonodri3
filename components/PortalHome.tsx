@@ -58,6 +58,7 @@ import { toIsoDateLocal } from '@/lib/attendance';
 import { fetchMenusFromCloud, saveSingleMenuToCloud } from '@/lib/cloudSync';
 import staticMenusData from '@/lib/staticMenus.json';
 import OfficialReport from '@/components/OfficialReport';
+import WeeklyReport from '@/components/WeeklyReport';
 import { TopNav, BottomTabs, SiteFooter } from '@/components/SiteNav';
 
 type WorkspaceTab = 'overview' | 'menu' | 'akg' | 'dapur' | 'distribusi' | 'dokumen';
@@ -250,6 +251,56 @@ export default function PortalHome() {
 
   const totalMaster = activeBeneficiaries.reduce((acc, site) => acc + site.masterCount, 0);
 
+  // ===== RENTANG MINGGUAN (Rekap & Bundle) =====
+  // printMode: 'harian' = OfficialReport 1 tanggal; 'rekap' = ringkasan 7 hari;
+  // 'bundle' = 7 lembar harian disusun berurutan dalam satu PDF.
+  const [printMode, setPrintMode] = useState<'harian' | 'rekap' | 'bundle'>('harian');
+  const [weekStart, setWeekStart] = useState<string>(() => {
+    const d = new Date();
+    const day = (d.getDay() + 6) % 7; // Senin = 0
+    d.setDate(d.getDate() - day);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+
+  const addDaysIso = (iso: string, n: number): string => {
+    const [y, m, d] = iso.split('-').map(Number);
+    const dt = new Date(y, (m || 1) - 1, (d || 1) + n);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+  };
+
+  const weekDates = useMemo(() => {
+    const out: string[] = [];
+    for (let i = 0; i < 7; i++) out.push(addDaysIso(weekStart, i));
+    return out;
+  }, [weekStart]);
+
+  const beneficiariesForDate = (date: string, menu?: DailyMenuRecord) => {
+    const base = getEffectiveBeneficiariesForDate(date, kuotaOverrides);
+    return base.map((site) => {
+      const ov = menu?.overrides?.find((o) => o.siteId === site.id);
+      if (ov) {
+        return {
+          ...site,
+          masterCount: ov.condition === 'libur' ? 0 : ov.effectiveCount,
+          condition: ov.condition,
+          reason: ov.reason,
+        };
+      }
+      return { ...site, condition: undefined, reason: undefined };
+    });
+  };
+
+  const weekDays = weekDates.map((date) => {
+    const menu = menuHistory.find((m) => m.date === date);
+    const beneficiaries = beneficiariesForDate(date, menu);
+    return {
+      date,
+      menu,
+      beneficiaries,
+      totalMaster: beneficiaries.reduce((acc, s) => acc + s.masterCount, 0),
+    };
+  });
+
   const filteredBeneficiaries = activeBeneficiaries.filter((b) => {
     const matchName = b.name.toLowerCase().includes(searchBeneficiary.toLowerCase());
     const matchType = typeFilter === 'ALL' || b.type === typeFilter;
@@ -373,9 +424,11 @@ export default function PortalHome() {
   }, []);
 
   /* ============ PRINT / PIN ============ */
-  const handleOpenPrintModal = async () => {
-    // Tidak ada laporan pada tanggal terpilih = tidak ada dokumen untuk dicetak.
-    if (!currentMenu) return;
+  const handlePrintRequest = async (mode: 'harian' | 'rekap' | 'bundle') => {
+    // Jangan minta PIN kalau dokumennya memang kosong.
+    if (mode === 'harian' && !currentMenu) return;
+    if (mode !== 'harian' && !weekDays.some((d) => d.menu)) return;
+    setPrintMode(mode);
     const sessionValid = await hasValidSession('operator');
     if (sessionValid) {
       setActiveTab('dokumen');
@@ -426,7 +479,7 @@ export default function PortalHome() {
 
           <button
             type="button"
-            onClick={handleOpenPrintModal}
+            onClick={() => handlePrintRequest('harian')}
             disabled={!currentMenu}
             aria-label="Cetak resmi"
             title={
@@ -1304,7 +1357,7 @@ export default function PortalHome() {
             {/* ==================== TAB: DOKUMEN RESMI ==================== */}
             {activeTab === 'dokumen' && (
               <div className="space-y-3">
-                <div className="no-print bg-white rounded-xl border border-line p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="no-print bg-white rounded-xl border border-line p-4 space-y-3">
                   <div className="flex items-start gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-lg bg-slate-900 text-white flex items-center justify-center shrink-0">
                       <FileText className="w-4 h-4" />
@@ -1319,20 +1372,127 @@ export default function PortalHome() {
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={handleOpenPrintModal}
-                    className="px-4 py-2.5 rounded-lg text-sm font-bold text-white bg-ink hover:bg-ink-soft flex items-center gap-1.5 justify-center cursor-pointer shrink-0"
-                  >
-                    <Lock className="w-3.5 h-3.5 text-gold" />
-                    <span>Cetak / Simpan PDF</span>
-                  </button>
+
+                  {/* Lingkup dokumen: harian / rekap mingguan / bundle mingguan */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex bg-slate-100 rounded-lg p-0.5 text-sm font-bold">
+                      {(
+                        [
+                          ['harian', 'Harian'],
+                          ['rekap', 'Rekap Mingguan'],
+                          ['bundle', 'Bundle Mingguan'],
+                        ] as const
+                      ).map(([value, label]) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setPrintMode(value)}
+                          className={`px-3 py-1.5 rounded-md cursor-pointer transition-colors ${
+                            printMode === value
+                              ? 'bg-white shadow-sm text-slate-900'
+                              : 'text-slate-500 hover:text-slate-800'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {printMode !== 'harian' && (
+                      <label className="flex items-center gap-2 text-[13px] font-semibold text-slate-600">
+                        Minggu mulai
+                        <input
+                          type="date"
+                          value={weekStart}
+                          onChange={(e) => setWeekStart(e.target.value)}
+                          className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm bg-white cursor-pointer"
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {printMode === 'harian' ? (
+                    <button
+                      onClick={() => handlePrintRequest('harian')}
+                      disabled={!currentMenu}
+                      className="px-4 py-2.5 rounded-lg text-sm font-bold text-white bg-ink hover:bg-ink-soft flex items-center gap-1.5 justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Lock className="w-3.5 h-3.5 text-gold" />
+                      <span>Cetak / Simpan PDF</span>
+                    </button>
+                  ) : (
+                    <>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => handlePrintRequest('rekap')}
+                          disabled={!weekDays.some((d) => d.menu)}
+                          className="px-4 py-2.5 rounded-lg text-sm font-bold text-white bg-ink hover:bg-ink-soft flex items-center gap-1.5 justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Lock className="w-3.5 h-3.5 text-gold" />
+                          <span>Cetak Rekap Mingguan</span>
+                        </button>
+                        <button
+                          onClick={() => handlePrintRequest('bundle')}
+                          disabled={!weekDays.some((d) => d.menu)}
+                          className="px-4 py-2.5 rounded-lg text-sm font-bold text-ink bg-white border border-line hover:bg-slate-50 flex items-center gap-1.5 justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          <span>Bundle {weekDays.filter((d) => d.menu).length} Laporan Harian</span>
+                        </button>
+                      </div>
+                      <p className="text-[12px] text-slate-500 leading-snug">
+                        Periode {formatTanggalIndo(weekStart)} s/d {formatTanggalIndo(addDaysIso(weekStart, 6))} ·{' '}
+                        {weekDays.filter((d) => d.menu).length} dari 7 hari sudah ada laporan.
+                      </p>
+                    </>
+                  )}
                 </div>
 
-                <OfficialReport
-                  menu={currentMenu}
-                  beneficiaries={activeBeneficiaries}
-                  totalMaster={totalMaster}
-                />
+                {printMode === 'harian' &&
+                  (currentMenu ? (
+                    <OfficialReport
+                      menu={currentMenu}
+                      beneficiaries={activeBeneficiaries}
+                      totalMaster={totalMaster}
+                    />
+                  ) : (
+                    <div className="bg-white rounded-xl border border-line p-6 text-sm text-slate-500">
+                      Belum ada laporan pada {formatTanggalIndo(selectedDate)} — pilih tanggal lain untuk
+                      dokumen harian.
+                    </div>
+                  ))}
+
+                {printMode === 'rekap' && (
+                  <WeeklyReport
+                    days={weekDays}
+                    rangeStart={weekStart}
+                    rangeEnd={addDaysIso(weekStart, 6)}
+                  />
+                )}
+
+                {printMode === 'bundle' && (
+                  <div className="space-y-4">
+                    {weekDays
+                      .filter((d) => d.menu)
+                      .map((d, index, arr) => (
+                        <div
+                          key={d.date}
+                          className={index < arr.length - 1 ? 'page-break-after' : ''}
+                        >
+                          <OfficialReport
+                            menu={d.menu as DailyMenuRecord}
+                            beneficiaries={d.beneficiaries}
+                            totalMaster={d.totalMaster}
+                          />
+                        </div>
+                      ))}
+                    {weekDays.every((d) => !d.menu) && (
+                      <div className="bg-white rounded-xl border border-line p-6 text-sm text-slate-500">
+                        Tidak ada laporan pada minggu ini — pilih minggu lain.
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </>
