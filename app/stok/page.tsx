@@ -655,7 +655,7 @@ export default function StockMonitoringPage() {
         id: `OPN-${new Date().toISOString().slice(0, 10)}`,
         date: new Date().toISOString().slice(0, 10),
         title: 'Audit Fisik Berkala Stok Bahan Baku SPPG Wonodri 3',
-        checkerName: 'Nur Khafidin (Petugas Timbangan)',
+        checkerName: 'Security Andrie (Petugas Timbangan)',
         status: 'draft',
         rows: resetRows,
         savedAt: new Date().toISOString(),
@@ -831,7 +831,7 @@ export default function StockMonitoringPage() {
       uom: target.uom,
       balanceAfter: Number((target.currentStock + qty).toFixed(2)),
       reference: formRestockInvoice || 'GRN-20261119-01',
-      loggedBy: 'Nur Khafidin (Petugas Timbangan)',
+      loggedBy: 'Security Andrie (Petugas Timbangan)',
       notes: formRestockNotes || 'Penerimaan bahan baku masuk tgl 19 Nov 2026',
     };
 
@@ -3663,13 +3663,13 @@ export default function StockMonitoringPage() {
                   <div className="grid grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 sm:gap-3 print:gap-2 text-center text-xs">
                     <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
-                        Petugas Logistik / Timbangan,
+                        Petugas Timbangan / Security,
                       </p>
                       <div>
                         <p className="font-bold underline uppercase text-slate-950 text-[11px] sm:text-xs">
-                          Nur Khafidin
+                          Security Andrie
                         </p>
-                        <p className="text-[9px] sm:text-[10px] text-slate-500">Staf Logistik SPPG</p>
+                        <p className="text-[9px] sm:text-[10px] text-slate-500">Security SPPG</p>
                       </div>
                     </div>
 
@@ -3873,13 +3873,13 @@ export default function StockMonitoringPage() {
                   <div className="grid grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 sm:gap-3 print:gap-2 text-center text-xs">
                     <div className="space-y-12 bg-slate-50/50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl">
                       <p className="font-medium text-slate-700 text-[10px] sm:text-[11px] leading-tight">
-                        Petugas Logistik / Timbangan,
+                        Petugas Timbangan / Security,
                       </p>
                       <div>
                         <p className="font-bold underline uppercase text-slate-950 text-[11px] sm:text-xs">
-                          Nur Khafidin
+                          Security Andrie
                         </p>
-                        <p className="text-[9px] sm:text-[10px] text-slate-500">Staf Logistik SPPG</p>
+                        <p className="text-[9px] sm:text-[10px] text-slate-500">Security SPPG</p>
                       </div>
                     </div>
 

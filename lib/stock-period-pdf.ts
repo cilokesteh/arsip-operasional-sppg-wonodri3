@@ -72,7 +72,7 @@ export async function createDailyStockPdf(report: DailyStockReport, logo: Uint8A
   doc.setDrawColor(175, 175, 175);
   doc.line(margin, signY - 13, pageWidth - margin, signY - 13);
   const signers = [
-    ['Petugas Logistik / Timbangan,', 'Nur Khafidin', 'Staf Logistik SPPG'],
+    ['Petugas Timbangan / Security,', 'Security Andrie', 'Security SPPG'],
     ['Ahli Gizi Penanggung Jawab,', 'Sintia Mariam, A.Md.Gz', 'Ahli Gizi SPPG'],
     ['Petugas Akuntansi / Keuangan,', 'Salsabiila Zainima, S.Ak', 'Akuntan SPPG'],
     ['Mengetahui / Mengesahkan,', 'Dicky Yusuf Mulyadi, S.M.', 'Kepala SPPG Wonodri 3'],

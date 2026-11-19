@@ -90,7 +90,7 @@ const report = () => require('../lib/stock-period-report.ts');
       const { execFileSync } = require('node:child_process');
       const extracted = execFileSync('pdftotext', [file, '-'], { encoding: 'utf8' });
       assert.ok(extracted.includes(day.number));
-      for (const signer of ['Nur Khafidin', 'Sintia Mariam, A.Md.Gz', 'Salsabiila Zainima, S.Ak', 'Dicky Yusuf Mulyadi, S.M.']) assert.ok(extracted.includes(signer));
+      for (const signer of ['Security Andrie', 'Petugas Timbangan / Security', 'Security SPPG', 'Sintia Mariam, A.Md.Gz', 'Salsabiila Zainima, S.Ak', 'Dicky Yusuf Mulyadi, S.M.']) assert.ok(extracted.includes(signer));
       if (day.date === '2026-11-20') { assert.match(extracted, /Maizena/i); assert.match(extracted, /INFERENSI/); }
     } finally { rmSync(temp, { recursive: true, force: true }); }
   }

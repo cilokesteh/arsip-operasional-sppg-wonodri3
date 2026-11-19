@@ -109,7 +109,7 @@ export default function DailyStockPeriodReport({ reports, title, onPrint }: Prop
           <footer className="mt-5 border-t border-slate-300 pt-3">
             <div className="grid grid-cols-4 gap-1 text-center text-[8px]">
               {[
-                ['Petugas Logistik / Timbangan,', 'Nur Khafidin', 'Staf Logistik SPPG'],
+                ['Petugas Timbangan / Security,', 'Security Andrie', 'Security SPPG'],
                 ['Ahli Gizi Penanggung Jawab,', 'Sintia Mariam, A.Md.Gz', 'Ahli Gizi SPPG'],
                 ['Petugas Akuntansi / Keuangan,', 'Salsabiila Zainima, S.Ak', 'Akuntan SPPG'],
                 ['Mengetahui / Mengesahkan,', 'Dicky Yusuf Mulyadi, S.M.', 'Kepala SPPG Wonodri 3'],
