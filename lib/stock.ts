@@ -1778,7 +1778,7 @@ export function loadOpnameDraftFromStorage(items: StockItem[]): OpnameSession {
     id: `OPN-${new Date().toISOString().slice(0, 10)}`,
     date: new Date().toISOString().slice(0, 10),
     title: 'Audit Fisik Berkala Stok Bahan Baku SPPG Wonodri 3',
-    checkerName: 'Nur Khafidin (Petugas Timbangan)',
+    checkerName: 'Security Andrie (Petugas Timbangan)',
     status: 'draft',
     rows: createInitialOpnameRows(items),
     savedAt: new Date().toISOString(),
