@@ -397,11 +397,11 @@ export function createAttendanceCsv(
       'Catatan / Alasan',
       'Petugas Pencatat',
     ],
-    ...hadirEntries.map((entry) => {
+    ...hadirEntries.map((entry, idx) => {
       const person = byId.get(entry.volunteerId);
       return [
         entry.date,
-        person?.no ?? '-',
+        idx + 1,
         person?.name ?? entry.volunteerId,
         person?.dutySection ?? '-',
         entry.status,
@@ -464,8 +464,8 @@ export function createAttendanceMonthlySummaryCsv(
       })
       // Output bulanan hanya menampilkan relawan yang pernah hadir di bulan itu
       .filter((row) => row.person.isActive && row.hadirCount > 0)
-      .map(({ person, hadirCount, izinCount, sakitCount, liburCount, earned }) => [
-        person.no,
+      .map(({ person, hadirCount, izinCount, sakitCount, liburCount, earned }, idx) => [
+        idx + 1,
         person.name,
         person.dutySection,
         person.isActive ? 'Aktif' : 'Nonaktif',
@@ -523,8 +523,8 @@ export function createAttendanceWeeklyMatrixCsv(
       })
       // Output mingguan hanya menampilkan relawan yang pernah hadir di minggu itu
       .filter((row) => row.person.isActive && row.hadirCount > 0)
-      .map(({ person, dailyStatuses, hadirCount, totalEarned }) => [
-        person.no,
+      .map(({ person, dailyStatuses, hadirCount, totalEarned }, idx) => [
+        idx + 1,
         person.name,
         person.dutySection,
         person.isActive ? 'Aktif' : 'Nonaktif',
