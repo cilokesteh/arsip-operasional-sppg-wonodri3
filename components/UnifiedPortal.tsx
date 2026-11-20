@@ -268,7 +268,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   // Form states Roster
   const [newPersonName, setNewPersonName] = useState<string>('');
   const [newPersonSection, setNewPersonSection] = useState<string>('Pemorsian');
-  const [newPersonRate, setNewPersonRate] = useState<string>('125000');
+  const [newPersonRate, setNewPersonRate] = useState<string>('100000');
   const [newPersonCheckIn, setNewPersonCheckIn] = useState<string>('04:00');
   const [newPersonCheckOut, setNewPersonCheckOut] = useState<string>('12:00');
 
@@ -798,7 +798,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
       no: nextNo,
       name: newName,
       dutySection: newPersonSection,
-      dailyRate: parseFloat(newPersonRate) || 125000,
+      dailyRate: parseFloat(newPersonRate) || 100000,
       isActive: true,
       defaultCheckIn: newPersonCheckIn,
       defaultCheckOut: newPersonCheckOut,
@@ -2246,7 +2246,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   type="number"
                   value={newPersonRate}
                   onChange={(e) => setNewPersonRate(e.target.value)}
-                  placeholder="125000"
+                  placeholder="100000"
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 font-mono font-bold focus:outline-none focus:border-blue-600"
                   required
                 />

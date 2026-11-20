@@ -68,63 +68,63 @@ export const DEFAULT_ROSTER_40: VolunteerProfile[] = [
   // 2. Head Chef (21:00 - 05:00 @ Rp 200.000)
   { id: 'v-2', no: 2, name: 'RIYAN ADHI KRISTANTO', dutySection: 'Head Chef', dailyRate: 200000, isActive: true, defaultCheckIn: '21:00', defaultCheckOut: '05:00' },
 
-  // 3 - 7 Persiapan (5 Personel: 17:00 - 01:00 @ Rp 130.000)
-  { id: 'v-3', no: 3, name: 'DEWI AGUSTINA', dutySection: 'Persiapan', dailyRate: 130000, isActive: true, defaultCheckIn: '17:00', defaultCheckOut: '01:00' },
-  { id: 'v-4', no: 4, name: 'RINA NUR HIDAYAH', dutySection: 'Persiapan', dailyRate: 130000, isActive: true, defaultCheckIn: '17:00', defaultCheckOut: '01:00' },
-  { id: 'v-5', no: 5, name: 'ALMIRA PUTRI HAYANI', dutySection: 'Persiapan', dailyRate: 130000, isActive: true, defaultCheckIn: '17:00', defaultCheckOut: '01:00' },
-  { id: 'v-6', no: 6, name: 'DEWI IKA PURNAMA', dutySection: 'Persiapan', dailyRate: 130000, isActive: true, defaultCheckIn: '17:00', defaultCheckOut: '01:00' },
-  { id: 'v-7', no: 7, name: 'FENI FEBRINUNGRUM', dutySection: 'Persiapan', dailyRate: 130000, isActive: true, defaultCheckIn: '17:00', defaultCheckOut: '01:00' },
+  // 3 - 7 Persiapan (5 Personel: 17:00 - 01:00 @ Rp 100.000)
+  { id: 'v-3', no: 3, name: 'DEWI AGUSTINA', dutySection: 'Persiapan', dailyRate: 100000, isActive: true, defaultCheckIn: '17:00', defaultCheckOut: '01:00' },
+  { id: 'v-4', no: 4, name: 'RINA NUR HIDAYAH', dutySection: 'Persiapan', dailyRate: 100000, isActive: true, defaultCheckIn: '17:00', defaultCheckOut: '01:00' },
+  { id: 'v-5', no: 5, name: 'ALMIRA PUTRI HAYANI', dutySection: 'Persiapan', dailyRate: 100000, isActive: true, defaultCheckIn: '17:00', defaultCheckOut: '01:00' },
+  { id: 'v-6', no: 6, name: 'DEWI IKA PURNAMA', dutySection: 'Persiapan', dailyRate: 100000, isActive: true, defaultCheckIn: '17:00', defaultCheckOut: '01:00' },
+  { id: 'v-7', no: 7, name: 'FENI FEBRINUNGRUM', dutySection: 'Persiapan', dailyRate: 100000, isActive: true, defaultCheckIn: '17:00', defaultCheckOut: '01:00' },
 
-  // 8. Admin (13:00 - 21:00 @ Rp 130.000)
-  { id: 'v-8', no: 8, name: 'NUR KHAFIDIN', dutySection: 'Admin', dailyRate: 130000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
+  // 8. Admin (13:00 - 21:00 @ Rp 100.000)
+  { id: 'v-8', no: 8, name: 'NUR KHAFIDIN', dutySection: 'Admin', dailyRate: 100000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
 
-  // 9 - 14 Pengolahan (6 Personel: 02:00 - 10:00 @ Rp 140.000)
-  { id: 'v-9', no: 9, name: 'ARI WIDYASARI', dutySection: 'Pengolahan', dailyRate: 140000, isActive: true, defaultCheckIn: '02:00', defaultCheckOut: '10:00' },
-  { id: 'v-10', no: 10, name: 'IRA DWI SETYANINGRUM', dutySection: 'Pengolahan', dailyRate: 140000, isActive: true, defaultCheckIn: '02:00', defaultCheckOut: '10:00' },
-  { id: 'v-11', no: 11, name: 'SRI WAHYUNI', dutySection: 'Pengolahan', dailyRate: 140000, isActive: false, defaultCheckIn: '02:00', defaultCheckOut: '10:00', notes: 'Non-Aktif / Resigned' },
-  { id: 'v-12', no: 12, name: 'AGUS RINI INDRIANI', dutySection: 'Pengolahan', dailyRate: 140000, isActive: true, defaultCheckIn: '02:00', defaultCheckOut: '10:00' },
-  { id: 'v-13', no: 13, name: 'AYU ARMAYA', dutySection: 'Pengolahan', dailyRate: 140000, isActive: true, defaultCheckIn: '02:00', defaultCheckOut: '10:00' },
-  { id: 'v-14', no: 14, name: 'MUHAMMAD RASYIDALIMMATIN', dutySection: 'Pengolahan', dailyRate: 140000, isActive: true, defaultCheckIn: '02:00', defaultCheckOut: '10:00' },
+  // 9 - 14 Pengolahan (6 Personel: 02:00 - 10:00 @ Rp 100.000)
+  { id: 'v-9', no: 9, name: 'ARI WIDYASARI', dutySection: 'Pengolahan', dailyRate: 100000, isActive: true, defaultCheckIn: '02:00', defaultCheckOut: '10:00' },
+  { id: 'v-10', no: 10, name: 'IRA DWI SETYANINGRUM', dutySection: 'Pengolahan', dailyRate: 100000, isActive: true, defaultCheckIn: '02:00', defaultCheckOut: '10:00' },
+  { id: 'v-11', no: 11, name: 'SRI WAHYUNI', dutySection: 'Pengolahan', dailyRate: 100000, isActive: false, defaultCheckIn: '02:00', defaultCheckOut: '10:00', notes: 'Non-Aktif / Resigned' },
+  { id: 'v-12', no: 12, name: 'AGUS RINI INDRIANI', dutySection: 'Pengolahan', dailyRate: 100000, isActive: true, defaultCheckIn: '02:00', defaultCheckOut: '10:00' },
+  { id: 'v-13', no: 13, name: 'AYU ARMAYA', dutySection: 'Pengolahan', dailyRate: 100000, isActive: true, defaultCheckIn: '02:00', defaultCheckOut: '10:00' },
+  { id: 'v-14', no: 14, name: 'MUHAMMAD RASYIDALIMMATIN', dutySection: 'Pengolahan', dailyRate: 100000, isActive: true, defaultCheckIn: '02:00', defaultCheckOut: '10:00' },
 
-  // 15 - 22 Pemorsian (8 Personel: 04:00 - 12:00 @ Rp 125.000)
-  { id: 'v-15', no: 15, name: 'MARINANINGSIH', dutySection: 'Pemorsian', dailyRate: 125000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
-  { id: 'v-16', no: 16, name: 'ALIS YULIANTI', dutySection: 'Pemorsian', dailyRate: 125000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
-  { id: 'v-17', no: 17, name: 'AGFANTI FATMASARI', dutySection: 'Pemorsian', dailyRate: 125000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
-  { id: 'v-18', no: 18, name: 'DWI ERNAWATI', dutySection: 'Pemorsian', dailyRate: 125000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
-  { id: 'v-19', no: 19, name: 'RATNA AYU CANDRA DEWI', dutySection: 'Pemorsian', dailyRate: 125000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
-  { id: 'v-20', no: 20, name: 'ROBBI FIRLI', dutySection: 'Pemorsian', dailyRate: 125000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
-  { id: 'v-21', no: 21, name: 'SRI HERNAWATI', dutySection: 'Pemorsian', dailyRate: 125000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
-  { id: 'v-22', no: 22, name: 'DESY ARYANI', dutySection: 'Pemorsian', dailyRate: 125000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
+  // 15 - 22 Pemorsian (8 Personel: 04:00 - 12:00 @ Rp 100.000)
+  { id: 'v-15', no: 15, name: 'MARINANINGSIH', dutySection: 'Pemorsian', dailyRate: 100000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
+  { id: 'v-16', no: 16, name: 'ALIS YULIANTI', dutySection: 'Pemorsian', dailyRate: 100000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
+  { id: 'v-17', no: 17, name: 'AGFANTI FATMASARI', dutySection: 'Pemorsian', dailyRate: 100000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
+  { id: 'v-18', no: 18, name: 'DWI ERNAWATI', dutySection: 'Pemorsian', dailyRate: 100000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
+  { id: 'v-19', no: 19, name: 'RATNA AYU CANDRA DEWI', dutySection: 'Pemorsian', dailyRate: 100000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
+  { id: 'v-20', no: 20, name: 'ROBBI FIRLI', dutySection: 'Pemorsian', dailyRate: 100000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
+  { id: 'v-21', no: 21, name: 'SRI HERNAWATI', dutySection: 'Pemorsian', dailyRate: 100000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
+  { id: 'v-22', no: 22, name: 'DESY ARYANI', dutySection: 'Pemorsian', dailyRate: 100000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
 
-  // 23. Packing dan Pelabelan (04:00 - 12:00 @ Rp 125.000)
-  { id: 'v-23', no: 23, name: 'MUHLISIN', dutySection: 'Packing dan Pelabelan', dailyRate: 125000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
+  // 23. Packing dan Pelabelan (04:00 - 12:00 @ Rp 100.000)
+  { id: 'v-23', no: 23, name: 'MUHLISIN', dutySection: 'Packing dan Pelabelan', dailyRate: 100000, isActive: true, defaultCheckIn: '04:00', defaultCheckOut: '12:00' },
 
-  // 24 - 27 Driver (4 Driver Armada: 06:00 - 14:00 @ Rp 125.000)
-  { id: 'v-24', no: 24, name: 'HARWIYONO', dutySection: 'Driver', dailyRate: 125000, isActive: true, defaultCheckIn: '06:00', defaultCheckOut: '14:00' },
-  { id: 'v-25', no: 25, name: 'MUHAMMAD TAMHID AMALI', dutySection: 'Driver', dailyRate: 125000, isActive: true, defaultCheckIn: '06:00', defaultCheckOut: '14:00' },
-  { id: 'v-26', no: 26, name: 'ROCHMAT SYAMSURI', dutySection: 'Driver', dailyRate: 125000, isActive: true, defaultCheckIn: '06:00', defaultCheckOut: '14:00' },
-  { id: 'v-27', no: 27, name: 'M SAEBANI', dutySection: 'Driver', dailyRate: 125000, isActive: true, defaultCheckIn: '06:00', defaultCheckOut: '14:00' },
+  // 24 - 27 Driver (4 Driver Armada: 06:00 - 14:00 @ Rp 100.000)
+  { id: 'v-24', no: 24, name: 'HARWIYONO', dutySection: 'Driver', dailyRate: 100000, isActive: true, defaultCheckIn: '06:00', defaultCheckOut: '14:00' },
+  { id: 'v-25', no: 25, name: 'MUHAMMAD TAMHID AMALI', dutySection: 'Driver', dailyRate: 100000, isActive: true, defaultCheckIn: '06:00', defaultCheckOut: '14:00' },
+  { id: 'v-26', no: 26, name: 'ROCHMAT SYAMSURI', dutySection: 'Driver', dailyRate: 100000, isActive: true, defaultCheckIn: '06:00', defaultCheckOut: '14:00' },
+  { id: 'v-27', no: 27, name: 'M SAEBANI', dutySection: 'Driver', dailyRate: 100000, isActive: true, defaultCheckIn: '06:00', defaultCheckOut: '14:00' },
 
-  // 28 - 37 Cuci Ompreng (10 Personel: 13:00 - 21:00 @ Rp 125.000)
-  { id: 'v-28', no: 28, name: 'ANDRI ARI KURNIASIH', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
-  { id: 'v-29', no: 29, name: 'ARIAWAN PRABOWO', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
-  { id: 'v-30', no: 30, name: 'YANTI PUJASARI', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
-  { id: 'v-31', no: 31, name: 'TITIS HARTAWAN', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
-  { id: 'v-32', no: 32, name: 'IRFANA PUTRI SETIADI', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
-  { id: 'v-33', no: 33, name: 'RASETIKA WINA WIDIA PUTRI', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: false, defaultCheckIn: '13:00', defaultCheckOut: '21:00', notes: 'Non-Aktif / Resigned' },
-  { id: 'v-34', no: 34, name: 'EKO RUMEININGSIH', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
-  { id: 'v-35', no: 35, name: 'DEWI RATNASARI', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
-  { id: 'v-36', no: 36, name: 'SAIFUL IKHSAN', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: false, defaultCheckIn: '13:00', defaultCheckOut: '21:00', notes: 'Non-Aktif / Resigned' },
-  { id: 'v-37', no: 37, name: 'MIFTAH RIZKY RAMADHAN', dutySection: 'Cuci Ompreng', dailyRate: 125000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
+  // 28 - 37 Cuci Ompreng (10 Personel: 13:00 - 21:00 @ Rp 100.000)
+  { id: 'v-28', no: 28, name: 'ANDRI ARI KURNIASIH', dutySection: 'Cuci Ompreng', dailyRate: 100000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
+  { id: 'v-29', no: 29, name: 'ARIAWAN PRABOWO', dutySection: 'Cuci Ompreng', dailyRate: 100000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
+  { id: 'v-30', no: 30, name: 'YANTI PUJASARI', dutySection: 'Cuci Ompreng', dailyRate: 100000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
+  { id: 'v-31', no: 31, name: 'TITIS HARTAWAN', dutySection: 'Cuci Ompreng', dailyRate: 100000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
+  { id: 'v-32', no: 32, name: 'IRFANA PUTRI SETIADI', dutySection: 'Cuci Ompreng', dailyRate: 100000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
+  { id: 'v-33', no: 33, name: 'RASETIKA WINA WIDIA PUTRI', dutySection: 'Cuci Ompreng', dailyRate: 100000, isActive: false, defaultCheckIn: '13:00', defaultCheckOut: '21:00', notes: 'Non-Aktif / Resigned' },
+  { id: 'v-34', no: 34, name: 'EKO RUMEININGSIH', dutySection: 'Cuci Ompreng', dailyRate: 100000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
+  { id: 'v-35', no: 35, name: 'DEWI RATNASARI', dutySection: 'Cuci Ompreng', dailyRate: 100000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
+  { id: 'v-36', no: 36, name: 'SAIFUL IKHSAN', dutySection: 'Cuci Ompreng', dailyRate: 100000, isActive: false, defaultCheckIn: '13:00', defaultCheckOut: '21:00', notes: 'Non-Aktif / Resigned' },
+  { id: 'v-37', no: 37, name: 'MIFTAH RIZKY RAMADHAN', dutySection: 'Cuci Ompreng', dailyRate: 100000, isActive: true, defaultCheckIn: '13:00', defaultCheckOut: '21:00' },
 
-  // 38. Cleaning Service (07:00 - 15:00 @ Rp 125.000)
-  { id: 'v-38', no: 38, name: 'SUTIMAN', dutySection: 'Cleaning Service', dailyRate: 125000, isActive: true, defaultCheckIn: '07:00', defaultCheckOut: '15:00' },
+  // 38. Cleaning Service (07:00 - 15:00 @ Rp 100.000)
+  { id: 'v-38', no: 38, name: 'SUTIMAN', dutySection: 'Cleaning Service', dailyRate: 100000, isActive: true, defaultCheckIn: '07:00', defaultCheckOut: '15:00' },
 
-  // 39. Security Pagi (07:00 - 19:00 @ Rp 125.000)
-  { id: 'v-39', no: 39, name: 'ANDRIE ARWINANTO', dutySection: 'Security Pagi', dailyRate: 125000, isActive: true, defaultCheckIn: '07:00', defaultCheckOut: '19:00' },
+  // 39. Security Pagi (07:00 - 19:00 @ Rp 100.000)
+  { id: 'v-39', no: 39, name: 'ANDRIE ARWINANTO', dutySection: 'Security Pagi', dailyRate: 100000, isActive: true, defaultCheckIn: '07:00', defaultCheckOut: '19:00' },
 
-  // 40. Security Malam (19:00 - 07:00 @ Rp 125.000)
-  { id: 'v-40', no: 40, name: 'BAMBANG JOYO WARSO', dutySection: 'Security Malam', dailyRate: 125000, isActive: true, defaultCheckIn: '19:00', defaultCheckOut: '07:00' },
+  // 40. Security Malam (19:00 - 07:00 @ Rp 100.000)
+  { id: 'v-40', no: 40, name: 'BAMBANG JOYO WARSO', dutySection: 'Security Malam', dailyRate: 100000, isActive: true, defaultCheckIn: '19:00', defaultCheckOut: '07:00' },
 ];
 
 export const ARSIP_ATTENDANCE_ROSTER_KEY = 'sppg_arsip_attendance_roster_v3';
@@ -598,6 +598,11 @@ export function loadRosterFromStorage(): VolunteerProfile[] {
         if (def) {
           if (!def.isActive && p.isActive) {
             p = { ...p, isActive: false, notes: def.notes || 'Non-Aktif / Resigned' };
+          }
+          // Sinkronkan tarif harian resmi dari DEFAULT_ROSTER_40 (revisi 20 Nov 2026:
+          // Rp 100.000 semua, kecuali Asisten Lapangan & Head Chef Rp 200.000)
+          if (p.dailyRate !== def.dailyRate) {
+            p = { ...p, dailyRate: def.dailyRate };
           }
           if (p.id === 'v-1') {
             p = { ...p, defaultCheckIn: '00:00', defaultCheckOut: '23:59' };
