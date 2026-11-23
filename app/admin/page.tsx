@@ -1506,7 +1506,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     <thead className="bg-slate-50 border-b border-line text-slate-700 font-bold text-xs sticky top-0">
                       <tr>
                         <th className="py-2.5 px-2 sm:px-3">Lembaga Sekolah / Posyandu</th>
-                        <th className="py-2.5 px-2 sm:px-3 w-20 sm:w-24">Tipe</th>
+                        <th className="py-2.5 px-2 sm:px-3 w-20 sm:w-24 hidden sm:table-cell">Tipe</th>
                         <th className="py-2.5 px-2 sm:px-3 w-[4.5rem] sm:w-28 text-right">Master Kuota</th>
                         <th className="py-2.5 px-2 sm:px-3 w-20 sm:w-32 text-center"><span className="sm:hidden">Status</span><span className="hidden sm:inline">Status Hari Ini</span></th>
                       </tr>
@@ -1517,7 +1517,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                         return (
                           <tr key={site.id} className="hover:bg-slate-50">
                             <td className="py-2 px-2 sm:px-3 font-semibold text-slate-900">{site.name}</td>
-                            <td className="py-2 px-2 sm:px-3 text-xs sm:text-sm text-slate-500">{site.type}</td>
+                            <td className="py-2 px-2 sm:px-3 text-xs sm:text-sm text-slate-500 hidden sm:table-cell">{site.type}</td>
                             <td className="py-2 px-2 sm:px-3 text-right font-bold text-slate-900">
                               {isEditingKuota ? (
                                 <input
