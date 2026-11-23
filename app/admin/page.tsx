@@ -1454,8 +1454,8 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
             {/* ===================== ALUR 4: ALOKASI ===================== */}
             <div className="app-card rounded-xl p-5 sm:p-7 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
                     <Users className="w-4 h-4" />
                   </div>
@@ -1500,15 +1500,15 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                 </div>
               </div>
 
-              <div className="border border-line rounded-xl overflow-hidden">
+              <div className="border border-line rounded-xl overflow-x-auto">
                 <div className="max-h-64 overflow-y-auto">
                   <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 border-b border-line text-slate-700 font-bold text-xs sticky top-0">
                       <tr>
-                        <th className="py-2.5 px-3">Lembaga Sekolah / Posyandu</th>
-                        <th className="py-2.5 px-3 w-24">Tipe</th>
-                        <th className="py-2.5 px-3 w-28 text-right">Master Kuota</th>
-                        <th className="py-2.5 px-3 w-32 text-center">Status Hari Ini</th>
+                        <th className="py-2.5 px-2 sm:px-3">Lembaga Sekolah / Posyandu</th>
+                        <th className="py-2.5 px-2 sm:px-3 w-16 sm:w-24">Tipe</th>
+                        <th className="py-2.5 px-2 sm:px-3 w-[4.5rem] sm:w-28 text-right">Master Kuota</th>
+                        <th className="py-2.5 px-2 sm:px-3 w-24 sm:w-32 text-center"><span className="sm:hidden">Status</span><span className="hidden sm:inline">Status Hari Ini</span></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -1516,9 +1516,9 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                         const isOverridden = beneficiaryOverrides[site.id]?.condition === 'libur';
                         return (
                           <tr key={site.id} className="hover:bg-slate-50">
-                            <td className="py-2 px-3 font-semibold text-slate-900">{site.name}</td>
-                            <td className="py-2 px-3 text-slate-500">{site.type}</td>
-                            <td className="py-2 px-3 text-right font-bold text-slate-900">
+                            <td className="py-2 px-2 sm:px-3 font-semibold text-slate-900">{site.name}</td>
+                            <td className="py-2 px-2 sm:px-3 text-slate-500">{site.type}</td>
+                            <td className="py-2 px-2 sm:px-3 text-right font-bold text-slate-900">
                               {isEditingKuota ? (
                                 <input
                                   type="number"
@@ -1529,7 +1529,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                                     const v = parseInt(e.target.value || '0', 10);
                                     setKuotaDraft({ ...kuotaDraft, [site.id]: Number.isNaN(v) ? 0 : Math.max(0, Math.min(9999, v)) });
                                   }}
-                                  className="w-20 px-2 py-1 text-right text-sm font-bold border border-indigo-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500"
+                                  className="w-16 sm:w-20 px-2 py-1 text-right text-sm font-bold border border-indigo-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500"
                                 />
                               ) : (
                                 <>
@@ -1540,7 +1540,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                                 </>
                               )}
                             </td>
-                            <td className="py-2 px-3 text-center">
+                            <td className="py-2 px-2 sm:px-3 text-center">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -1556,13 +1556,13 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                                     });
                                   }
                                 }}
-                                className={`px-2 py-0.5 rounded text-xs font-bold cursor-pointer transition-all ${
+                                className={`px-2 py-0.5 rounded text-xs font-bold cursor-pointer transition-all whitespace-nowrap ${
                                   isOverridden
                                     ? 'bg-rose-100 text-rose-800 border border-rose-200'
                                     : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
                                 }`}
                               >
-                                {isOverridden ? 'Libur (0 Porsi)' : 'Aktif Distribusi'}
+                                {isOverridden ? (<><span className="sm:hidden">Libur</span><span className="hidden sm:inline">Libur (0 Porsi)</span></>) : (<><span className="sm:hidden">Aktif</span><span className="hidden sm:inline">Aktif Distribusi</span></>)}
                               </button>
                             </td>
                           </tr>
