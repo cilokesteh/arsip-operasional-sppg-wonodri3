@@ -44,6 +44,8 @@ interface AKGInputRaw {
 
 // Tanggal hari ini (WIB) — dipakai sebagai tanggal default form & reset,
 // supaya panel selalu dibuka pada periode berjalan (tombol Edit Kuota terlihat).
+// JANGAN hardcode tanggal di sini: tanggal default yang lama (1 Okt 2026)
+// membuat tombol Edit Kuota hilang karena periode lama terkunci (kasus 23 Nov 2026).
 const getTodayWIB = () => {
   const now = new Date(Date.now() + 7 * 60 * 60 * 1000);
   return now.toISOString().slice(0, 10);
