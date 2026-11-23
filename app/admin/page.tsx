@@ -1501,14 +1501,14 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
               </div>
 
               <div className="border border-line rounded-xl overflow-x-auto">
-                <div className="max-h-64 overflow-y-auto">
+                <div className="max-h-64 overflow-y-auto w-max min-w-full">
                   <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 border-b border-line text-slate-700 font-bold text-xs sticky top-0">
                       <tr>
                         <th className="py-2.5 px-2 sm:px-3">Lembaga Sekolah / Posyandu</th>
-                        <th className="py-2.5 px-2 sm:px-3 w-16 sm:w-24">Tipe</th>
+                        <th className="py-2.5 px-2 sm:px-3 w-20 sm:w-24">Tipe</th>
                         <th className="py-2.5 px-2 sm:px-3 w-[4.5rem] sm:w-28 text-right">Master Kuota</th>
-                        <th className="py-2.5 px-2 sm:px-3 w-24 sm:w-32 text-center"><span className="sm:hidden">Status</span><span className="hidden sm:inline">Status Hari Ini</span></th>
+                        <th className="py-2.5 px-2 sm:px-3 w-20 sm:w-32 text-center"><span className="sm:hidden">Status</span><span className="hidden sm:inline">Status Hari Ini</span></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -1517,7 +1517,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                         return (
                           <tr key={site.id} className="hover:bg-slate-50">
                             <td className="py-2 px-2 sm:px-3 font-semibold text-slate-900">{site.name}</td>
-                            <td className="py-2 px-2 sm:px-3 text-slate-500">{site.type}</td>
+                            <td className="py-2 px-2 sm:px-3 text-xs sm:text-sm text-slate-500">{site.type}</td>
                             <td className="py-2 px-2 sm:px-3 text-right font-bold text-slate-900">
                               {isEditingKuota ? (
                                 <input
@@ -1529,7 +1529,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                                     const v = parseInt(e.target.value || '0', 10);
                                     setKuotaDraft({ ...kuotaDraft, [site.id]: Number.isNaN(v) ? 0 : Math.max(0, Math.min(9999, v)) });
                                   }}
-                                  className="w-16 sm:w-20 px-2 py-1 text-right text-sm font-bold border border-indigo-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500"
+                                  className="w-14 sm:w-20 px-2 py-1 text-right text-sm font-bold border border-indigo-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500"
                                 />
                               ) : (
                                 <>
