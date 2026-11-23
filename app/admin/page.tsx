@@ -1501,7 +1501,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
               </div>
 
               <div className="border border-line rounded-xl overflow-x-auto">
-                <div className="max-h-64 overflow-y-auto w-max min-w-full">
+                <div className="max-h-64 overflow-y-auto">
                   <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 border-b border-line text-slate-700 font-bold text-xs sticky top-0">
                       <tr>
