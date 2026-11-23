@@ -42,6 +42,12 @@ interface AKGInputRaw {
   fiberG: string;
 }
 
+// Tanggal hari ini (WIB) — dipakai sebagai tanggal default form & reset,
+// supaya panel selalu dibuka pada periode berjalan (tombol Edit Kuota terlihat).
+const getTodayWIB = () => {
+  const now = new Date(Date.now() + 7 * 60 * 60 * 1000);
+  return now.toISOString().slice(0, 10);
+};
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -52,7 +58,7 @@ export default function AdminPage() {
   const [savedMenuList, setSavedMenuList] = useState<DailyMenuRecord[]>([]);
 
   // 1. Data Menu Harian
-  const [menuDate, setMenuDate] = useState('2026-10-01');
+  const [menuDate, setMenuDate] = useState(getTodayWIB);
   const [namaMenu, setNamaMenu] = useState('');
   const [components, setComponents] = useState({
     karbohidrat: '',
@@ -375,6 +381,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
   };
 
   const handleResetForm = () => {
+    setMenuDate(getTodayWIB());
     setNamaMenu('');
     setMenuPhotoUrl(null);
     setPrepPhotoUrl(null);
