@@ -253,6 +253,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   const [editingVolunteer, setEditingVolunteer] = useState<VolunteerProfile | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [showPrintModalAbsensi, setShowPrintModalAbsensi] = useState<boolean>(false);
+  const [showPrintWeeklyModal, setShowPrintWeeklyModal] = useState<boolean>(false);
   const [printDateTarget, setPrintDateTarget] = useState<string>('2026-10-21');
 
   // Proteksi PIN Gaji
@@ -260,7 +261,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   const [showPinModalSalary, setShowPinModalSalary] = useState<boolean>(false);
   const [pinInputSalary, setPinInputSalary] = useState<string>('');
   const [pinErrorSalary, setPinErrorSalary] = useState<string>('');
-  const [pinPendingActionSalary, setPinPendingActionSalary] = useState<'unlock' | 'print' | 'export' | null>(null);
+  const [pinPendingActionSalary, setPinPendingActionSalary] = useState<'unlock' | 'print' | 'print-weekly' | 'export' | null>(null);
 
   // Modal Foto Selfie Presensi Realtime
   const [viewingPhotoModal, setViewingPhotoModal] = useState<{ url: string; name: string; time: string; distance?: number } | null>(null);
@@ -747,6 +748,15 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
     setSelectedDate(toIsoDateLocal(current));
   };
 
+  const handleShiftWeek = (direction: number) => {
+    if (isDirty) {
+      if (!window.confirm('Ada perubahan presensi belum disimpan. Tetap pindah pekan?')) return;
+    }
+    const current = new Date(`${selectedDate}T12:00:00`);
+    current.setDate(current.getDate() + direction * 7);
+    setSelectedDate(toIsoDateLocal(current));
+  };
+
   // Roster Management (Edit & Tambah Relawan)
   const handleSaveEditRoster = (e: React.FormEvent) => {
     e.preventDefault();
@@ -836,7 +846,7 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
   };
 
   // PIN security actions
-  const handleOpenPinModalSalary = (action: 'unlock' | 'print' | 'export' = 'unlock') => {
+  const handleOpenPinModalSalary = (action: 'unlock' | 'print' | 'print-weekly' | 'export' = 'unlock') => {
     setPinPendingActionSalary(action);
     setPinInputSalary('');
     setPinErrorSalary('');
@@ -854,6 +864,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
       if (pinPendingActionSalary === 'print') {
         setShowPrintModalAbsensi(true);
+      } else if (pinPendingActionSalary === 'print-weekly') {
+        setShowPrintWeeklyModal(true);
       } else if (pinPendingActionSalary === 'export') {
         executeExportCsv();
       }
@@ -1059,20 +1071,32 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
             </button>
 
             <button
-              onClick={() => handleOpenPrintForDate(selectedDate)}
+              onClick={() => {
+                if (absensiSubTab === 'rekap' && rekapPeriod === 'mingguan') {
+                  if (!isSalaryUnlocked) {
+                    handleOpenPinModalSalary('print-weekly');
+                  } else {
+                    setShowPrintWeeklyModal(true);
+                  }
+                } else {
+                  handleOpenPrintForDate(selectedDate);
+                }
+              }}
               className="inline-flex items-center gap-1.5 px-3 min-h-10 rounded-lg text-sm font-semibold text-white bg-ink hover:bg-ink-soft shrink-0 cursor-pointer"
-              title="Cetak Berita Acara &amp; SPJ A4"
+              title={absensiSubTab === 'rekap' && rekapPeriod === 'mingguan' ? 'Cetak Lembar Matrix Mingguan A4' : 'Cetak Berita Acara & SPJ A4'}
             >
               <Printer className="w-4 h-4 shrink-0" aria-hidden="true" />
-              <span className="hidden sm:inline">Cetak SPJ</span>
-              <span className="sr-only sm:hidden">Cetak SPJ</span>
+              <span className="hidden sm:inline">
+                {absensiSubTab === 'rekap' && rekapPeriod === 'mingguan' ? 'Cetak Matrix' : 'Cetak SPJ'}
+              </span>
+              <span className="sr-only sm:hidden">Cetak</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* 2. BODY KONTEN PRESENSI & SDM RELAWAN */}
-      <main className="max-w-6xl mx-auto w-full px-3 sm:px-4 py-4 sm:py-5 flex-1">
+      <main className="max-w-6xl mx-auto w-full px-3 sm:px-4 py-4 sm:py-5 flex-1 no-print print:hidden">
         <div className="space-y-4 animate-in fade-in">
             <PageHeader
               eyebrow="Area Operator • Presensi"
@@ -1211,6 +1235,46 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                         onChange={(e) => setSelectedDate(e.target.value)}
                         className="bg-transparent text-sm font-bold text-slate-800 cursor-pointer"
                       />
+                    </div>
+                  )}
+
+                  {rekapPeriod === 'mingguan' && (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <div className="flex items-center gap-1 bg-slate-50 border border-line rounded-lg px-1.5 py-1">
+                        <button
+                          type="button"
+                          onClick={() => handleShiftWeek(-1)}
+                          className="w-7 h-7 flex items-center justify-center hover:bg-slate-200 text-slate-700 rounded transition-colors cursor-pointer"
+                          title="Pekan Sebelumnya"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <div className="flex items-center gap-1 px-1">
+                          <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            className="bg-transparent text-xs sm:text-sm font-bold text-slate-800 cursor-pointer focus:outline-none"
+                            title="Pilih tanggal acuan pekan"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleShiftWeek(1)}
+                          className="w-7 h-7 flex items-center justify-center hover:bg-slate-200 text-slate-700 rounded transition-colors cursor-pointer"
+                          title="Pekan Berikutnya"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDate(toIsoDateLocal(new Date()))}
+                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0"
+                        title="Kembali ke Pekan Ini"
+                      >
+                        Pekan Ini
+                      </button>
                     </div>
                   )}
 
@@ -1736,8 +1800,23 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                         <strong>{renderSalary(weeklySummary.totalEarned)}</strong>
                         <button
                           type="button"
+                          onClick={() => {
+                            if (!isSalaryUnlocked) {
+                              handleOpenPinModalSalary('print-weekly');
+                            } else {
+                              setShowPrintWeeklyModal(true);
+                            }
+                          }}
+                          className="ml-2 px-2.5 py-1 rounded-lg bg-ink hover:bg-ink-soft text-white font-bold text-[13px] flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                          title="Cetak Lembar Rekap Matrix Mingguan A4 / PDF"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          <span>Cetak Matrix (A4)</span>
+                        </button>
+                        <button
+                          type="button"
                           onClick={handleExportCsv}
-                          className="ml-2 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[13px] flex items-center gap-1 cursor-pointer transition-colors"
+                          className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[13px] flex items-center gap-1 cursor-pointer transition-colors"
                           title="Unduh Matrix Mingguan (CSV / Excel)"
                         >
                           <Download className="w-3 h-3 text-emerald-700" />
@@ -2298,8 +2377,8 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
 
       {/* MODAL PRINT SPJ A4 ABSENSI */}
       {showPrintModalAbsensi && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-4xl w-full p-6 sm:p-8 space-y-6 my-8 animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto print:static print:p-0 print:m-0 print:bg-white print:overflow-visible">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-4xl w-full p-6 sm:p-8 space-y-6 my-8 animate-in fade-in print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-full">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3 print:hidden">
               <div className="flex items-center gap-2">
                 <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
@@ -2433,6 +2512,197 @@ export function UnifiedPortal({ initialCategory = 'arsip' }: UnifiedPortalProps)
                   <div>
                     <div className="font-bold underline text-slate-900">DICKY YUSUF MULYADI, S.M.</div>
                     <span className="text-[10px] text-slate-500">Penanggung Jawab SPPG</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PRINT REKAPITULASI MATRIX MINGGUAN A4 */}
+      {showPrintWeeklyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto print:static print:p-0 print:m-0 print:bg-white print:overflow-visible">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-5xl w-full p-6 sm:p-8 space-y-5 my-8 animate-in fade-in print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-full">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3 print:hidden">
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="w-5 h-5 text-indigo-600" />
+                <h3 className="font-bold text-base text-slate-900">
+                  Pratinjau Lembar Rekapitulasi Matrix Mingguan (A4)
+                </h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Cetak / PDF</span>
+                </button>
+                <button
+                  onClick={() => setShowPrintWeeklyModal(false)}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-4 text-slate-900 print:text-black">
+              <div className="text-center border-b-2 border-slate-900 pb-3 space-y-1">
+                <h2 className="text-base font-black uppercase tracking-wider">
+                  SATUAN PELAYANAN PROGRAM GIZI (SPPG) WONODRI 3
+                </h2>
+                <h3 className="text-xs sm:text-sm font-bold uppercase text-slate-700">
+                  BERITA ACARA &amp; REKAPITULASI MATRIX UPAH RELAWAN DAPUR (MINGGUAN)
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang
+                </p>
+                <div className="text-xs font-mono font-bold text-slate-800 pt-0.5">
+                  Periode: {weekDays[0].label}, {weekDays[0].formatted} s/d {weekDays[weekDays.length - 1].label}, {weekDays[weekDays.length - 1].formatted}
+                </div>
+                <p className="text-[10px] text-slate-500 italic">
+                  Rekapitulasi resmi presensi 7 hari kalender dan hak amprah upah relawan dapur.
+                </p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-[11px] border-collapse border border-slate-300">
+                  <thead>
+                    <tr className="bg-slate-100 font-bold border-b border-slate-300 text-[10px] uppercase">
+                      <th className="p-1.5 border border-slate-300 text-center w-7">NO</th>
+                      <th className="p-1.5 border border-slate-300 min-w-[140px]">NAMA RELAWAN</th>
+                      <th className="p-1.5 border border-slate-300">DIVISI</th>
+                      {weekDays.map((d) => (
+                        <th
+                          key={d.date}
+                          className="p-1 border border-slate-300 text-center w-9 font-mono"
+                        >
+                          <span className="block text-[10px] font-bold">{d.label.slice(0, 3)}</span>
+                          <span className="block text-[8px] font-normal text-slate-500">{d.date.slice(8)}</span>
+                        </th>
+                      ))}
+                      <th className="p-1.5 border border-slate-300 text-center w-12">HADIR</th>
+                      <th className="p-1.5 border border-slate-300 text-right w-16">TARIF</th>
+                      <th className="p-1.5 border border-slate-300 text-right w-20">TOTAL UPAH</th>
+                      <th className="p-1.5 border border-slate-300 text-center w-16">PARAF</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {roster.map((person) => {
+                      let hadirCount = 0;
+                      const dayMarks = weekDays.map((d) => {
+                        if (d.date > todayDateStr) return '-';
+                        const st = weeklyLedgerMap.get(`${person.id}:${d.date}`) || (person.isActive ? 'Belum Absen' : 'Nonaktif');
+                        if (st === 'Hadir') {
+                          hadirCount += 1;
+                          return '✓';
+                        }
+                        if (st === 'Izin' || st === 'Sakit') return 'I';
+                        if (st === 'Alpha') return 'A';
+                        return '-';
+                      });
+                      const totalEarned = hadirCount * person.dailyRate;
+                      const isNonAktif = !person.isActive;
+
+                      return (
+                        <tr key={person.id} className={`border-b border-slate-200 ${isNonAktif ? 'bg-slate-50/50' : ''}`}>
+                          <td className="p-1 border border-slate-300 text-center font-mono font-bold">
+                            {person.no}
+                          </td>
+                          <td className="p-1 border border-slate-300 font-semibold">
+                            <span className={isNonAktif ? 'line-through text-slate-400' : ''}>
+                              {person.name}
+                            </span>
+                            {isNonAktif && (
+                              <span className="text-[9px] text-rose-600 font-bold ml-1">
+                                (Nonaktif)
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-1 border border-slate-300 text-[10px]">{person.dutySection}</td>
+                          {dayMarks.map((mark, idx) => (
+                            <td
+                              key={idx}
+                              className={`p-1 border border-slate-300 text-center font-mono text-[10px] ${
+                                mark === '✓' ? 'font-bold text-emerald-800' : 'text-slate-400'
+                              }`}
+                            >
+                              {mark}
+                            </td>
+                          ))}
+                          <td className="p-1 border border-slate-300 text-center font-mono font-bold">
+                            {hadirCount}
+                          </td>
+                          <td className="p-1 border border-slate-300 text-right font-mono text-[10px]">
+                            {isNonAktif ? '-' : formatRupiah(person.dailyRate)}
+                          </td>
+                          <td className="p-1 border border-slate-300 text-right font-mono font-bold text-[10px]">
+                            {isNonAktif ? '-' : formatRupiah(totalEarned)}
+                          </td>
+                          <td className="p-1 border border-slate-300 text-center text-[10px] text-slate-300">
+                            {isNonAktif ? '-' : `${person.no}. .....`}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-slate-100 font-bold">
+                      <td colSpan={10} className="p-2 border border-slate-300 text-right uppercase text-[10px]">
+                        Total Pengeluaran Upah Pekan Ini:
+                      </td>
+                      <td className="p-2 border border-slate-300 text-right font-mono text-xs text-blue-900" colSpan={2}>
+                        {formatRupiah(weeklySummary.totalEarned)}
+                      </td>
+                      <td className="p-2 border border-slate-300 text-center text-[10px] text-slate-500">
+                        Lolos Audit
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              {/* 4 TTD RESMI SPPG */}
+              <div className="grid grid-cols-4 gap-2 pt-3 text-center text-[10px]">
+                <div className="space-y-8">
+                  <div>
+                    <span className="text-slate-500 block">Petugas Timbangan / Security,</span>
+                  </div>
+                  <div>
+                    <div className="font-bold underline uppercase text-slate-900">Security Andrie</div>
+                    <span className="text-[9px] text-slate-500">Security SPPG</span>
+                  </div>
+                </div>
+
+                <div className="space-y-8">
+                  <div>
+                    <span className="text-slate-500 block">Asisten Lapangan,</span>
+                  </div>
+                  <div>
+                    <div className="font-bold underline uppercase text-slate-900">Arief Rahman Hakim</div>
+                    <span className="text-[9px] text-slate-500">PJ Operasional Dapur</span>
+                  </div>
+                </div>
+
+                <div className="space-y-8">
+                  <div>
+                    <span className="text-slate-500 block">Petugas Akuntansi,</span>
+                  </div>
+                  <div>
+                    <div className="font-bold underline uppercase text-slate-900">Salsabiila Zainima, S.Ak</div>
+                    <span className="text-[9px] text-slate-500">Verifikator Kas BNI</span>
+                  </div>
+                </div>
+
+                <div className="space-y-8">
+                  <div>
+                    <span className="text-slate-500 block">Kepala SPPG,</span>
+                  </div>
+                  <div>
+                    <div className="font-bold underline uppercase text-slate-900">Dicky Yusuf Mulyadi, S.M.</div>
+                    <span className="text-[9px] text-slate-500">Penanggung Jawab SPPG</span>
                   </div>
                 </div>
               </div>
