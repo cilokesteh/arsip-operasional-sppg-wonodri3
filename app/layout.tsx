@@ -1,19 +1,19 @@
 import type { Metadata } from 'next';
-import { Lexend, Source_Sans_3 } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 
-const lexend = Lexend({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+const lexend = localFont({
+  src: './fonts/lexend-latin.woff2',
   variable: '--font-lexend',
   display: 'swap',
+  weight: '400 800',
 });
 
-const sourceSans = Source_Sans_3({
-  subsets: ['latin'],
-  weight: ['400', '600', '700'],
+const sourceSans = localFont({
+  src: './fonts/source-sans-3-latin.woff2',
   variable: '--font-source-sans',
   display: 'swap',
+  weight: '400 700',
 });
 
 export const metadata: Metadata = {
