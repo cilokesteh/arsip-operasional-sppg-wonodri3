@@ -118,7 +118,7 @@ export default function StockMonitoringPage() {
   const [isOpnameDirty, setIsOpnameDirty] = useState<boolean>(false);
 
   // Modal Print Type: Masuk/Keluar Masak per Batch, atau Rekap Mutasi
-  const [printReportType, setPrintReportType] = useState<'B17_OUT' | 'B17_IN' | 'B16_OUT' | 'B16_IN' | 'B15_OUT' | 'B15_IN' | 'B14_OUT' | 'B14_IN' | 'B13_OUT' | 'B13_IN' | 'B12_OUT' | 'B12_IN' | 'B11_OUT' | 'B11_IN' | 'B10_OUT' | 'B10_IN' | 'B9_OUT' | 'B9_IN' | 'B8_OUT' | 'B8_IN' | 'B7_OUT' | 'B7_IN' | 'B6_OUT' | 'B6_IN' | 'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'WEEK_OUT' | 'MONTH_OUT' | 'MUTASI'>('B17_OUT');
+  const [printReportType, setPrintReportType] = useState<'B18_OUT' | 'B18_IN' | 'B17_OUT' | 'B17_IN' | 'B16_OUT' | 'B16_IN' | 'B15_OUT' | 'B15_IN' | 'B14_OUT' | 'B14_IN' | 'B13_OUT' | 'B13_IN' | 'B12_OUT' | 'B12_IN' | 'B11_OUT' | 'B11_IN' | 'B10_OUT' | 'B10_IN' | 'B9_OUT' | 'B9_IN' | 'B8_OUT' | 'B8_IN' | 'B7_OUT' | 'B7_IN' | 'B6_OUT' | 'B6_IN' | 'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'WEEK_OUT' | 'MONTH_OUT' | 'MUTASI'>('B18_OUT');
   // v3.x — rekap mingguan/bulanan: tanggal awal periode (default Senin berjalan /
   // tanggal 1 bulan berjalan, diisi otomatis saat mode dipilih).
   const [periodStart, setPeriodStart] = useState<string>('');
@@ -151,6 +151,10 @@ export default function StockMonitoringPage() {
     { label: 'Rekap Periode', options: [
       { value: 'WEEK_OUT', icon: '📅', title: 'Keluar Masak Harian Mingguan', count: countBatchesInPeriod(true, weekStartDefault) },
       { value: 'MONTH_OUT', icon: '🗓', title: 'Keluar Masak Harian Bulanan', count: countBatchesInPeriod(false, monthStartDefault) },
+    ] },
+    { label: 'Batch 18 — Masuk 24 Nov / Masak 25 Nov', options: [
+      { value: 'B18_OUT', icon: '📤', title: 'Keluar Masak 25 Nov', count: 21 },
+      { value: 'B18_IN', icon: '📥', title: 'Masuk 24 Nov', count: 21 },
     ] },
     { label: 'Batch 17 — Masuk 23 Nov / Masak 24 Nov', options: [
       { value: 'B17_OUT', icon: '📤', title: 'Keluar Masak 24 Nov', count: 22 },
@@ -221,7 +225,7 @@ export default function StockMonitoringPage() {
       { value: 'B1_IN', icon: '📥', title: 'Masuk 01 Nov', count: 16 },
     ] },
     { label: 'Rekap', options: [
-      { value: 'MUTASI', icon: '📊', title: 'Rekap Mutasi', count: 628 },
+      { value: 'MUTASI', icon: '📊', title: 'Rekap Mutasi', count: 670 },
     ] },
   ];
   const currentPrintOption = PRINT_REPORT_GROUPS.flatMap((g) => g.options).find((o) => o.value === printReportType) ?? PRINT_REPORT_GROUPS[0].options[0];
@@ -236,13 +240,16 @@ export default function StockMonitoringPage() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [printMenuOpen]);
 
-  const handleOpenPrintFor = (type: 'B17_OUT' | 'B17_IN' | 'B16_OUT' | 'B16_IN' | 'B15_OUT' | 'B15_IN' | 'B14_OUT' | 'B14_IN' | 'B13_OUT' | 'B13_IN' | 'B12_OUT' | 'B12_IN' | 'B11_OUT' | 'B11_IN' | 'B10_OUT' | 'B10_IN' | 'B9_OUT' | 'B9_IN' | 'B8_OUT' | 'B8_IN' | 'B7_OUT' | 'B7_IN' | 'B6_OUT' | 'B6_IN' | 'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'WEEK_OUT' | 'MONTH_OUT' | 'MUTASI') => {
+  const handleOpenPrintFor = (type: 'B18_OUT' | 'B18_IN' | 'B17_OUT' | 'B17_IN' | 'B16_OUT' | 'B16_IN' | 'B15_OUT' | 'B15_IN' | 'B14_OUT' | 'B14_IN' | 'B13_OUT' | 'B13_IN' | 'B12_OUT' | 'B12_IN' | 'B11_OUT' | 'B11_IN' | 'B10_OUT' | 'B10_IN' | 'B9_OUT' | 'B9_IN' | 'B8_OUT' | 'B8_IN' | 'B7_OUT' | 'B7_IN' | 'B6_OUT' | 'B6_IN' | 'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'WEEK_OUT' | 'MONTH_OUT' | 'MUTASI') => {
     setPrintReportType(type);
     setShowPrintModal(true);
   };
 
   // Items untuk Dokumen Berita Acara A4
   const reportItems = useMemo(() => {
+    if (printReportType === 'B18_OUT' || printReportType === 'B18_IN') {
+      return stockItems.filter((i) => i.batch === '18-NOV');
+    }
     if (printReportType === 'B17_OUT' || printReportType === 'B17_IN') {
       return stockItems.filter((i) => i.batch === '17-NOV');
     }
@@ -344,20 +351,20 @@ export default function StockMonitoringPage() {
   const [formAddMinAlert, setFormAddMinAlert] = useState<number>(5);
   const [formAddDailyUsage, setFormAddDailyUsage] = useState<number>(2);
   const [formAddSupplier, setFormAddSupplier] = useState<string>('Yayasan Berkat Makmur Sentosa');
-  const [formAddNotes, setFormAddNotes] = useState<string>('Penerimaan tgl 23 Nov 2026');
+  const [formAddNotes, setFormAddNotes] = useState<string>('Penerimaan tgl 24 Nov 2026');
 
   // Form States for Restock
   const [formRestockItemId, setFormRestockItemId] = useState<string>('bhk-01');
   const [formRestockDate, setFormRestockDate] = useState<string>('2026-11-01');
   const [formRestockQty, setFormRestockQty] = useState<number>(20);
   const [formRestockVendor, setFormRestockVendor] = useState<string>('Yayasan Berkat Makmur Sentosa');
-  const [formRestockInvoice, setFormRestockInvoice] = useState<string>('GRN-20261123-01');
-  const [formRestockNotes, setFormRestockNotes] = useState<string>('Bahan baku masuk tgl 23 Nov 2026');
+  const [formRestockInvoice, setFormRestockInvoice] = useState<string>('GRN-20261124-01');
+  const [formRestockNotes, setFormRestockNotes] = useState<string>('Bahan baku masuk tgl 24 Nov 2026');
 
   // Form States for Usage
   const [formUsageItemId, setFormUsageItemId] = useState<string>('bhk-01');
   const [formUsageQty, setFormUsageQty] = useState<number>(10);
-  const [formUsageMenu, setFormUsageMenu] = useState<string>('Produksi Dapur MBG 1.541 Porsi (24 Nov 2026)');
+  const [formUsageMenu, setFormUsageMenu] = useState<string>('Produksi Dapur MBG 1.541 Porsi (25 Nov 2026)');
   const [formUsageNotes, setFormUsageNotes] = useState<string>('Dikeluarkan penuh untuk pengolahan masak dapur');
 
   // Feedback Notification Toast
@@ -701,14 +708,14 @@ export default function StockMonitoringPage() {
     setFormAddMinAlert(5);
     setFormAddDailyUsage(2);
     setFormAddSupplier('Yayasan Berkat Makmur Sentosa');
-    setFormAddNotes('Penerimaan masuk 23 Nov 2026');
+    setFormAddNotes('Penerimaan masuk 24 Nov 2026');
     setShowAddItemModal(true);
   };
 
   const handleSubmitAddItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formAddName.trim()) {
-      alert('Nama bahan baku wajib diisi');
+      showToast('⚠️ Nama bahan tidak boleh kosong');
       return;
     }
 
@@ -725,9 +732,9 @@ export default function StockMonitoringPage() {
       minStockAlert: Number(formAddMinAlert) || 0,
       dailyUsageAvg: Number(formAddDailyUsage) || 0,
       supplierName: formAddSupplier || 'Yayasan Berkat Makmur Sentosa',
-      lastRestockDate: '2026-11-23',
-      lastUsageDate: '2026-11-24',
-      batch: '17-NOV',
+      lastRestockDate: '2026-11-24',
+      lastUsageDate: '2026-11-25',
+      batch: '18-NOV',
       notes: formAddNotes || undefined,
     };
 
@@ -772,9 +779,9 @@ export default function StockMonitoringPage() {
       setFormRestockItemId(stockItems[0]?.id || '');
       setFormRestockVendor(stockItems[0]?.supplierName || 'Yayasan Berkat Makmur Sentosa');
     }
-    setFormRestockDate('2026-11-23');
+    setFormRestockDate('2026-11-24');
     setFormRestockQty(20);
-    setFormRestockInvoice(`GRN-20261123-${Date.now().toString().slice(-4)}`);
+    setFormRestockInvoice(`GRN-20261124-${Date.now().toString().slice(-4)}`);
     setShowRestockModal(true);
   };
 
@@ -923,9 +930,9 @@ export default function StockMonitoringPage() {
     showToast(`🍳 Pemakaian dapur dicatat: -${qty} ${target.uom} ${target.name}`);
   };
 
-  // Reset to Baseline: Seluruh Siklus Mutasi Penuh (Batch 1-17 - 628 Mutasi)
+  // Reset to Baseline: Seluruh Siklus Mutasi Penuh (Batch 1-18 - 670 Mutasi)
   const handleResetToBaseline = () => {
-    if (window.confirm('Muat ulang seluruh riwayat mutasi (Batch 01-17 Nov — 628 Mutasi)?')) {
+    if (window.confirm('Muat ulang seluruh riwayat mutasi (Batch 01-18 Nov — 670 Mutasi)?')) {
       setStockItems(DEFAULT_STOCK_ITEMS_ALL);
       setMovements(DEFAULT_STOCK_MOVEMENTS);
       saveStockToStorage(DEFAULT_STOCK_ITEMS_ALL);
@@ -933,7 +940,7 @@ export default function StockMonitoringPage() {
       clearOpnameDraftFromStorage();
       const newOpname = loadOpnameDraftFromStorage(DEFAULT_STOCK_ITEMS_ALL);
       setOpnameSession(newOpname);
-      showToast('📦 Seluruh riwayat mutasi Batch 01-17 Nov (628 transaksi) berhasil dimuat utuh.');
+      showToast('📦 Seluruh riwayat mutasi Batch 01-18 Nov (670 transaksi) berhasil dimuat utuh.');
     }
   };
 
@@ -1245,7 +1252,7 @@ export default function StockMonitoringPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleOpenPrintFor('B17_IN')}
+              onClick={() => handleOpenPrintFor('B18_IN')}
               className="px-3 py-2 rounded-xl text-sm font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
               title="Download Dokumen PDF Bahan Masuk"
             >
@@ -1254,7 +1261,7 @@ export default function StockMonitoringPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleOpenPrintFor('B17_OUT')}
+              onClick={() => handleOpenPrintFor('B18_OUT')}
               className="px-3 py-2 rounded-xl text-sm font-bold text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
               title="Download Dokumen PDF Bahan Keluar Masak"
             >
@@ -1471,7 +1478,7 @@ export default function StockMonitoringPage() {
                 type="button"
                 onClick={handleResetToBaseline}
                 className="text-slate-500 hover:text-slate-800 p-2 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
-                title="Muat Ulang 314 Bahan Batch 01-17 Nov (628 Mutasi)"
+                title="Muat Ulang 335 Bahan Batch 01-18 Nov (670 Mutasi)"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
@@ -1570,6 +1577,7 @@ export default function StockMonitoringPage() {
                   className="flex-1 min-w-0 bg-slate-50 border border-line rounded-xl px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer truncate"
                 >
                   <option value="ALL">Semua Bahan ({stockItems.length})</option>
+                  <option value="18-NOV">Batch 24 Nov → Masak 25 Nov ({stockItems.filter(i => i.batch === '18-NOV').length})</option>
                   <option value="17-NOV">Batch 23 Nov → Masak 24 Nov ({stockItems.filter(i => i.batch === '17-NOV').length})</option>
                   <option value="16-NOV">Batch 22 Nov → Masak 23 Nov ({stockItems.filter(i => i.batch === '16-NOV').length})</option>
                   <option value="15-NOV">Batch 19 Nov → Masak 20 Nov ({stockItems.filter(i => i.batch === '15-NOV').length})</option>
@@ -1656,7 +1664,7 @@ export default function StockMonitoringPage() {
                       className="w-full py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm border border-slate-300 flex items-center justify-center gap-1.5"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
-                      <span>Muat 314 Bahan Batch 01-17 Nov</span>
+                      <span>Muat 335 Bahan Batch 01-18 Nov</span>
                     </button>
                   </div>
                 </div>
@@ -1789,7 +1797,7 @@ export default function StockMonitoringPage() {
                               className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm border border-slate-300 cursor-pointer flex items-center gap-1.5"
                             >
                               <RotateCcw className="w-3.5 h-3.5" />
-                              <span>Muat 314 Bahan Batch 01-17 Nov</span>
+                              <span>Muat 335 Bahan Batch 01-18 Nov</span>
                             </button>
                           </div>
                         </td>
@@ -2273,13 +2281,13 @@ export default function StockMonitoringPage() {
               <div className="space-y-1">
                 <h3 className="text-sm font-bold text-slate-900">Buku Register Mutasi Stok (Audit Trail)</h3>
                 <p className="text-sm text-slate-500">
-                  Daftar transaksi barang masuk dan keluar masak dapur (Siklus Batch 01–17 Nov 2026).
+                  Daftar transaksi barang masuk dan keluar masak dapur (Siklus Batch 01–18 Nov 2026).
                 </p>
               </div>
               <div className="flex items-center gap-1.5 flex-wrap">
                 <button
                   type="button"
-                  onClick={() => handleOpenPrintFor('B17_IN')}
+                  onClick={() => handleOpenPrintFor('B18_IN')}
                   className="px-3 py-1.5 rounded-xl text-sm font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
                   title="Download Dokumen Berita Acara PDF Bahan Masuk"
                 >
@@ -2288,7 +2296,7 @@ export default function StockMonitoringPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleOpenPrintFor('B17_OUT')}
+                  onClick={() => handleOpenPrintFor('B18_OUT')}
                   className="px-3 py-1.5 rounded-xl text-sm font-bold text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 flex items-center gap-1 cursor-pointer transition-colors"
                   title="Download Dokumen Berita Acara PDF Bahan Keluar Masak"
                 >
@@ -3407,9 +3415,12 @@ export default function StockMonitoringPage() {
                 {/* Judul Dokumen Sesuai Pilihan */}
                 <div className="text-center space-y-1">
                   <h3 className="text-sm sm:text-base font-black uppercase underline tracking-wider text-slate-950">
+                    {printReportType === 'B18_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (25 NOV 2026)'}
+                    {printReportType === 'B18_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (24 NOV 2026)'}
                     {printReportType === 'B17_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (24 NOV 2026)'}
                     {printReportType === 'B17_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (23 NOV 2026)'}
                     {printReportType === 'B16_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (23 NOV 2026)'}
+                    {printReportType === 'B16_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (22 NOV 2026)'}
                     {printReportType === 'B15_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (20 NOV 2026)'}
                     {printReportType === 'B15_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (19 NOV 2026)'}
                     {printReportType === 'B14_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (19 NOV 2026)'}
@@ -3440,12 +3451,15 @@ export default function StockMonitoringPage() {
                     {printReportType === 'B2_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (02 NOV 2026)'}
                     {printReportType === 'B1_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (02 NOV 2026)'}
                     {printReportType === 'B1_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (01 NOV 2026)'}
-                    {printReportType === 'MUTASI' && 'BUKU REGISTER REKAPITULASI MUTASI BAHAN BAKU (01 - 24 NOV 2026)'}
+                    {printReportType === 'MUTASI' && 'BUKU REGISTER REKAPITULASI MUTASI BAHAN BAKU (01 - 25 NOV 2026)'}
                   </h3>
                   <p className="text-[10px] font-mono text-slate-600">
+                    {printReportType === 'B18_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1125'}
+                    {printReportType === 'B18_IN' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1124'}
                     {printReportType === 'B17_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1124'}
                     {printReportType === 'B17_IN' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1123'}
                     {printReportType === 'B16_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1123'}
+                    {printReportType === 'B16_IN' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1122'}
                     {printReportType === 'B15_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1120'}
                     {printReportType === 'B15_IN' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1119'}
                     {printReportType === 'B14_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1119'}
@@ -3479,9 +3493,12 @@ export default function StockMonitoringPage() {
                     {printReportType === 'MUTASI' && 'Nomor: REG-MUTASI/SPPG-SMG3/BGN/2026/11'}
                   </p>
                   <p className="text-[11px] text-slate-700 font-bold">
+                    {printReportType === 'B18_OUT' && 'Tanggal Pengolahan Masak: Rabu, 25 November 2026'}
+                    {printReportType === 'B18_IN' && 'Tanggal Penerimaan: Selasa, 24 November 2026'}
                     {printReportType === 'B17_OUT' && 'Tanggal Pengolahan Masak: Selasa, 24 November 2026'}
                     {printReportType === 'B17_IN' && 'Tanggal Penerimaan: Senin, 23 November 2026'}
                     {printReportType === 'B16_OUT' && 'Tanggal Pengolahan Masak: Senin, 23 November 2026'}
+                    {printReportType === 'B16_IN' && 'Tanggal Penerimaan: Minggu, 22 November 2026'}
                     {printReportType === 'B15_OUT' && 'Tanggal Pengolahan Masak: Jumat, 20 November 2026'}
                     {printReportType === 'B15_IN' && 'Tanggal Penerimaan: Kamis, 19 November 2026'}
                     {printReportType === 'B14_OUT' && 'Tanggal Pengolahan Masak: Kamis, 19 November 2026'}
@@ -3512,20 +3529,24 @@ export default function StockMonitoringPage() {
                     {printReportType === 'B2_IN' && 'Tanggal Penerimaan: Senin, 02 November 2026'}
                     {printReportType === 'B1_OUT' && 'Tanggal Pengolahan Masak: Senin, 02 November 2026'}
                     {printReportType === 'B1_IN' && 'Tanggal Penerimaan: Minggu, 01 November 2026'}
-                    {printReportType === 'MUTASI' && 'Periode Mutasi: 01 s/d 23 November 2026'}
+                    {printReportType === 'MUTASI' && 'Periode Mutasi: 01 s/d 25 November 2026'}
                   </p>
                 </div>
 
                 {/* Narasi Resmi Sesuai Pilihan */}
                 <p className="text-[11px] leading-relaxed print:leading-snug text-justify text-slate-800">
+                  {printReportType === 'B18_OUT' &&
+                    'Pada hari ini, Rabu tanggal 25 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 18 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi (Menu INFERENSI: Nasi Putih, Chicken Teriyaki, Edamame Rebus, Tumis Caisim Jagung Wortel, Anggur Merah — menu resmi 25 Nov belum terbit) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                  {printReportType === 'B18_IN' &&
+                    'Pada hari ini, Selasa tanggal 24 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 18 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B17_OUT' &&
                     'Pada hari ini, Selasa tanggal 24 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 17 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi (Menu INFERENSI: Nasi Putih, Ayam Asam Manis, Tempe Goreng, Tumis Buncis Kembang Kol & Tomat, Jeruk — menu resmi 24 Nov belum terbit) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B17_IN' &&
                     'Pada hari ini, Senin tanggal 23 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 17 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
-                  {printReportType === 'B15_OUT' &&
-                    'Pada hari ini, Jumat tanggal 20 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 15 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi (Menu INFERENSI: Nasi Putih, Ayam Goreng Tepung, Tempe Goreng, Tumis Kol & Brokoli, Kurma — menu resmi 20 Nov belum terbit) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
-                  {printReportType === 'B15_IN' &&
-                    'Pada hari ini, Kamis tanggal 19 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 15 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                  {printReportType === 'B16_OUT' &&
+                    'Pada hari ini, Senin tanggal 23 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 16 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi (Menu INFERENSI: Nasi Putih, Ayam Goreng Tepung, Tahu Goreng, Tumis Kol & Wortel, Kurma — menu resmi 23 Nov belum terbit) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                  {printReportType === 'B16_IN' &&
+                    'Pada hari ini, Minggu tanggal 22 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 16 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B14_OUT' &&
                     'Pada hari ini, Kamis tanggal 19 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 14 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi (Menu: Telur Bumbu Kecap Manis, Tahu Goreng, Tumis Buncis Wortel & Tomat, Buah Anggur) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B14_IN' &&
