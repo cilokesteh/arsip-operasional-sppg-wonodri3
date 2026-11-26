@@ -34,6 +34,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   ArrowLeft,
+  RefreshCw,
 } from 'lucide-react';
 import { TopNav, BottomTabs } from '@/components/SiteNav';
 import {
@@ -45,6 +46,8 @@ import {
   saveStockToStorage,
   loadMovementsFromStorage,
   saveMovementsToStorage,
+  mergeStockWithCloudItems,
+  mergeMovementsWithCloudItems,
   calculateStockStatus,
   getDaysLeft,
   calculateStockSummary,
@@ -60,7 +63,8 @@ import {
 } from '@/lib/stock';
 import { verifyPin, hasValidSession, clearSession } from '@/lib/auth';
 import { getEffectiveBeneficiariesForDate, getProductionPortionCount, loadKuotaOverrides, loadEffectiveKuotaOverrides } from '@/lib/data';
-import { formatTanggalIndo } from '@/lib/dateUtils';
+import { formatTanggalIndo, formatHariTanggalIndo, formatTanggalUpper } from '@/lib/dateUtils';
+import { fetchStockFromCloud } from '@/lib/cloudSync';
 import { buildDailyStockReports, getStockPeriodRange } from '@/lib/stock-period-report';
 import type { StockPeriodType } from '@/lib/stock-period-report';
 import DailyStockPeriodReport from '@/components/DailyStockPeriodReport';
@@ -119,7 +123,7 @@ export default function StockMonitoringPage() {
   const [isOpnameDirty, setIsOpnameDirty] = useState<boolean>(false);
 
   // Modal Print Type: Masuk/Keluar Masak per Batch, atau Rekap Mutasi
-  const [printReportType, setPrintReportType] = useState<'B20_OUT' | 'B20_IN' | 'B19_OUT' | 'B19_IN' | 'B18_OUT' | 'B18_IN' | 'B17_OUT' | 'B17_IN' | 'B16_OUT' | 'B16_IN' | 'B15_OUT' | 'B15_IN' | 'B14_OUT' | 'B14_IN' | 'B13_OUT' | 'B13_IN' | 'B12_OUT' | 'B12_IN' | 'B11_OUT' | 'B11_IN' | 'B10_OUT' | 'B10_IN' | 'B9_OUT' | 'B9_IN' | 'B8_OUT' | 'B8_IN' | 'B7_OUT' | 'B7_IN' | 'B6_OUT' | 'B6_IN' | 'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'WEEK_OUT' | 'MONTH_OUT' | 'WEEK_IN' | 'MONTH_IN' | 'MUTASI'>('B20_OUT');
+  const [printReportType, setPrintReportType] = useState<string>('B20_OUT');
   // v3.x — rekap mingguan/bulanan: tanggal awal periode (default Senin berjalan /
   // tanggal 1 bulan berjalan, diisi otomatis saat mode dipilih).
   const [periodStart, setPeriodStart] = useState<string>('');
@@ -145,9 +149,52 @@ export default function StockMonitoringPage() {
     return range ? buildDailyStockReports(stockItems, movements, range, direction).length : 0;
   };
 
+  const fmtDayShort = (dateStr: string) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const mIdx = parseInt(parts[1], 10) - 1;
+    return `${parts[2]} ${months[mIdx] || ''}`;
+  };
+
+  // Dinamis: Deteksi batch baru / cloud di luar B1..B20
+  const dynamicBatchGroups = useMemo(() => {
+    const legacySet = new Set([
+      '01-NOV', '02-NOV', '03-NOV', '04-NOV', '05-NOV', '06-NOV', '07-NOV', '08-NOV', '09-NOV', '10-NOV',
+      '11-NOV', '12-NOV', '13-NOV', '14-NOV', '15-NOV', '16-NOV', '17-NOV', '18-NOV', '19-NOV', '20-NOV',
+      'ALL',
+    ]);
+    const map = new Map<string, StockItem[]>();
+    for (const item of stockItems) {
+      if (!item.batch || legacySet.has(item.batch)) continue;
+      if (!map.has(item.batch)) map.set(item.batch, []);
+      map.get(item.batch)!.push(item);
+    }
+    return [...map.entries()]
+      .sort((a, b) => {
+        const dateA = a[1][0]?.lastUsageDate || '';
+        const dateB = b[1][0]?.lastUsageDate || '';
+        return dateB.localeCompare(dateA);
+      })
+      .map(([batchName, items]) => {
+        const restockDate = items[0]?.lastRestockDate || '';
+        const usageDate = items[0]?.lastUsageDate || '';
+        const numMatch = batchName.match(/\d+/);
+        const batchNum = numMatch ? numMatch[0].replace(/^0+/, '') : batchName;
+        return {
+          label: `Batch ${batchNum} — Masuk ${fmtDayShort(restockDate)} / Masak ${fmtDayShort(usageDate)}`,
+          options: [
+            { value: `B${batchNum}_OUT`, icon: '📤', title: `Keluar Masak ${fmtDayShort(usageDate)}`, count: items.length },
+            { value: `B${batchNum}_IN`, icon: '📥', title: `Masuk ${fmtDayShort(restockDate)}`, count: items.length },
+          ],
+        };
+      });
+  }, [stockItems]);
+
   const PRINT_REPORT_GROUPS: {
     label: string;
-    options: { value: typeof printReportType; icon: string; title: string; count: number }[];
+    options: { value: string; icon: string; title: string; count: number }[];
   }[] = [
     { label: 'Rekap Periode', options: [
       { value: 'WEEK_IN', icon: '📥', title: 'Masuk Harian Mingguan', count: countBatchesInPeriod(true, weekStartDefault, 'IN') },
@@ -155,6 +202,7 @@ export default function StockMonitoringPage() {
       { value: 'WEEK_OUT', icon: '📅', title: 'Keluar Masak Harian Mingguan', count: countBatchesInPeriod(true, weekStartDefault, 'OUT') },
       { value: 'MONTH_OUT', icon: '🗓', title: 'Keluar Masak Harian Bulanan', count: countBatchesInPeriod(false, monthStartDefault, 'OUT') },
     ] },
+    ...dynamicBatchGroups,
     { label: 'Batch 20 — Masuk 26 Nov / Masak 27 Nov', options: [
       { value: 'B20_OUT', icon: '📤', title: 'Keluar Masak 27 Nov', count: 17 },
       { value: 'B20_IN', icon: '📥', title: 'Masuk 26 Nov', count: 17 },
@@ -251,7 +299,7 @@ export default function StockMonitoringPage() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [printMenuOpen]);
 
-  const handleOpenPrintFor = (type: 'B20_OUT' | 'B20_IN' | 'B19_OUT' | 'B19_IN' | 'B18_OUT' | 'B18_IN' | 'B17_OUT' | 'B17_IN' | 'B16_OUT' | 'B16_IN' | 'B15_OUT' | 'B15_IN' | 'B14_OUT' | 'B14_IN' | 'B13_OUT' | 'B13_IN' | 'B12_OUT' | 'B12_IN' | 'B11_OUT' | 'B11_IN' | 'B10_OUT' | 'B10_IN' | 'B9_OUT' | 'B9_IN' | 'B8_OUT' | 'B8_IN' | 'B7_OUT' | 'B7_IN' | 'B6_OUT' | 'B6_IN' | 'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'WEEK_OUT' | 'MONTH_OUT' | 'WEEK_IN' | 'MONTH_IN' | 'MUTASI') => {
+  const handleOpenPrintFor = (type: string) => {
     setPrintReportType(type);
     setShowPrintModal(true);
   };
@@ -318,7 +366,19 @@ export default function StockMonitoringPage() {
     if (printReportType === 'B1_OUT' || printReportType === 'B1_IN') {
       return stockItems.filter((i) => i.batch === '01-NOV');
     }
-    return stockItems;
+
+    // Dynamic matching untuk batch B21+ atau custom
+    const match = printReportType.match(/^B(\d+)_(OUT|IN)$/);
+    if (match) {
+      const num = match[1];
+      const found = stockItems.filter((i) => {
+        const iNum = i.batch.match(/\d+/);
+        return iNum && iNum[0].replace(/^0+/, '') === num;
+      });
+      if (found.length > 0) return found;
+    }
+
+    return stockItems.filter((i) => i.batch === printReportType);
   }, [stockItems, printReportType]);
 
   const reportSummary = useMemo(() => calculateStockSummary(reportItems), [reportItems]);
@@ -439,7 +499,35 @@ export default function StockMonitoringPage() {
     setPinError('');
   };
 
-  // Load Initial Data on Mount
+  const [isSyncingCloud, setIsSyncingCloud] = useState<boolean>(false);
+
+  const handleSyncFromCloud = async () => {
+    setIsSyncingCloud(true);
+    try {
+      const cloud = await fetchStockFromCloud();
+      if (cloud && Array.isArray(cloud.items) && cloud.items.length > 0) {
+        setStockItems((prev) => {
+          const merged = mergeStockWithCloudItems(prev, cloud.items);
+          saveStockToStorage(merged);
+          return merged;
+        });
+        setMovements((prev) => {
+          const merged = mergeMovementsWithCloudItems(prev, cloud.movements);
+          saveMovementsToStorage(merged);
+          return merged;
+        });
+        showToast(`☁️ Berhasil sinkron ${cloud.count} batch cloud (${cloud.items.length} bahan)!`);
+      } else {
+        showToast('☁️ Data stok cloud sudah tersinkron (0 batch baru).');
+      }
+    } catch {
+      showToast('⚠️ Gagal menghubungi server cloud stok.');
+    } finally {
+      setIsSyncingCloud(false);
+    }
+  };
+
+  // Load Initial Data on Mount & Auto-Sync Cloud
   useEffect(() => {
     const loadedItems = loadStockFromStorage();
     const loadedMovements = loadMovementsFromStorage();
@@ -448,6 +536,24 @@ export default function StockMonitoringPage() {
     setStockItems(loadedItems);
     setMovements(loadedMovements);
     setOpnameSession(loadedOpname);
+
+    // Auto-fetch cloud stock di background
+    fetchStockFromCloud()
+      .then((cloud) => {
+        if (cloud && Array.isArray(cloud.items) && cloud.items.length > 0) {
+          setStockItems((prev) => {
+            const merged = mergeStockWithCloudItems(prev, cloud.items);
+            saveStockToStorage(merged);
+            return merged;
+          });
+          setMovements((prev) => {
+            const merged = mergeMovementsWithCloudItems(prev, cloud.movements);
+            saveMovementsToStorage(merged);
+            return merged;
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Recalculate summary metrics
@@ -1285,6 +1391,16 @@ export default function StockMonitoringPage() {
               <FileDown className="w-4 h-4 text-indigo-700 shrink-0" />
               <span>PDF Bahan Masak</span>
             </button>
+            <button
+              type="button"
+              onClick={handleSyncFromCloud}
+              disabled={isSyncingCloud}
+              className="px-3 py-2 rounded-xl text-sm font-bold text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
+              title="Tarik pembaruan batch dari Cloudflare KV / Google Sheet"
+            >
+              <RefreshCw className={`w-4 h-4 text-sky-700 shrink-0 ${isSyncingCloud ? 'animate-spin' : ''}`} />
+              <span>{isSyncingCloud ? 'Syncing...' : 'Sync Cloud'}</span>
+            </button>
           </div>
         </div>
 
@@ -1594,6 +1710,16 @@ export default function StockMonitoringPage() {
                   className="flex-1 min-w-0 bg-slate-50 border border-line rounded-xl px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:border-blue-600 cursor-pointer truncate"
                 >
                   <option value="ALL">Semua Bahan ({stockItems.length})</option>
+                  {dynamicBatchGroups.map((g) => {
+                    const legacyList = ['01-NOV','02-NOV','03-NOV','04-NOV','05-NOV','06-NOV','07-NOV','08-NOV','09-NOV','10-NOV','11-NOV','12-NOV','13-NOV','14-NOV','15-NOV','16-NOV','17-NOV','18-NOV','19-NOV','20-NOV','ALL'];
+                    const bKey = stockItems.find((i) => !legacyList.includes(i.batch) && g.label.includes(i.batch.replace(/[^0-9]/g, '')))?.batch;
+                    if (!bKey) return null;
+                    return (
+                      <option key={bKey} value={bKey}>
+                        {g.label} ({stockItems.filter((i) => i.batch === bKey).length})
+                      </option>
+                    );
+                  })}
                   <option value="20-NOV">Batch 26 Nov → Masak 27 Nov ({stockItems.filter(i => i.batch === '20-NOV').length})</option>
                   <option value="19-NOV">Batch 25 Nov → Masak 26 Nov ({stockItems.filter(i => i.batch === '19-NOV').length})</option>
                   <option value="18-NOV">Batch 24 Nov → Masak 25 Nov ({stockItems.filter(i => i.batch === '18-NOV').length})</option>
@@ -3457,6 +3583,13 @@ export default function StockMonitoringPage() {
                 {/* Judul Dokumen Sesuai Pilihan */}
                 <div className="text-center space-y-1">
                   <h3 className="text-sm sm:text-base font-black uppercase underline tracking-wider text-slate-950">
+                    {/* Fallback Dinamis untuk Batch Baru (B21+) */}
+                    {printReportType.endsWith('_OUT') && !printReportType.match(/^B([1-9]|1[0-9]|20)_OUT$/) && reportItems.length > 0 && (
+                      `BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (${formatTanggalUpper(reportItems[0].lastUsageDate)})`
+                    )}
+                    {printReportType.endsWith('_IN') && !printReportType.match(/^B([1-9]|1[0-9]|20)_IN$/) && reportItems.length > 0 && (
+                      `BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (${formatTanggalUpper(reportItems[0].lastRestockDate)})`
+                    )}
                     {printReportType === 'B20_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (27 NOV 2026)'}
                     {printReportType === 'B20_IN' && 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK (26 NOV 2026)'}
                     {printReportType === 'B19_OUT' && 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK (26 NOV 2026)'}
@@ -3500,6 +3633,13 @@ export default function StockMonitoringPage() {
                     {printReportType === 'MUTASI' && 'BUKU REGISTER REKAPITULASI MUTASI BAHAN BAKU (01 - 27 NOV 2026)'}
                   </h3>
                   <p className="text-[10px] font-mono text-slate-600">
+                    {/* Fallback Dinamis Nomor Dokumen B21+ */}
+                    {printReportType.endsWith('_OUT') && !printReportType.match(/^B([1-9]|1[0-9]|20)_OUT$/) && reportItems.length > 0 && (
+                      `Nomor: BA-BOM/SPPG-SMG3/BGN/2026/${reportItems[0].lastUsageDate.replace(/-/g, '').slice(4)}`
+                    )}
+                    {printReportType.endsWith('_IN') && !printReportType.match(/^B([1-9]|1[0-9]|20)_IN$/) && reportItems.length > 0 && (
+                      `Nomor: BA-LOG/SPPG-SMG3/BGN/2026/${reportItems[0].lastRestockDate.replace(/-/g, '').slice(4)}`
+                    )}
                     {printReportType === 'B20_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1127'}
                     {printReportType === 'B20_IN' && 'Nomor: BA-LOG/SPPG-SMG3/BGN/2026/1126'}
                     {printReportType === 'B19_OUT' && 'Nomor: BA-BOM/SPPG-SMG3/BGN/2026/1126'}
@@ -3543,6 +3683,13 @@ export default function StockMonitoringPage() {
                     {printReportType === 'MUTASI' && 'Nomor: REG-MUTASI/SPPG-SMG3/BGN/2026/11'}
                   </p>
                   <p className="text-[11px] text-slate-700 font-bold">
+                    {/* Fallback Dinamis Tanggal Dokumen B21+ */}
+                    {printReportType.endsWith('_OUT') && !printReportType.match(/^B([1-9]|1[0-9]|20)_OUT$/) && reportItems.length > 0 && (
+                      `Tanggal Pengolahan Masak: ${formatHariTanggalIndo(reportItems[0].lastUsageDate)}`
+                    )}
+                    {printReportType.endsWith('_IN') && !printReportType.match(/^B([1-9]|1[0-9]|20)_IN$/) && reportItems.length > 0 && (
+                      `Tanggal Penerimaan: ${formatHariTanggalIndo(reportItems[0].lastRestockDate)}`
+                    )}
                     {printReportType === 'B20_OUT' && 'Tanggal Pengolahan Masak: Jumat, 27 November 2026'}
                     {printReportType === 'B20_IN' && 'Tanggal Penerimaan: Kamis, 26 November 2026'}
                     {printReportType === 'B19_OUT' && 'Tanggal Pengolahan Masak: Kamis, 26 November 2026'}
@@ -3589,6 +3736,13 @@ export default function StockMonitoringPage() {
 
                 {/* Narasi Resmi Sesuai Pilihan */}
                 <p className="text-[11px] leading-relaxed print:leading-snug text-justify text-slate-800">
+                  {/* Fallback Dinamis Narasi Dokumen B21+ */}
+                  {printReportType.endsWith('_OUT') && !printReportType.match(/^B([1-9]|1[0-9]|20)_OUT$/) && reportItems.length > 0 && (
+                    `Pada hari ini, ${formatHariTanggalIndo(reportItems[0].lastUsageDate)}, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch ${reportItems[0].batch.replace(/[^0-9]/g, '') || reportItems[0].batch} dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi pasokan dari ${reportItems[0].supplierName} dengan rincian sebagai berikut:`
+                  )}
+                  {printReportType.endsWith('_IN') && !printReportType.match(/^B([1-9]|1[0-9]|20)_IN$/) && reportItems.length > 0 && (
+                    `Pada hari ini, ${formatHariTanggalIndo(reportItems[0].lastRestockDate)}, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch ${reportItems[0].batch.replace(/[^0-9]/g, '') || reportItems[0].batch} di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi ${reportItems[0].supplierName} dengan rincian sebagai berikut:`
+                  )}
                   {printReportType === 'B20_OUT' &&
                     'Pada hari ini, Jumat tanggal 27 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 20 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi (Menu INFERENSI: Nasi Putih, Telur Semur, Tempe Goreng, Tumis Pakcoy & Wortel, Kelengkeng — menu resmi 27 Nov belum terbit) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B20_IN' &&

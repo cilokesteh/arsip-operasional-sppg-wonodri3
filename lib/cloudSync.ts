@@ -1,6 +1,45 @@
 import { DailyMenuRecord } from './data';
+import { StockItem, StockMovement } from './stock';
 
 export const CLOUD_SYNC_ENDPOINT = 'https://sppg-sync-worker.cilokesteh.workers.dev/api/menus';
+export const CLOUD_STOCK_ENDPOINT = 'https://sppg-sync-worker.cilokesteh.workers.dev/api/stock';
+
+export interface CloudStockBatch {
+  id: string;
+  batch: string;
+  restockDate: string;
+  usageDate: string;
+  menu: string;
+  portions: number;
+  supplierName: string;
+  itemCount: number;
+  items: StockItem[];
+  movements: StockMovement[];
+  createdAt: string;
+}
+
+export interface CloudStockResponse {
+  success: boolean;
+  batches: CloudStockBatch[];
+  items: StockItem[];
+  movements: StockMovement[];
+  count: number;
+}
+
+// Ambil semua daftar batch stok dinamis dari Cloudflare KV Database
+export async function fetchStockFromCloud(): Promise<CloudStockResponse | null> {
+  try {
+    const res = await fetch(`${CLOUD_STOCK_ENDPOINT}?t=${Date.now()}`, {
+      method: 'GET',
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data && data.success ? data : null;
+  } catch (err) {
+    console.error('Gagal mengambil data stok dari Cloudflare KV:', err);
+    return null;
+  }
+}
 
 // Ambil semua daftar menu resmi dari Cloudflare KV Database
 export async function fetchMenusFromCloud(): Promise<DailyMenuRecord[]> {

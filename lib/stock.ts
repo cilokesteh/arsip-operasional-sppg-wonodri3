@@ -24,7 +24,7 @@ export interface StockItem {
   supplierName: string;
   lastRestockDate: string; // YYYY-MM-DD
   lastUsageDate: string; // YYYY-MM-DD
-  batch: '01-NOV' | '02-NOV' | '03-NOV' | '04-NOV' | '05-NOV' | '06-NOV' | '07-NOV' | '08-NOV' | '09-NOV' | '10-NOV' | '11-NOV' | '12-NOV' | '13-NOV' | '14-NOV' | '15-NOV' | '16-NOV' | '17-NOV' | '18-NOV' | '19-NOV' | '20-NOV' | 'ALL';
+  batch: '01-NOV' | '02-NOV' | '03-NOV' | '04-NOV' | '05-NOV' | '06-NOV' | '07-NOV' | '08-NOV' | '09-NOV' | '10-NOV' | '11-NOV' | '12-NOV' | '13-NOV' | '14-NOV' | '15-NOV' | '16-NOV' | '17-NOV' | '18-NOV' | '19-NOV' | '20-NOV' | 'ALL' | (string & {});
   notes?: string;
 }
 
@@ -1826,13 +1826,18 @@ export function loadStockFromStorage(): StockItem[] {
       const hasMissing = DEFAULT_STOCK_ITEMS_ALL.some((item) => !existingIds.has(item.id));
       const hasBrokoliOld = parsed.some((item: StockItem) => item.id === 'b4-17' && item.name === 'BROKOLI');
       if (hasMissing || hasBrokoliOld) {
-        const merged = DEFAULT_STOCK_ITEMS_ALL.map((def) => {
-          const found = parsed.find((p: StockItem) => p.id === def.id);
-          if (!found) return def;
-          if (def.id === 'b1-11' && found.initialStock === 65) return def; // Update Dorry 65 -> 90 KG per RKB
-          if (def.id === 'b4-17' && found.name === 'BROKOLI') return def; // Update Brokoli -> Buncis per instruksi Tuan
-          return found;
-        });
+        const defaultIds = new Set(DEFAULT_STOCK_ITEMS_ALL.map((item) => item.id));
+        const customItems = parsed.filter((item: StockItem) => !defaultIds.has(item.id));
+        const merged = [
+          ...customItems,
+          ...DEFAULT_STOCK_ITEMS_ALL.map((def) => {
+            const found = parsed.find((p: StockItem) => p.id === def.id);
+            if (!found) return def;
+            if (def.id === 'b1-11' && found.initialStock === 65) return def; // Update Dorry 65 -> 90 KG per RKB
+            if (def.id === 'b4-17' && found.name === 'BROKOLI') return def; // Update Brokoli -> Buncis per instruksi Tuan
+            return found;
+          }),
+        ];
         saveStockToStorage(merged);
         return merged;
       }
@@ -1893,6 +1898,22 @@ export function saveMovementsToStorage(movements: StockMovement[]): void {
   } catch (err) {
     console.error('Failed to save movements to localStorage:', err);
   }
+}
+
+export function mergeStockWithCloudItems(currentItems: StockItem[], cloudItems: StockItem[]): StockItem[] {
+  if (!cloudItems || cloudItems.length === 0) return currentItems;
+  const existingIds = new Set(currentItems.map((item) => item.id));
+  const newCloudItems = cloudItems.filter((item) => !existingIds.has(item.id));
+  if (newCloudItems.length === 0) return currentItems;
+  return [...newCloudItems, ...currentItems];
+}
+
+export function mergeMovementsWithCloudItems(currentMovs: StockMovement[], cloudMovs: StockMovement[]): StockMovement[] {
+  if (!cloudMovs || cloudMovs.length === 0) return currentMovs;
+  const existingIds = new Set(currentMovs.map((m) => m.id));
+  const newCloudMovs = cloudMovs.filter((m) => !existingIds.has(m.id));
+  if (newCloudMovs.length === 0) return currentMovs;
+  return [...newCloudMovs, ...currentMovs];
 }
 
 // Rekapitulasi kuantitas fisik
