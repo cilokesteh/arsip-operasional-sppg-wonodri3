@@ -1463,7 +1463,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
 
             {/* ===================== ALUR 4: ALOKASI ===================== */}
             <div className="app-card rounded-xl p-5 sm:p-7 space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div className="flex flex-col items-stretch gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <div className="flex min-w-0 flex-1 items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
                     <Users className="w-4 h-4" />
@@ -1477,7 +1477,7 @@ Secara keseluruhan, kegiatan operasional SPPG Wonodri 3 berjalan dengan lancar d
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
                   {isKuotaEditablePeriod && !isEditingKuota && (
                     <button
                       type="button"
