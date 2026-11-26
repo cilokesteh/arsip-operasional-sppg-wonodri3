@@ -126,3 +126,87 @@ test('the ZIP contains distinct one-page A4 PDFs with daily detail and all signe
     } finally { rmSync(temp, { recursive: true, force: true }); }
   }
 });
+
+test('WEEK_IN uses receiving dates and mirrors the OUT week shape', () => {
+  const { getStockPeriodRange, buildDailyStockReports } = report();
+  const range = getStockPeriodRange('WEEK_IN', '2026-11-16');
+  assert.deepEqual(range, { start: '2026-11-16', end: '2026-11-22' });
+  const days = buildDailyStockReports(items, movements, range, 'IN');
+  assert.deepEqual(days.map(({ date, rows, portions }) => [date, rows.length, portions]), [
+    ['2026-11-16', 18, 1553], ['2026-11-17', 21, 1541], ['2026-11-18', 18, 1541],
+    ['2026-11-19', 18, 1541], ['2026-11-22', 20, 1541],
+  ]);
+  assert.equal(days.reduce((count, day) => count + day.rows.length, 0), 95);
+  assert.match(days[0].number, /^BA-BM\/SPPG-SMG3\/BGN\/2026\/20261116$/);
+  assert.ok(days[1].context.some(note => note.includes('Penerimaan bahan baku masuk')));
+  assert.ok(days[1].context.some(note => note.includes('GRN-20261117-01')));
+});
+
+test('MONTH_IN covers the whole selected month with receiving dates only', () => {
+  const { getStockPeriodRange, buildDailyStockReports } = report();
+  const range = getStockPeriodRange('MONTH_IN', '2026-11-20');
+  assert.deepEqual(range, { start: '2026-11-01', end: '2026-11-30' });
+  const days = buildDailyStockReports(items, movements, range, 'IN');
+  assert.equal(days.length, 20);
+  assert.equal(days.reduce((count, day) => count + day.rows.length, 0), 380);
+  assert.equal(days[0].date, '2026-11-01');
+  assert.equal(days.at(-1).date, '2026-11-26');
+  const batch20 = days.at(-1);
+  assert.equal(batch20.rows.length, 17);
+  assert.ok(batch20.rows.some(row => row.name === 'BERAS' && row.qty === 85 && row.uom === 'KG'));
+  assert.ok(batch20.rows.some(row => row.name === 'DAUN SALAM' && row.qty === 30 && row.uom === 'LEMBAR'));
+  assert.equal(batch20.totals.find(total => total.uom === 'LEMBAR').qty, 30);
+  assert.deepEqual(getStockPeriodRange('MONTH_IN', '2028-02-18'), { start: '2028-02-01', end: '2028-02-29' });
+  assert.deepEqual(getStockPeriodRange('WEEK_IN', '2026-12-28'), { start: '2026-12-28', end: '2027-01-03' });
+});
+
+test('an ingredient received on different dates keeps its individual IN amounts and OUT events stay out', () => {
+  const { getStockPeriodRange, buildDailyStockReports } = report();
+  const item = { ...items[0], usedStock: 11, initialStock: 99, lastUsageDate: '2026-12-02', lastRestockDate: '2026-12-02' };
+  const fallback = { ...items[1], usedStock: 2.5, initialStock: 40, lastUsageDate: '2026-12-01', lastRestockDate: '2026-12-01' };
+  const event = { ...movements[0], itemId: item.id, itemName: item.name };
+  const days = buildDailyStockReports([item, fallback], [
+    { ...event, id: 'a', date: '2026-11-30', qty: 4, type: 'IN' },
+    { ...event, id: 'b', date: '2026-12-02', qty: 7, type: 'IN' },
+    { ...event, id: 'c', date: '2026-12-01', qty: 99, type: 'OUT' },
+    { ...event, id: 'd', date: '2026-12-01', qty: 99, type: 'ADJUST' },
+  ], getStockPeriodRange('WEEK_IN', '2026-11-30'), 'IN');
+  assert.deepEqual(days.map(day => [day.date, day.rows.map(row => row.qty)]), [
+    ['2026-11-30', [4]], ['2026-12-01', [40]], ['2026-12-02', [7]],
+  ]);
+});
+
+test('the IN ZIP contains distinct one-page A4 PDFs with receiving detail and all signers', async () => {
+  const { getStockPeriodRange, buildDailyStockReports } = report();
+  const { createStockPeriodZip } = require('../lib/stock-period-pdf.ts');
+  const { unzipSync } = require('fflate');
+  const logo = readFileSync('public/logo.png');
+  const days = buildDailyStockReports(items, movements, getStockPeriodRange('MONTH_IN', '2026-11-01'), 'IN');
+  const entries = unzipSync(await createStockPeriodZip(days, logo, 'IN'));
+  assert.deepEqual(Object.keys(entries).map(name => name.endsWith('/') ? name.slice(0, -1) : name), days.map(day => `BA-BM-${day.date}.pdf`));
+  for (const day of days) {
+    const pdf = Buffer.from(entries[Object.keys(entries).find(name => name.replace(/\/$/, '') === `BA-BM-${day.date}.pdf`)]).toString('latin1');
+    assert.match(pdf, /^%PDF-/);
+    assert.equal((pdf.match(/\/Type \/Page\b/g) || []).length, 1);
+    assert.match(pdf, /\/MediaBox \[0 0 595\.\d+ 841\.\d+\]/);
+    assert.match(pdf, /\/Count 1/);
+    assert.match(pdf, /stream\n[^]*?endstream/);
+    const { mkdtempSync, writeFileSync, rmSync } = require('node:fs');
+    const { join } = require('node:path');
+    const { tmpdir } = require('node:os');
+    const temp = mkdtempSync(join(tmpdir(), 'daily-report-pdf-'));
+    try {
+      const file = join(temp, `${day.date}.pdf`);
+      writeFileSync(file, entries[Object.keys(entries).find(name => name.replace(/\/$/, '') === `BA-BM-${day.date}.pdf`)]);
+      const { execFileSync } = require('node:child_process');
+      const extracted = execFileSync('pdftotext', [file, '-'], { encoding: 'utf8' });
+      assert.ok(extracted.includes(day.number));
+      assert.match(extracted, /PENERIMAAN/i);
+      assert.match(extracted, /JUMLAH MASUK/i);
+      for (const signer of ['Security Andrie', 'Petugas Timbangan / Security', 'Security SPPG', 'Sintia Mariam, A.Md.Gz', 'Salsabiila Zainima, S.Ak', 'Dicky Yusuf Mulyadi, S.M.']) assert.ok(extracted.includes(signer));
+      if (day.date === '2026-11-16') assert.match(extracted, /1[.,]553/i);
+      if (day.date >= '2026-11-17') assert.match(extracted, /1[.,]541/i);
+      if (day.date === '2026-11-26') { assert.match(extracted, /DAUN SALAM/i); assert.match(extracted, /30/); }
+    } finally { rmSync(temp, { recursive: true, force: true }); }
+  }
+});

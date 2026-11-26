@@ -62,6 +62,7 @@ import { verifyPin, hasValidSession, clearSession } from '@/lib/auth';
 import { getEffectiveBeneficiariesForDate, getProductionPortionCount, loadKuotaOverrides, loadEffectiveKuotaOverrides } from '@/lib/data';
 import { formatTanggalIndo } from '@/lib/dateUtils';
 import { buildDailyStockReports, getStockPeriodRange } from '@/lib/stock-period-report';
+import type { StockPeriodType } from '@/lib/stock-period-report';
 import DailyStockPeriodReport from '@/components/DailyStockPeriodReport';
 
 // Tanggal lokal (WIB) tanpa geser timezone — pemilih periode rekap.
@@ -118,11 +119,11 @@ export default function StockMonitoringPage() {
   const [isOpnameDirty, setIsOpnameDirty] = useState<boolean>(false);
 
   // Modal Print Type: Masuk/Keluar Masak per Batch, atau Rekap Mutasi
-  const [printReportType, setPrintReportType] = useState<'B20_OUT' | 'B20_IN' | 'B19_OUT' | 'B19_IN' | 'B18_OUT' | 'B18_IN' | 'B17_OUT' | 'B17_IN' | 'B16_OUT' | 'B16_IN' | 'B15_OUT' | 'B15_IN' | 'B14_OUT' | 'B14_IN' | 'B13_OUT' | 'B13_IN' | 'B12_OUT' | 'B12_IN' | 'B11_OUT' | 'B11_IN' | 'B10_OUT' | 'B10_IN' | 'B9_OUT' | 'B9_IN' | 'B8_OUT' | 'B8_IN' | 'B7_OUT' | 'B7_IN' | 'B6_OUT' | 'B6_IN' | 'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'WEEK_OUT' | 'MONTH_OUT' | 'MUTASI'>('B20_OUT');
+  const [printReportType, setPrintReportType] = useState<'B20_OUT' | 'B20_IN' | 'B19_OUT' | 'B19_IN' | 'B18_OUT' | 'B18_IN' | 'B17_OUT' | 'B17_IN' | 'B16_OUT' | 'B16_IN' | 'B15_OUT' | 'B15_IN' | 'B14_OUT' | 'B14_IN' | 'B13_OUT' | 'B13_IN' | 'B12_OUT' | 'B12_IN' | 'B11_OUT' | 'B11_IN' | 'B10_OUT' | 'B10_IN' | 'B9_OUT' | 'B9_IN' | 'B8_OUT' | 'B8_IN' | 'B7_OUT' | 'B7_IN' | 'B6_OUT' | 'B6_IN' | 'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'WEEK_OUT' | 'MONTH_OUT' | 'WEEK_IN' | 'MONTH_IN' | 'MUTASI'>('B20_OUT');
   // v3.x — rekap mingguan/bulanan: tanggal awal periode (default Senin berjalan /
   // tanggal 1 bulan berjalan, diisi otomatis saat mode dipilih).
   const [periodStart, setPeriodStart] = useState<string>('');
-  const isPeriodReport = printReportType === 'WEEK_OUT' || printReportType === 'MONTH_OUT';
+  const isPeriodReport = printReportType === 'WEEK_OUT' || printReportType === 'MONTH_OUT' || printReportType === 'WEEK_IN' || printReportType === 'MONTH_IN';
 
   // Dropdown kustom untuk pilihan dokumen Berita Acara (pengganti <select> native
   // yang tampil berantakan di popup Android: label grup jadi baris penuh dan
@@ -139,9 +140,9 @@ export default function StockMonitoringPage() {
     return isoLocal(new Date(now.getFullYear(), now.getMonth(), 1));
   })();
 
-  const countBatchesInPeriod = (isWeek: boolean, start: string): number => {
-    const range = getStockPeriodRange(isWeek ? 'WEEK_OUT' : 'MONTH_OUT', start);
-    return range ? buildDailyStockReports(stockItems, movements, range).length : 0;
+  const countBatchesInPeriod = (isWeek: boolean, start: string, direction: 'IN' | 'OUT'): number => {
+    const range = getStockPeriodRange(isWeek ? (direction === 'IN' ? 'WEEK_IN' : 'WEEK_OUT') : (direction === 'IN' ? 'MONTH_IN' : 'MONTH_OUT'), start);
+    return range ? buildDailyStockReports(stockItems, movements, range, direction).length : 0;
   };
 
   const PRINT_REPORT_GROUPS: {
@@ -149,8 +150,10 @@ export default function StockMonitoringPage() {
     options: { value: typeof printReportType; icon: string; title: string; count: number }[];
   }[] = [
     { label: 'Rekap Periode', options: [
-      { value: 'WEEK_OUT', icon: '📅', title: 'Keluar Masak Harian Mingguan', count: countBatchesInPeriod(true, weekStartDefault) },
-      { value: 'MONTH_OUT', icon: '🗓', title: 'Keluar Masak Harian Bulanan', count: countBatchesInPeriod(false, monthStartDefault) },
+      { value: 'WEEK_IN', icon: '📥', title: 'Masuk Harian Mingguan', count: countBatchesInPeriod(true, weekStartDefault, 'IN') },
+      { value: 'MONTH_IN', icon: '📥', title: 'Masuk Harian Bulanan', count: countBatchesInPeriod(false, monthStartDefault, 'IN') },
+      { value: 'WEEK_OUT', icon: '📅', title: 'Keluar Masak Harian Mingguan', count: countBatchesInPeriod(true, weekStartDefault, 'OUT') },
+      { value: 'MONTH_OUT', icon: '🗓', title: 'Keluar Masak Harian Bulanan', count: countBatchesInPeriod(false, monthStartDefault, 'OUT') },
     ] },
     { label: 'Batch 20 — Masuk 26 Nov / Masak 27 Nov', options: [
       { value: 'B20_OUT', icon: '📤', title: 'Keluar Masak 27 Nov', count: 17 },
@@ -248,7 +251,7 @@ export default function StockMonitoringPage() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [printMenuOpen]);
 
-  const handleOpenPrintFor = (type: 'B20_OUT' | 'B20_IN' | 'B19_OUT' | 'B19_IN' | 'B18_OUT' | 'B18_IN' | 'B17_OUT' | 'B17_IN' | 'B16_OUT' | 'B16_IN' | 'B15_OUT' | 'B15_IN' | 'B14_OUT' | 'B14_IN' | 'B13_OUT' | 'B13_IN' | 'B12_OUT' | 'B12_IN' | 'B11_OUT' | 'B11_IN' | 'B10_OUT' | 'B10_IN' | 'B9_OUT' | 'B9_IN' | 'B8_OUT' | 'B8_IN' | 'B7_OUT' | 'B7_IN' | 'B6_OUT' | 'B6_IN' | 'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'WEEK_OUT' | 'MONTH_OUT' | 'MUTASI') => {
+  const handleOpenPrintFor = (type: 'B20_OUT' | 'B20_IN' | 'B19_OUT' | 'B19_IN' | 'B18_OUT' | 'B18_IN' | 'B17_OUT' | 'B17_IN' | 'B16_OUT' | 'B16_IN' | 'B15_OUT' | 'B15_IN' | 'B14_OUT' | 'B14_IN' | 'B13_OUT' | 'B13_IN' | 'B12_OUT' | 'B12_IN' | 'B11_OUT' | 'B11_IN' | 'B10_OUT' | 'B10_IN' | 'B9_OUT' | 'B9_IN' | 'B8_OUT' | 'B8_IN' | 'B7_OUT' | 'B7_IN' | 'B6_OUT' | 'B6_IN' | 'B5_OUT' | 'B5_IN' | 'B4_OUT' | 'B4_IN' | 'B3_OUT' | 'B3_IN' | 'B2_OUT' | 'B2_IN' | 'B1_OUT' | 'B1_IN' | 'WEEK_OUT' | 'MONTH_OUT' | 'WEEK_IN' | 'MONTH_IN' | 'MUTASI') => {
     setPrintReportType(type);
     setShowPrintModal(true);
   };
@@ -329,18 +332,18 @@ export default function StockMonitoringPage() {
   // ===== DOKUMEN HARIAN PENGELUARAN DALAM RENTANG MINGGUAN / BULANAN =====
   const periodRange = useMemo(() => {
     if (!isPeriodReport || !periodStart) return null;
-    return getStockPeriodRange(printReportType as 'WEEK_OUT' | 'MONTH_OUT', periodStart);
+    return getStockPeriodRange(printReportType as StockPeriodType, periodStart);
   }, [isPeriodReport, periodStart, printReportType]);
   const dailyPeriodReports = useMemo(
-    () => periodRange ? buildDailyStockReports(stockItems, movements, periodRange) : [],
-    [periodRange, stockItems, movements],
+    () => periodRange ? buildDailyStockReports(stockItems, movements, periodRange, printReportType.endsWith('_IN') ? 'IN' : 'OUT') : [],
+    [periodRange, stockItems, movements, printReportType],
   );
   // Isi otomatis "Minggu mulai" saat mode rekap dipilih: Senin berjalan untuk
   // mingguan, tanggal 1 berjalan untuk bulanan.
   useEffect(() => {
     if (!isPeriodReport || periodStart) return;
     const now = new Date();
-    const next = printReportType === 'WEEK_OUT'
+    const next = printReportType === 'WEEK_OUT' || printReportType === 'WEEK_IN'
       ? new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7))
       : new Date(now.getFullYear(), now.getMonth(), 1);
     setPeriodStart(isoLocal(next));
@@ -3372,20 +3375,20 @@ export default function StockMonitoringPage() {
               {isPeriodReport && (
                 <div className="flex flex-wrap items-center gap-2 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    {printReportType === 'WEEK_OUT' ? 'Minggu mulai' : 'Pilih bulan'}
+                    {printReportType === 'WEEK_OUT' || printReportType === 'WEEK_IN' ? 'Minggu mulai' : 'Pilih bulan'}
                   </span>
                   <input
                     type="date"
                     value={periodStart}
                     onChange={(e) => setPeriodStart(e.target.value)}
-                    aria-label={printReportType === 'WEEK_OUT' ? 'Minggu mulai' : 'Tanggal dalam bulan laporan'}
+                    aria-label={printReportType === 'WEEK_OUT' || printReportType === 'WEEK_IN' ? 'Minggu mulai' : 'Tanggal dalam bulan laporan'}
                     className="min-w-[165px] shrink-0 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-bold text-slate-800 bg-white cursor-pointer"
                   />
                   <span className="text-[11px] text-slate-600 font-semibold">
                     s/d {periodRange ? formatTanggalIndo(periodRange.end) : '—'}
                   </span>
                   <span className="text-[11px] text-slate-500">
-                    {dailyPeriodReports.length} PDF · {dailyPeriodReports.length} tanggal masak
+                    {dailyPeriodReports.length} PDF · {dailyPeriodReports.length} tanggal {printReportType.endsWith('_IN') ? 'masuk' : 'masak'}
                   </span>
                 </div>
               )}
@@ -3416,7 +3419,8 @@ export default function StockMonitoringPage() {
               {isPeriodReport ? (
                 <DailyStockPeriodReport
                   reports={dailyPeriodReports}
-                  title={printReportType === 'WEEK_OUT' ? 'keluar-masak-mingguan' : 'keluar-masak-bulanan'}
+                  title={printReportType === 'WEEK_IN' ? 'masuk-mingguan' : printReportType === 'MONTH_IN' ? 'masuk-bulanan' : printReportType === 'WEEK_OUT' ? 'keluar-masak-mingguan' : 'keluar-masak-bulanan'}
+                  direction={printReportType.endsWith('_IN') ? 'IN' : 'OUT'}
                   onPrint={() => window.print()}
                 />
               ) : (

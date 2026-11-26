@@ -11,6 +11,7 @@ interface Props {
   reports: readonly DailyStockReport[];
   title: string;
   onPrint: () => void;
+  direction?: 'IN' | 'OUT';
 }
 function formatQuantity(value: number): string {
   return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(value);
@@ -29,7 +30,7 @@ async function loadLogo(): Promise<Uint8Array> {
   return new Uint8Array(await response.arrayBuffer());
 }
 
-export default function DailyStockPeriodReport({ reports, title, onPrint }: Props) {
+export default function DailyStockPeriodReport({ reports, title, onPrint, direction = 'OUT' }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const generate = async (report: DailyStockReport) => {
@@ -37,7 +38,7 @@ export default function DailyStockPeriodReport({ reports, title, onPrint }: Prop
     setError('');
     try {
       const logo = await loadLogo();
-      saveBlob(new Blob([new Uint8Array(await createDailyStockPdf(report, logo)).buffer as ArrayBuffer], { type: 'application/pdf' }), `BA-BOM-${report.date}.pdf`);
+      saveBlob(new Blob([new Uint8Array(await createDailyStockPdf(report, logo, direction)).buffer as ArrayBuffer], { type: 'application/pdf' }), `${direction === 'IN' ? 'BA-BM' : 'BA-BOM'}-${report.date}.pdf`);
     } catch {
       setError('PDF gagal dibuat. Coba ulangi setelah koneksi normal.');
     } finally {
@@ -49,7 +50,7 @@ export default function DailyStockPeriodReport({ reports, title, onPrint }: Prop
     setError('');
     try {
       const logo = await loadLogo();
-      saveBlob(new Blob([new Uint8Array(await createStockPeriodZip(reports, logo)).buffer as ArrayBuffer], { type: 'application/zip' }), `${title.toLowerCase()}-${reports[0].date}-${reports.at(-1)?.date}.zip`);
+      saveBlob(new Blob([new Uint8Array(await createStockPeriodZip(reports, logo, direction)).buffer as ArrayBuffer], { type: 'application/zip' }), `${title.toLowerCase()}-${reports[0].date}-${reports.at(-1)?.date}.zip`);
     } catch {
       setError('ZIP PDF harian gagal dibuat. Coba ulangi.');
     } finally {
@@ -58,7 +59,7 @@ export default function DailyStockPeriodReport({ reports, title, onPrint }: Prop
   };
 
   return (
-    <section className="period-report" aria-label="Dokumen keluar masak per tanggal">
+    <section className="period-report" aria-label={direction === 'IN' ? 'Dokumen penerimaan bahan per tanggal' : 'Dokumen keluar masak per tanggal'}>
       <div className="no-print flex flex-wrap items-center justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm">
         <p className="font-bold text-blue-950">{reports.length} PDF · {reports.length} tanggal · satu lembar A4 per tanggal</p>
         <div className="flex flex-wrap gap-2">
@@ -74,7 +75,7 @@ export default function DailyStockPeriodReport({ reports, title, onPrint }: Prop
       </div>
 
       {reports.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm font-semibold text-slate-500">Tidak ada catatan pengeluaran masak pada periode ini.</div>
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm font-semibold text-slate-500">{direction === 'IN' ? 'Tidak ada catatan penerimaan bahan pada periode ini.' : 'Tidak ada catatan pengeluaran masak pada periode ini.'}</div>
       ) : reports.map((report) => (
         <article key={report.date} className="report-sheet daily-outgoing-sheet mx-auto my-5 max-w-3xl rounded-xl border border-slate-300 bg-white p-5 font-serif text-xs text-slate-950 shadow-md print:my-0 print:max-w-none print:rounded-none print:shadow-none">
           <header className="flex items-center justify-center gap-3 border-b-2 border-slate-950 pb-2 text-center">
@@ -83,19 +84,21 @@ export default function DailyStockPeriodReport({ reports, title, onPrint }: Prop
               <p className="text-[11px] font-bold tracking-widest">BADAN GIZI NASIONAL</p>
               <h2 className="text-sm font-black">SATUAN PELAYANAN PROGRAM GIZI (SPPG) WONODRI 3</h2>
               <p className="text-[10px] text-slate-700">Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang, Jawa Tengah</p>
-              <p className="font-mono text-[9px] text-slate-600">Realisasi Produksi: {formatQuantity(report.portions)} Porsi · Kode Satpel: SPPG-SMG-003</p>
+              <p className="font-mono text-[9px] text-slate-600">{direction === 'IN' ? `Master layanan: ${formatQuantity(report.portions)} Porsi / Hari · Kode Satpel: SPPG-SMG-003` : `Realisasi Produksi: ${formatQuantity(report.portions)} Porsi · Kode Satpel: SPPG-SMG-003`}</p>
             </div>
           </header>
           <header className="space-y-1 py-3 text-center">
-            <h3 className="text-sm font-black underline">BERITA ACARA PENGELUARAN &amp; PEMAKAIAN BAHAN MASAK</h3>
+            <h3 className="text-sm font-black underline">{direction === 'IN' ? 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK' : 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK'}</h3>
             <p className="font-mono text-[10px]">Nomor: {report.number}</p>
-            <p className="font-bold">Tanggal Pengolahan Masak: {formatTanggalIndo(report.date)}</p>
+            <p className="font-bold">{direction === 'IN' ? 'Tanggal Penerimaan' : 'Tanggal Pengolahan Masak'}: {formatTanggalIndo(report.date)}</p>
           </header>
-          <p className="mb-3 leading-relaxed">Pada tanggal {formatTanggalIndo(report.date)}, telah dikeluarkan dan digunakan bahan baku dari gudang penyimpanan untuk pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak {formatQuantity(report.portions)} porsi dengan pasokan dari Yayasan Berkat Makmur Sentosa. Rincian kuantitas fisik sebagai berikut:</p>
+          <p className="mb-3 leading-relaxed">{direction === 'IN'
+            ? `Pada tanggal ${formatTanggalIndo(report.date)}, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:`
+            : `Pada tanggal ${formatTanggalIndo(report.date)}, telah dikeluarkan dan digunakan bahan baku dari gudang penyimpanan untuk pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak ${formatQuantity(report.portions)} porsi dengan pasokan dari Yayasan Berkat Makmur Sentosa. Rincian kuantitas fisik sebagai berikut:`}</p>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-[9px]">
               <thead><tr className="bg-slate-100">
-                {['NO', 'GOLONGAN', 'NAMA BAHAN MAKANAN', 'JUMLAH MASAK', 'SATUAN', 'LOKASI SIMPAN'].map((heading) => <th key={heading} className="border border-slate-500 p-1 text-left">{heading}</th>)}
+                {['NO', 'GOLONGAN', 'NAMA BAHAN MAKANAN', direction === 'IN' ? 'JUMLAH MASUK' : 'JUMLAH MASAK', 'SATUAN', 'LOKASI SIMPAN'].map((heading) => <th key={heading} className="border border-slate-500 p-1 text-left">{heading}</th>)}
               </tr></thead>
               <tbody>{report.rows.map((row, index) => <tr key={`${row.name}-${row.uom}`}>
                 <td className="border border-slate-400 p-1 text-center">{index + 1}</td><td className="border border-slate-400 p-1">{row.category}</td>

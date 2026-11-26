@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { zipSync } from 'fflate';
-import type { DailyStockReport } from './stock-period-report';
+import type { DailyStockReport, StockPeriodDirection } from './stock-period-report';
 import { formatTanggalIndo } from './dateUtils';
 
 const safe = (value: string): string => value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
@@ -12,7 +12,7 @@ function imageDataUrl(bytes: Uint8Array): string {
   return `data:image/png;base64,${btoa(binary)}`;
 }
 
-export async function createDailyStockPdf(report: DailyStockReport, logo: Uint8Array): Promise<Uint8Array> {
+export async function createDailyStockPdf(report: DailyStockReport, logo: Uint8Array, direction: StockPeriodDirection = 'OUT'): Promise<Uint8Array> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4', compress: false });
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 34;
@@ -26,25 +26,27 @@ export async function createDailyStockPdf(report: DailyStockReport, logo: Uint8A
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.text('Jl. Erlangga Raya No 38, Kel. Pleburan, Kec. Semarang Selatan, Kota Semarang, Jawa Tengah', pageWidth / 2 + 18, 69, { align: 'center' });
-  doc.text(`Realisasi Produksi: ${fmtQty(report.portions)} Porsi | Kode Satpel: SPPG-SMG-003`, pageWidth / 2 + 18, 81, { align: 'center' });
+  doc.text(direction === 'IN' ? `Master layanan: ${fmtQty(report.portions)} Porsi / Hari | Kode Satpel: SPPG-SMG-003` : `Realisasi Produksi: ${fmtQty(report.portions)} Porsi | Kode Satpel: SPPG-SMG-003`, pageWidth / 2 + 18, 81, { align: 'center' });
   doc.setLineWidth(1.6);
   doc.line(margin, 92, pageWidth - margin, 92);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
-  doc.text('BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK', pageWidth / 2, 112, { align: 'center' });
+  doc.text(direction === 'IN' ? 'BERITA ACARA PENERIMAAN FISIK BAHAN BAKU MASUK' : 'BERITA ACARA PENGELUARAN & PEMAKAIAN BAHAN MASAK', pageWidth / 2, 112, { align: 'center' });
   doc.setFontSize(8);
   doc.text(`Nomor: ${report.number}`, pageWidth / 2, 127, { align: 'center' });
-  doc.text(`Tanggal Pengolahan Masak: ${safe(formatTanggalIndo(report.date))}`, pageWidth / 2, 141, { align: 'center' });
+  doc.text(direction === 'IN' ? `Tanggal Penerimaan: ${safe(formatTanggalIndo(report.date))}` : `Tanggal Pengolahan Masak: ${safe(formatTanggalIndo(report.date))}`, pageWidth / 2, 141, { align: 'center' });
   doc.setFont('helvetica', 'normal');
-  const introduction = `Pada tanggal ${safe(formatTanggalIndo(report.date))}, telah dikeluarkan dan digunakan bahan baku dari gudang penyimpanan untuk pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak ${fmtQty(report.portions)} porsi dengan pasokan dari Yayasan Berkat Makmur Sentosa. Rincian kuantitas fisik sebagai berikut:`;
+  const introduction = direction === 'IN'
+    ? `Pada tanggal ${safe(formatTanggalIndo(report.date))}, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:`
+    : `Pada tanggal ${safe(formatTanggalIndo(report.date))}, telah dikeluarkan dan digunakan bahan baku dari gudang penyimpanan untuk pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak ${fmtQty(report.portions)} porsi dengan pasokan dari Yayasan Berkat Makmur Sentosa. Rincian kuantitas fisik sebagai berikut:`;
   const lines = doc.splitTextToSize(introduction, pageWidth - margin * 2);
   doc.text(lines, margin, 156);
   const tableTop = 165 + (lines.length - 1) * 9;
   autoTable(doc, {
     startY: tableTop,
     margin: { left: margin, right: margin, bottom: 135 },
-    head: [['NO', 'GOLONGAN', 'NAMA BAHAN MAKANAN', 'JUMLAH MASAK', 'SATUAN', 'LOKASI SIMPAN']],
+    head: [['NO', 'GOLONGAN', 'NAMA BAHAN MAKANAN', direction === 'IN' ? 'JUMLAH MASUK' : 'JUMLAH MASAK', 'SATUAN', 'LOKASI SIMPAN']],
     body: report.rows.map((row, index) => [String(index + 1), safe(row.category), safe(row.name), fmtQty(row.qty), safe(row.uom), safe(row.location)]),
     foot: [['', '', 'TOTAL PER SATUAN', report.totals.map(({ qty, uom }) => `${fmtQty(qty)} ${safe(uom)}`).join(' · '), '', '']],
     showFoot: 'lastPage',
@@ -89,9 +91,9 @@ export async function createDailyStockPdf(report: DailyStockReport, logo: Uint8A
   return new Uint8Array(doc.output('arraybuffer'));
 }
 
-export async function createStockPeriodZip(reports: readonly DailyStockReport[], logo: Uint8Array): Promise<Uint8Array> {
+export async function createStockPeriodZip(reports: readonly DailyStockReport[], logo: Uint8Array, direction: StockPeriodDirection = 'OUT'): Promise<Uint8Array> {
   if (reports.length === 0) throw new Error('Periode kosong tidak menghasilkan arsip ZIP.');
   const files: Record<string, Uint8Array> = {};
-  for (const report of reports) files[`BA-BOM-${report.date}.pdf`] = await createDailyStockPdf(report, logo);
+  for (const report of reports) files[`${direction === 'IN' ? 'BA-BM' : 'BA-BOM'}-${report.date}.pdf`] = await createDailyStockPdf(report, logo, direction);
   return zipSync(files, { level: 6 });
 }
