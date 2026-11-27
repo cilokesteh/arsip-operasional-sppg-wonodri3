@@ -901,8 +901,8 @@ export const BATCH_12_ITEMS: StockItem[] = [
 ];
 
 // BATCH 20: 17 Bahan Masuk 26 Nov 2026 (Kamis) -> Keluar Masak 27 Nov 2026 (Jumat)
-// Menu (INFERENSI — menu resmi 27 Nov belum terbit di cloud KV per 26 Nov; header nota terbaca "Nasi putih, Telur Semur, Tempe Goreng, K..."):
-//   Nasi Putih, Telur Semur, Tempe Goreng, Tumis Pakcoy & Wortel, Kelengkeng
+// Menu Resmi (terbit di Cloudflare KV per 26 Nov):
+//   Nasi Putih, Telur Semur, Tempe Goreng, Tumis Pakcoy Wortel, Kelengkeng
 // CATATAN: nota ini TIDAK ada kolom SATUAN (3 kolom: GOLONGAN | BAHAN MAKANAN | JUMLAH) -> satuan diinferensi sesuai standar dapur SPPG (SATUAN INFERENSI).
 export const BATCH_20_ITEMS: StockItem[] = [
   { id: 'b20-01', sku: 'BGN-BHK-2001', name: 'BERAS', category: 'Bahan Kering', uom: 'KG', storageLocation: 'Gudang Kering', currentStock: 0, initialStock: 85, usedStock: 85, minStockAlert: 21.25, dailyUsageAvg: 85, supplierName: SUPPLIER_YAYASAN, lastRestockDate: '2026-11-26', lastUsageDate: '2026-11-27', batch: '20-NOV', notes: 'Batch 20: Masuk 85 KG (2026-11-26) -> Keluar masak 85 KG (2026-11-27) Nasi Putih (SATUAN INFERENSI)' },
@@ -1164,7 +1164,7 @@ export const DEFAULT_STOCK_MOVEMENTS: StockMovement[] = [
     balanceAfter: 0,
     reference: 'BOM-MSK-20261127',
     loggedBy: 'Seksi Pengolahan Dapur',
-    notes: 'Batch 20: Pemakaian masak 1.541 Porsi MBG tgl 27 Nov 2026 (INFERENSI: Nasi Putih, Telur Semur, Tempe Goreng, Tumis Pakcoy & Wortel, Kelengkeng — menu resmi 27 Nov belum terbit)',
+    notes: 'Batch 20: Pemakaian masak 1.541 Porsi MBG tgl 27 Nov 2026 (Menu Resmi: Nasi Putih, Telur Semur, Tempe Goreng, Tumis Pakcoy Wortel, Kelengkeng)',
   })),
 
   // --- 17 MASUK BATCH 20 (26 NOV 2026) ---

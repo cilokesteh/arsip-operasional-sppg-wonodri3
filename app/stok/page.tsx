@@ -2754,7 +2754,7 @@ export default function StockMonitoringPage() {
                 </h3>
               </div>
               <p className="text-sm text-slate-600 leading-relaxed">
-                Kebutuhan bahan pangan untuk pengolahan menu sajian 1.541 Porsi MBG tanggal <strong>Jumat, 27 November 2026</strong> telah terpenuhi 100% dari penerimaan logistik tgl 26 November 2026. (Menu INFERENSI — menu resmi 27 Nov belum terbit.)
+                Kebutuhan bahan pangan untuk pengolahan menu sajian 1.541 Porsi MBG tanggal <strong>Jumat, 27 November 2026</strong> telah terpenuhi 100% dari penerimaan logistik tgl 26 November 2026. (Menu Resmi: Nasi Putih, Telur Semur, Tempe Goreng, Tumis Pakcoy Wortel, Kelengkeng.)
               </p>
             </div>
 
@@ -3744,7 +3744,7 @@ export default function StockMonitoringPage() {
                     `Pada hari ini, ${formatHariTanggalIndo(reportItems[0].lastRestockDate)}, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch ${reportItems[0].batch.replace(/[^0-9]/g, '') || reportItems[0].batch} di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi ${reportItems[0].supplierName} dengan rincian sebagai berikut:`
                   )}
                   {printReportType === 'B20_OUT' &&
-                    'Pada hari ini, Jumat tanggal 27 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 20 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi (Menu INFERENSI: Nasi Putih, Telur Semur, Tempe Goreng, Tumis Pakcoy & Wortel, Kelengkeng — menu resmi 27 Nov belum terbit) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
+                    'Pada hari ini, Jumat tanggal 27 November 2026, telah dikeluarkan dan dialokasikan seluruh stok bahan baku Batch 20 dari gudang penyimpanan untuk proses pengolahan masak Program Makan Bergizi Gratis (MBG) sebanyak 1.541 Porsi (Menu: Nasi Putih, Telur Semur, Tempe Goreng, Tumis Pakcoy Wortel, Kelengkeng) pasokan dari Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B20_IN' &&
                     'Pada hari ini, Kamis tanggal 26 November 2026, telah diterima dan diverifikasi kuantitas timbangan fisik bahan baku Batch 20 di fasilitas Central Kitchen SPPG Wonodri 3 dari mitra resmi Yayasan Berkat Makmur Sentosa dengan rincian sebagai berikut:'}
                   {printReportType === 'B19_OUT' &&
