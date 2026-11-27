@@ -134,15 +134,23 @@ export default function StockMonitoringPage() {
   // teks panjang terpotong). Dropdown ini dirender aplikasi sendiri sehingga
   // tampilannya sama di semua perangkat.
   const [printMenuOpen, setPrintMenuOpen] = useState<boolean>(false);
-  // Default periode rekap (tanpa hook — dipakai badge dropdown).
-  const weekStartDefault = (() => {
+  // Default periode rekap:
+  // - Keluar Masak (Senin–Jumat) default mulai Senin berjalan
+  // - Penerimaan Masuk (Minggu–Kamis H-1) default mulai Minggu berjalan
+  const weekOutStartDefault = useMemo(() => {
     const now = new Date();
     return isoLocal(new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)));
-  })();
-  const monthStartDefault = (() => {
+  }, []);
+  const weekInStartDefault = useMemo(() => {
+    const now = new Date();
+    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+    const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() - 1);
+    return isoLocal(sunday);
+  }, []);
+  const monthStartDefault = useMemo(() => {
     const now = new Date();
     return isoLocal(new Date(now.getFullYear(), now.getMonth(), 1));
-  })();
+  }, []);
 
   const countBatchesInPeriod = (isWeek: boolean, start: string, direction: 'IN' | 'OUT'): number => {
     const range = getStockPeriodRange(isWeek ? (direction === 'IN' ? 'WEEK_IN' : 'WEEK_OUT') : (direction === 'IN' ? 'MONTH_IN' : 'MONTH_OUT'), start);
@@ -197,9 +205,9 @@ export default function StockMonitoringPage() {
     options: { value: string; icon: string; title: string; count: number }[];
   }[] = [
     { label: 'Rekap Periode', options: [
-      { value: 'WEEK_IN', icon: '📥', title: 'Masuk Harian Mingguan', count: countBatchesInPeriod(true, weekStartDefault, 'IN') },
+      { value: 'WEEK_IN', icon: '📥', title: 'Masuk Harian Mingguan', count: countBatchesInPeriod(true, weekInStartDefault, 'IN') },
       { value: 'MONTH_IN', icon: '📥', title: 'Masuk Harian Bulanan', count: countBatchesInPeriod(false, monthStartDefault, 'IN') },
-      { value: 'WEEK_OUT', icon: '📅', title: 'Keluar Masak Harian Mingguan', count: countBatchesInPeriod(true, weekStartDefault, 'OUT') },
+      { value: 'WEEK_OUT', icon: '📅', title: 'Keluar Masak Harian Mingguan', count: countBatchesInPeriod(true, weekOutStartDefault, 'OUT') },
       { value: 'MONTH_OUT', icon: '🗓', title: 'Keluar Masak Harian Bulanan', count: countBatchesInPeriod(false, monthStartDefault, 'OUT') },
     ] },
     ...dynamicBatchGroups,
@@ -398,16 +406,27 @@ export default function StockMonitoringPage() {
     () => periodRange ? buildDailyStockReports(stockItems, movements, periodRange, printReportType.endsWith('_IN') ? 'IN' : 'OUT') : [],
     [periodRange, stockItems, movements, printReportType],
   );
-  // Isi otomatis "Minggu mulai" saat mode rekap dipilih: Senin berjalan untuk
-  // mingguan, tanggal 1 berjalan untuk bulanan.
+  // Isi otomatis tanggal awal saat mode rekap dipilih:
+  // - WEEK_IN: Minggu (H-1) pekan berjalan (kadensi Sun-Thu)
+  // - WEEK_OUT: Senin pekan berjalan (kadensi Mon-Fri)
+  // - MONTH_IN / MONTH_OUT: Tanggal 1 bulan berjalan
+  const [lastPeriodType, setLastPeriodType] = useState<string>('');
   useEffect(() => {
-    if (!isPeriodReport || periodStart) return;
-    const now = new Date();
-    const next = printReportType === 'WEEK_OUT' || printReportType === 'WEEK_IN'
-      ? new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7))
-      : new Date(now.getFullYear(), now.getMonth(), 1);
-    setPeriodStart(isoLocal(next));
-  }, [isPeriodReport, periodStart, printReportType]);
+    if (!isPeriodReport) {
+      setLastPeriodType('');
+      return;
+    }
+    if (printReportType !== lastPeriodType) {
+      setLastPeriodType(printReportType);
+      if (printReportType === 'WEEK_IN') {
+        setPeriodStart(weekInStartDefault);
+      } else if (printReportType === 'WEEK_OUT') {
+        setPeriodStart(weekOutStartDefault);
+      } else {
+        setPeriodStart(monthStartDefault);
+      }
+    }
+  }, [isPeriodReport, printReportType, lastPeriodType, weekInStartDefault, weekOutStartDefault, monthStartDefault]);
 
   // Interactive Modals
   const [showAddItemModal, setShowAddItemModal] = useState<boolean>(false);
